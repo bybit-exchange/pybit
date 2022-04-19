@@ -201,7 +201,7 @@ class HTTP(_HTTPManager):
         :returns: Request results as dictionary.
         """
 
-        suffix = "/spot/v1/history-orders"
+        suffix = "/spot/v1/order"
 
         return self._submit_request(
             method="GET",

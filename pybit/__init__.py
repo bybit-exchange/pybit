@@ -540,7 +540,7 @@ class HTTP:
             suffix = endpoint
         else:
             if self.spot is True or kwargs.get('spot', '') is True:
-                suffix = '/spot/v1/history-orders'
+                suffix = '/spot/v1/order'
             elif kwargs.get('symbol', '').endswith('USDT'):
                 suffix = '/private/linear/order/list'
             elif kwargs.get('symbol', '')[-2:].isdigit():
