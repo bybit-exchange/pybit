@@ -367,7 +367,10 @@ class _FuturesWebSocketManager(_WebSocketManager):
         if topic_string in self.private_topics or is_usdc_private_topic():
             return topic_string
         topic_without_symbol = re.match(r".*(\..*|)(?=\.)", topic_string)
-        return topic_without_symbol[0]
+        if topic_without_symbol:
+            return topic_without_symbol[0]
+        else:
+            return None
 
     @staticmethod
     def _extract_symbol(topic_string):
@@ -375,7 +378,10 @@ class _FuturesWebSocketManager(_WebSocketManager):
         Regex to return the symbol without the topic.
         """
         symbol_without_topic = re.search(r"(?!.*\.)[A-Z*|]*$", topic_string)
-        return symbol_without_topic[0]
+        if symbol_without_topic:
+            return symbol_without_topic[0]
+        else:
+            return None
 
     def _check_callback_directory(self, topics):
         for topic in topics:
