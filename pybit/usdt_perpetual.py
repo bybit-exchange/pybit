@@ -680,7 +680,8 @@ class HTTP(_FuturesHTTPManager):
                 "qty": p["size"],
                 "time_in_force": "ImmediateOrCancel",
                 "reduce_only": True,
-                "close_on_trigger": True
+                "close_on_trigger": True,
+                "position_idx": p["position_idx"]
             } for p in (r if isinstance(r, list) else [r]) if p["size"] > 0
         ]
 
