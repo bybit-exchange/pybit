@@ -194,14 +194,14 @@ class HTTP(_HTTPManager):
     def get_active_order(self, **kwargs):
         """
         Gets an active order. For more information, see
-        https://bybit-exchange.github.io/docs/spot/#t-getactive.
+        https://bybit-exchange.github.io/docs/spot/v1/#t-getactive.
 
         :param kwargs: See
-            https://bybit-exchange.github.io/docs/spot/#t-getactive.
+            https://bybit-exchange.github.io/docs/spot/v1/#t-getactive.
         :returns: Request results as dictionary.
         """
 
-        suffix = "/spot/v1/history-orders"
+        suffix = "/spot/v1/order"
 
         return self._submit_request(
             method="GET",
