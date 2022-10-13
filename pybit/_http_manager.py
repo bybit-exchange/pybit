@@ -384,9 +384,11 @@ class _HTTPManager:
                     pass
 
                 else:
+                    error_link = _helpers.error_link(path, s_json[ret_code])
+
                     raise InvalidRequestError(
                         request=f"{method} {path}: {req_params}",
-                        message=s_json[ret_msg],
+                        message=s_json[ret_msg] + error_link,
                         status_code=s_json[ret_code],
                         time=dt.utcnow().strftime("%H:%M:%S")
                     )

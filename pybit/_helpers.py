@@ -36,3 +36,17 @@ def make_public_kwargs(private_kwargs):
     public_kwargs.pop("api_key", "")
     public_kwargs.pop("api_secret", "")
     return public_kwargs
+
+def error_link(path, number):
+    if "spot" in path:
+        number = -1*number
+        return  f" https://bybit-exchange.github.io/docs/spot/#{number}"
+    elif "account_asset" in path:  # account asset
+        return f" https://bybit-exchange.github.io/docs/account_asset/#{number}",
+    elif "usdc" in path:  # USDC
+        if "option" in path:  # option
+            return f" https://bybit-exchange.github.io/docs/usdc/option/#{number}"
+        else:  # perpetual
+            return f" https://bybit-exchange.github.io/docs/usdc/perpetual/#{number}"
+    else:  # inverse perpetual, USDT perpetual, inverse futures
+        return f" https://bybit-exchange.github.io/docs/inverse/#{number}"
