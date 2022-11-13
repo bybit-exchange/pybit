@@ -2,7 +2,6 @@ import websocket
 import threading
 import time
 import json
-import ssl
 import hmac
 import logging
 import re
