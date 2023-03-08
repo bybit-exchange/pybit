@@ -33,7 +33,7 @@ class _WebSocketManager:
     def __init__(self, callback_function, ws_name,
                  testnet, domain="", api_key=None, api_secret=None,
                  ping_interval=20, ping_timeout=10, retries=10,
-                 restart_on_error=True, trace_logging=False):
+                 restart_on_error=True, trace_logging=False, ssl_options=None):
 
         self.testnet = testnet
         self.domain = domain
@@ -62,6 +62,9 @@ class _WebSocketManager:
         self.ping_timeout = ping_timeout
         self.custom_ping_message = json.dumps({"op": "ping"})
         self.retries = retries
+        
+        # Set SSL options
+        self.ssl_options = ssl_options
 
         # Other optional data handling settings.
         self.handle_error = restart_on_error
@@ -150,10 +153,17 @@ class _WebSocketManager:
             )
 
             # Setup the thread running WebSocketApp.
-            self.wst = threading.Thread(target=lambda: self.ws.run_forever(
-                ping_interval=self.ping_interval,
-                ping_timeout=self.ping_timeout
-            ))
+            if self.ssl_options is None:
+                self.wst = threading.Thread(target=lambda: self.ws.run_forever(
+                   ping_interval=self.ping_interval,
+                   ping_timeout=self.ping_timeout
+                ))
+            else:
+                self.wst = threading.Thread(target=lambda: self.ws.run_forever(
+                   sslopt=self.ssl_options,
+                   ping_interval=self.ping_interval,
+                   ping_timeout=self.ping_timeout
+                ))
 
             # Configure as daemon; start.
             self.wst.daemon = True
