@@ -58,6 +58,8 @@ It was designed with the following vision in mind:
 pip install pybit
 ```
 
+If you want to use only v5 ByBit APIs, you can use [v5 branch](https://github.com/bybit-exchange/pybit/tree/v5-only)
+
 ## Basic Usage
 You can retrieve a specific market like so:
 ```python
