@@ -6,7 +6,6 @@
   "commit": false,
   "contributors": [
     {
-    
       "login": "verata-veritatis",
       "name": "verata-veritatis",
       "avatar_url": "https://avatars0.githubusercontent.com/u/9677388?v=4",
@@ -14,14 +13,23 @@
       "contributions": [
         "code",
         "doc"
-
+      ]
+    },
+    {
+      "login": "tomcru",
+      "name": "Tom Rumpf",
+      "avatar_url": "https://avatars.githubusercontent.com/u/35841182?v=4",
+      "profile": "https://github.com/tomcru",
+      "contributions": [
+        "code"
       ]
     }
   ],
   "contributorsPerLine": 7,
   "projectName": "pybit",
-  "projectOwner": "verata-veritatis",
+  "projectOwner": "bybit-exchange",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "skipCi": true
+  "skipCi": true,
+  "commitConvention": "angular"
 }
