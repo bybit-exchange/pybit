@@ -52,3 +52,14 @@ class InvalidRequestError(Exception):
             f"{message} (ErrCode: {status_code}) (ErrTime: {time})"
             f".\nRequest → {request}."
         )
+
+
+class BreachedRateLimitError(FailedRequestError):
+    """
+    Exception raised for HTTP 403 error when breached rate limit
+    """
+
+    def __init__(self, rate_limit_reset_timestamp, **kwargs):
+        super().__init__(**kwargs)
+
+        self.rate_limit_reset_timestamp = rate_limit_reset_timestamp
