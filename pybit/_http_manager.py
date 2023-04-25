@@ -9,7 +9,7 @@ import requests
 
 from datetime import datetime as dt
 
-from .exceptions import FailedRequestError, InvalidRequestError
+from .exceptions import FailedRequestError, InvalidRequestError, BreachedRateLimitError
 from . import _helpers
 
 # Requests will use simplejson if available.
@@ -262,15 +262,24 @@ class _V5HTTPManager:
             if s.status_code != 200:
                 if s.status_code == 403:
                     error_msg = "You have breached the IP rate limit."
+                    self.logger.debug(f"Response text: {s.text}")
+                    rate_limit_reset_timestamp = s.headers.get("X-Bapi-Limit-Reset-Timestamp")
+                    raise BreachedRateLimitError(
+                        request=f"{method} {path}: {req_params}",
+                        message=error_msg,
+                        status_code=s.status_code,
+                        time=dt.utcnow().strftime("%H:%M:%S"),
+                        rate_limit_reset_timestamp=rate_limit_reset_timestamp and int(rate_limit_reset_timestamp),
+                    )
                 else:
                     error_msg = "HTTP status code is not 200."
-                self.logger.debug(f"Response text: {s.text}")
-                raise FailedRequestError(
-                    request=f"{method} {path}: {req_params}",
-                    message=error_msg,
-                    status_code=s.status_code,
-                    time=dt.utcnow().strftime("%H:%M:%S"),
-                )
+                    self.logger.debug(f"Response text: {s.text}")
+                    raise FailedRequestError(
+                        request=f"{method} {path}: {req_params}",
+                        message=error_msg,
+                        status_code=s.status_code,
+                        time=dt.utcnow().strftime("%H:%M:%S"),
+                    )
 
             # Convert response to dictionary, or raise if requests error.
             try:
