@@ -21,11 +21,12 @@ class FailedRequestError(Exception):
         time -- The time of the error.
     """
 
-    def __init__(self, request, message, status_code, time):
+    def __init__(self, request, message, status_code, time, resp_headers):
         self.request = request
         self.message = message
         self.status_code = status_code
         self.time = time
+        self.resp_headers = resp_headers
         super().__init__(
             f"{message.capitalize()} (ErrCode: {status_code}) (ErrTime: {time})"
             f".\nRequest → {request}."
