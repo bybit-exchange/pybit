@@ -355,6 +355,7 @@ class _V5HTTPManager:
                         message=s_json[ret_msg],
                         status_code=s_json[ret_code],
                         time=dt.utcnow().strftime("%H:%M:%S"),
+                        resp_headers=s.headers,
                     )
             else:
                 if self.record_request_time:
