@@ -40,7 +40,8 @@ You can retrieve a specific market like so:
 ```python
 from pybit.unified_trading import HTTP
 ```
-Create an HTTP session and connect via WebSocket for Inverse on mainnet:
+Using your [API Key](https://learn.bybit.com/bybit-guide/how-to-create-a-bybit-api-key/) create an HTTP session and connect via WebSocket for Inverse on mainnet:
+
 ```python
 session = HTTP(
     testnet=False,
