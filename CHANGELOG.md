@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [5.6.2] - 2023-10-27
+### Fixed
+- `ModuleNotFoundError: No module named 'Crypto'`
+
 ## [5.6.1] - 2023-10-09
 ### Changed
 - Improved the IP rate limit error message to indicate that an HTTP status code 403 may also mean that the IP address was identified as being from the USA – all requests from USA IPs are [banned](https://t.me/BybitAPI/180420) by Bybit.
