@@ -179,6 +179,7 @@ class _WebSocketManager:
             self._auth()
 
         resubscribe_to_topics()
+        self._send_initial_ping()
 
         self.attempting_connection = False
 
@@ -247,6 +248,13 @@ class _WebSocketManager:
 
     def _send_custom_ping(self):
         self.ws.send(self.custom_ping_message)
+
+    def _send_initial_ping(self):
+        """https://github.com/bybit-exchange/pybit/issues/164"""
+        timer = threading.Timer(
+            self.ping_interval, self._send_custom_ping
+        )
+        timer.start()
 
     @staticmethod
     def _is_custom_pong(message):

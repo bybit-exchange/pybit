@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Add methods for the [Institutional Loan](https://bybit-exchange.github.io/docs/v5/otc/margin-product-info) endpoints
 
+### Fixed
+- Options WebSocket failing to maintain connection (#164)
+
 
 
 ## [5.6.1] - 2023-10-09
