@@ -1,3 +1,5 @@
+from typing import List, Dict, Any
+
 import websocket
 import threading
 import time
@@ -47,7 +49,7 @@ class _WebSocketManager:
         self.ws_name = ws_name
         if api_key:
             self.ws_name += " (Auth)"
-        
+
         # Delta time for private auth expiration in seconds
         self.private_auth_expire = private_auth_expire
 
@@ -348,49 +350,40 @@ class _V5WebSocketManager(_WebSocketManager):
         try:
             self.data[topic]
         except KeyError:
-            self.data[topic] = []
+            self.data[topic] = {}
+
+    def _process_synchronization_orderbook(self, orderbook: Dict, topic: str, side: str):
+        for price, amount in orderbook.items():
+            if self.data[topic][side].get(price):
+
+                # Delete filled order
+                if float(amount) == 0:
+                    self.data[topic][side].pop(price, 0)
+
+                # Update order amount
+                else:
+                    self.data[topic][side][price] = amount
 
     def _process_delta_orderbook(self, message, topic):
         self._initialise_local_data(topic)
 
-        # Record the initial snapshot.
-        if "snapshot" in message["type"]:
-            self.data[topic] = message["data"]
-            return
+        bids: List[List[str, str]] = message["data"]["b"]
+        asks: List[List[str, str]] = message["data"]["a"]
 
-        # Make updates according to delta response.
-        book_sides = {"b": message["data"]["b"], "a": message["data"]["a"]}
+        orderbook: Dict[str, Any] = {
+            "a": dict(asks),
+            "b": dict(bids),
+            "s": message["data"]["s"],
+            "u": message["data"]["u"],
+            "seq": message["data"]["seq"],
+        }
 
-        for side, entries in book_sides.items():
-            for entry in entries:
-                # Delete.
-                if float(entry[1]) == 0:
-                    index = _helpers.find_index(
-                        self.data[topic][side], entry, 0
-                    )
-                    self.data[topic][side].pop(index)
-                    continue
+        if "delta" in message["type"]:
+            self._process_synchronization_orderbook(orderbook['a'], topic, 'a')
+            self._process_synchronization_orderbook(orderbook['b'], topic, 'b')
 
-                # Insert.
-                price_level_exists = entry[0] in [
-                    level[0] for level in self.data[topic][side]
-                ]
-                if not price_level_exists:
-                    self.data[topic][side].append(entry)
-                    continue
-
-                # Update.
-                qty_changed = entry[1] != next(
-                    level[1]
-                    for level in self.data[topic][side]
-                    if level[0] == entry[0]
-                )
-                if price_level_exists and qty_changed:
-                    index = _helpers.find_index(
-                        self.data[topic][side], entry, 0
-                    )
-                    self.data[topic][side][index] = entry
-                    continue
+        else:
+            self.data[topic] = orderbook
 
     def _process_delta_ticker(self, message, topic):
         self._initialise_local_data(topic)
