@@ -6,15 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [5.7.0] - 2024-04-11
+## [Unreleased]
 ### Added
 - [Demo Trading](https://bybit-exchange.github.io/docs/v5/demo) support 
 - Add methods for the [Institutional Loan](https://bybit-exchange.github.io/docs/v5/otc/margin-product-info) endpoints
 - Add [Account](https://bybit-exchange.github.io/docs/v5/account/wallet-balance) methods `repay_liability()`, `set_collateral_coin()`, `batch_set_collateral_coin()`
-- `tld` arg for users in The Netherlands and Hong Kong for `HTTP` sessions
+- `tld` arg for users in The Netherlands and Hong Kong
 
 ### Fixed
-- Options WebSocket failing to maintain connection (https://github.com/bybit-exchange/pybit/issues/164)
+- Options WebSocket failing to maintain connection (#164)
+
 
 
 ## [5.6.1] - 2023-10-09
