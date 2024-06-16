@@ -37,6 +37,7 @@ class _WebSocketManager:
         restart_on_error=True,
         trace_logging=False,
         private_auth_expire=1,
+        skip_utf8_validation=True,
     ):
         self.testnet = testnet
         self.domain = domain
@@ -76,6 +77,13 @@ class _WebSocketManager:
         # Enable websocket-client's trace logging for extra debug information
         # on the websocket connection, including the raw sent & recv messages
         websocket.enableTrace(trace_logging)
+
+        # Set the skip_utf8_validation parameter to True to skip the utf-8
+        # validation of incoming messages. 
+        # Could be useful if incoming messages contain invalid utf-8 characters.
+        # Also disabling utf-8 validation could improve performance
+        # (more about performance: https://github.com/websocket-client/websocket-client).
+        self.skip_utf8_validation = skip_utf8_validation
 
         # Set initial state, initialize dictionary and connect.
         self._reset()
@@ -159,6 +167,7 @@ class _WebSocketManager:
                 target=lambda: self.ws.run_forever(
                     ping_interval=self.ping_interval,
                     ping_timeout=self.ping_timeout,
+                    skip_utf8_validation=self.skip_utf8_validation,
                 )
             )
 
