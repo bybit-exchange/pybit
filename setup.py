@@ -31,5 +31,6 @@ setup(
         "requests",
         "websocket-client",
         "websockets",
+        "packaging",
     ],
 )
