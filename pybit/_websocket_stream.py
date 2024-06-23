@@ -1,6 +1,6 @@
 """ Websocket stream manager for Bybit API. """
 
-from typing import Optional, Union
+from typing import Optional, Union, Callable
 import threading
 import time
 import json
@@ -9,6 +9,13 @@ import copy
 from uuid import uuid4
 import websocket
 from ._http_manager import generate_signature
+from .exceptions import (
+    PybitException,
+    AlreadySubscribedTopicException,
+    AuthorizationFailedException,
+    WSConnectionNotEstablishedException
+)
+from ._utils import deprecate_function_arguments
 from . import _helpers
 
 
@@ -31,6 +38,10 @@ class _WebSocketManager:
     attempting_connection: bool
     data: dict
 
+    @deprecate_function_arguments(
+        "6.0",
+        to_be_replaced=("restart_on_error", "restart_on_ws_disconnect"),
+    )
     def __init__(
         self,
         callback_function,
@@ -44,7 +55,9 @@ class _WebSocketManager:
         ping_interval=20,
         ping_timeout=10,
         retries=10,
-        restart_on_error=True,
+        restart_on_error: Optional[bool] = None,
+        restart_on_ws_disconnect: bool = True,
+        disconnect_on_exception: bool = True,
         trace_logging=False,
         private_auth_expire=1,
         skip_utf8_validation=True,
@@ -69,11 +82,11 @@ class _WebSocketManager:
         #   {
         #       "topic_name": function
         #   }
-        self.callback_directory = {}
+        self.callback_directory: dict[str, Callable] = {}
 
         # Record the subscriptions made so that we can resubscribe if the WSS
         # connection is broken.
-        self.subscriptions = {}
+        self.subscriptions: dict[str, str] = {}
 
         # Set ping settings.
         self.ping_interval = ping_interval
@@ -82,7 +95,13 @@ class _WebSocketManager:
         self.retries = retries
 
         # Other optional data handling settings.
-        self.handle_error = restart_on_error
+        self.restart_on_ws_disconnect = restart_on_error or restart_on_ws_disconnect
+        # If True, disconnects the websocket connection when a non-websocket
+        # exception is raised(for example, a broken ws message was received, which
+        # caused wrong handling, and, therefore, an exception was thrown).
+        # If False, the websocket connection will not be closed, and the exception
+        # will be ignored(will be only logged).
+        self.disconnect_on_exception = disconnect_on_exception
 
         # Enable websocket-client's trace logging for extra debug information
         # on the websocket connection, including the raw sent & recv messages
@@ -129,12 +148,10 @@ class _WebSocketManager:
                 return False
         except AttributeError:
             return False
-    
+
     def _send(self, message):
         if self.ws is None:
-            raise Exception(
-                "WebSocket connection is not established. Please connect first."
-            )
+            raise WSConnectionNotEstablishedException()
         self.ws.send(message)
 
     def _connect(self, url):
@@ -248,27 +265,43 @@ class _WebSocketManager:
         """
         Exit on errors and raise exception, or attempt reconnect.
         """
-        if type(error).__name__ not in [
-            "WebSocketConnectionClosedException",
-            "ConnectionResetError",
-            "WebSocketTimeoutException",
-        ]:
-            # Raises errors not related to websocket disconnection.
-            self.exit()
-            raise error
-
-        if not self.exited:
-            logger.exception(
-                "WebSocket %(ws_name)s (%(endpoint)s) "
-                "encountered error: %(error)s.",
-                {"ws_name": self.ws_name, "endpoint": self.endpoint, "error": error},
+        is_ws_disconnect = any(
+            map(
+                lambda exception: isinstance(error, exception),
+                [
+                    websocket.WebSocketConnectionClosedException,
+                    websocket.WebSocketTimeoutException,
+                ]
             )
-            self.exit()
+        )
+        should_raise = isinstance(error, PybitException) or \
+            (is_ws_disconnect and not self.restart_on_ws_disconnect) or \
+            (not is_ws_disconnect and self.disconnect_on_exception)
 
-        # Reconnect.
-        if self.handle_error and not self.attempting_connection:
+        log_callback = logger.error if is_ws_disconnect else logger.exception
+        log_callback(
+            "WebSocket %(ws_name)s (%(endpoint)s) encountered error: %(error)s.",
+            {"ws_name": self.ws_name, "endpoint": self.endpoint, "error": error},
+        )
+
+        if is_ws_disconnect and self.restart_on_ws_disconnect and not self.attempting_connection:
+            if not self.exited:
+                self.exit()
+            logger.info(
+                "Attempting to reconnect WebSocket %s...",
+                self.ws_name
+            )
             self._reset()
             self._connect(self.endpoint)
+
+        if should_raise:
+            self.exit()
+            logger.info(
+                "WebSocket %s closed because an exception was raised."
+                "If you want to keep the connection open, set disconnect_on_exception=False",
+                self.ws_name
+            )
+            raise error
 
     def _on_close(self, *args):
         """
@@ -457,9 +490,9 @@ class _V5WebSocketManager(_WebSocketManager):
             self.auth = True
         # If we get unsuccessful auth, notify user.
         elif message.get("success") is False or message.get("type") == "error":
-            raise Exception(
-                f"Authorization for {self.ws_name} failed. Please check your "
-                f"API keys and resync your system time. Raw error: {message}"
+            raise AuthorizationFailedException(
+                ws_name=self.ws_name,
+                raw_message=message,
             )
 
     def _process_subscription_message(self, message):
@@ -525,8 +558,7 @@ class _V5WebSocketManager(_WebSocketManager):
     def _check_callback_directory(self, topics):
         for topic in topics:
             if topic in self.callback_directory:
-                raise Exception(
-                    f"You have already subscribed to this topic: {topic}")
+                raise AlreadySubscribedTopicException(topic)
 
     def _set_callback(self, topic, callback_function):
         self.callback_directory[topic] = callback_function
