@@ -1,6 +1,10 @@
-import unittest, time
+import sys
+import inspect
+import unittest
+import time
 from pybit.exceptions import InvalidChannelTypeError, TopicMismatchError
 from pybit.unified_trading import HTTP, WebSocket
+from pybit._utils import DEPRECATION_CONFIG
 
 # session uses Bybit's mainnet endpoint
 session = HTTP()
@@ -52,7 +56,7 @@ class HTTPTest(unittest.TestCase):
 
 class WebSocketTest(unittest.TestCase):
     # A very simple test to ensure we're getting something from WS.
-    def _callback_function(msg):
+    def _callback_function(self, msg):
         print(msg)
 
     def test_websocket(self):
@@ -80,12 +84,13 @@ class WebSocketTest(unittest.TestCase):
             )
 
             ws.order_stream(callback=self._callback_function)
-            
+
+
 class PrivateWebSocketTest(unittest.TestCase):
     # Connect to private websocket and see if we can auth.
-    def _callback_function(msg):
+    def _callback_function(self, msg):
         print(msg)
-    
+
     def test_private_websocket_connect(self):
         ws_private = WebSocket(
             testnet=True,
@@ -93,8 +98,55 @@ class PrivateWebSocketTest(unittest.TestCase):
             api_key="...",
             api_secret="...",
             trace_logging=True,
-            #private_auth_expire=10
+            # private_auth_expire=10
         )
-        
+
         ws_private.position_stream(callback=self._callback_function)
-        #time.sleep(10)
+        # time.sleep(10)
+
+
+class DeprecatedMembersTest(unittest.TestCase):
+    """ Test deprecated members. """
+
+    def _check_deprecated_function(self, func):
+        config = func.__dict__.get(DEPRECATION_CONFIG)
+        if config and config.should_be_modified:
+            message = (
+                f'There are arguments from function "{config.function_name}" '
+                'that are deprecated and must be removed in version '
+                f'{config.modification_version}:\n' +
+                ', '.join([f'"{x}"' for x in config.to_be_removed]) +
+                (', ' if len(config.to_be_removed) > 0 else '') +
+                ', '.join(
+                    [f'"{x[0]}"(Replaced with "{x[1]}")' for x in config.to_be_replaced])
+            )
+            raise AssertionError(message)
+
+    def _check_deprecated_class(self, cls):
+        config = cls[1].__dict__.get(DEPRECATION_CONFIG)
+        if config:
+            self.assertFalse(
+                config.should_be_modified,
+                f'Class "{cls[0]}" should be removed in version {config.modification_version}!'
+            )
+
+    def test_should_modify_deprecated_members(self):
+        """ Test if deprecated members(classes/functions) 
+        should be modified(removed/renamed) in current version. 
+        """
+        pybit_modules = [e[1]
+                         for e in sys.modules.items() if e[0].startswith('pybit.')]
+        for module in pybit_modules:
+            # Getting all classes from the module
+            classes = inspect.getmembers(module, inspect.isclass)
+            for cls in classes:
+                # Check all classes in the module
+                self._check_deprecated_class(cls)
+                # Check all functions in the class
+                for item in cls[1].__dict__.items():
+                    if inspect.isfunction(item[1]):
+                        self._check_deprecated_function(item[1])
+            # Check all functions in the module
+            functions = inspect.getmembers(module, inspect.isfunction)
+            for func in functions:
+                self._check_deprecated_function(func[1])
