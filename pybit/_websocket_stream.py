@@ -297,7 +297,7 @@ class _WebSocketManager:
         if should_raise:
             self.exit()
             logger.info(
-                "WebSocket %s closed because an exception was raised."
+                "WebSocket %s closed because an exception was raised. "
                 "If you want to keep the connection open, set disconnect_on_exception=False",
                 self.ws_name
             )
