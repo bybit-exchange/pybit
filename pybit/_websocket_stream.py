@@ -1,11 +1,21 @@
-import websocket
+""" Websocket stream manager for Bybit API. """
+
+from typing import Optional, Union, Callable
 import threading
 import time
 import json
-from ._http_manager import generate_signature
 import logging
 import copy
 from uuid import uuid4
+import websocket
+from ._http_manager import generate_signature
+from .exceptions import (
+    PybitException,
+    AlreadySubscribedTopicException,
+    AuthorizationFailedException,
+    WSConnectionNotEstablishedException
+)
+from ._utils import deprecate_function_arguments
 from . import _helpers
 
 
@@ -21,6 +31,17 @@ DOMAIN_ALT = "bytick"
 
 
 class _WebSocketManager:
+    ws: Optional[websocket.WebSocketApp]
+    wst: Optional[threading.Thread]
+    auth: bool
+    exited: bool
+    attempting_connection: bool
+    data: dict
+
+    @deprecate_function_arguments(
+        "6.0",
+        to_be_replaced=("restart_on_error", "restart_on_ws_disconnect"),
+    )
     def __init__(
         self,
         callback_function,
@@ -34,9 +55,12 @@ class _WebSocketManager:
         ping_interval=20,
         ping_timeout=10,
         retries=10,
-        restart_on_error=True,
+        restart_on_error: Optional[bool] = None,
+        restart_on_ws_disconnect: bool = True,
+        disconnect_on_exception: bool = True,
         trace_logging=False,
         private_auth_expire=1,
+        skip_utf8_validation=True,
     ):
         self.testnet = testnet
         self.domain = domain
@@ -50,7 +74,7 @@ class _WebSocketManager:
         self.ws_name = ws_name
         if api_key:
             self.ws_name += " (Auth)"
-        
+
         # Delta time for private auth expiration in seconds
         self.private_auth_expire = private_auth_expire
 
@@ -58,11 +82,11 @@ class _WebSocketManager:
         #   {
         #       "topic_name": function
         #   }
-        self.callback_directory = {}
+        self.callback_directory: dict[str, Callable] = {}
 
         # Record the subscriptions made so that we can resubscribe if the WSS
         # connection is broken.
-        self.subscriptions = []
+        self.subscriptions: dict[str, str] = {}
 
         # Set ping settings.
         self.ping_interval = ping_interval
@@ -71,23 +95,41 @@ class _WebSocketManager:
         self.retries = retries
 
         # Other optional data handling settings.
-        self.handle_error = restart_on_error
+        self.restart_on_ws_disconnect = restart_on_error or restart_on_ws_disconnect
+        # If True, disconnects the websocket connection when a non-websocket
+        # exception is raised(for example, a broken ws message was received, which
+        # caused wrong handling, and, therefore, an exception was thrown).
+        # If False, the websocket connection will not be closed, and the exception
+        # will be ignored(will be only logged).
+        self.disconnect_on_exception = disconnect_on_exception
 
         # Enable websocket-client's trace logging for extra debug information
         # on the websocket connection, including the raw sent & recv messages
         websocket.enableTrace(trace_logging)
 
+        # Set the skip_utf8_validation parameter to True to skip the utf-8
+        # validation of incoming messages.
+        # Could be useful if incoming messages contain invalid utf-8 characters.
+        # Also disabling utf-8 validation could improve performance
+        # (more about performance: https://github.com/websocket-client/websocket-client).
+        self.skip_utf8_validation = skip_utf8_validation
+
         # Set initial state, initialize dictionary and connect.
-        self._reset()
+        self.auth = False
+        self.exited = False
+        self.data = {}
+        self.endpoint = None
+        self.ws = None
+        self.wst = None
         self.attempting_connection = False
 
-    def _on_open(self):
+    def _on_open(self, *_):
         """
         Log WS open.
         """
-        logger.debug(f"WebSocket {self.ws_name} opened.")
+        logger.debug("WebSocket %s opened.", self.ws_name)
 
-    def _on_message(self, message):
+    def _on_message(self, _, message):
         """
         Parse incoming messages.
         """
@@ -98,6 +140,7 @@ class _WebSocketManager:
             self.callback(message)
 
     def is_connected(self):
+        """ Check if the websocket is connected. """
         try:
             if self.ws.sock.connected:
                 return True
@@ -105,6 +148,11 @@ class _WebSocketManager:
                 return False
         except AttributeError:
             return False
+
+    def _send(self, message):
+        if self.ws is None:
+            raise WSConnectionNotEstablishedException()
+        self.ws.send(message)
 
     def _connect(self, url):
         """
@@ -118,8 +166,8 @@ class _WebSocketManager:
                 # no previous WSS connection.
                 return
 
-            for req_id, subscription_message in self.subscriptions.items():
-                self.ws.send(subscription_message)
+            for _, subscription_message in self.subscriptions.items():
+                self._send(subscription_message)
 
         self.attempting_connection = True
 
@@ -144,14 +192,14 @@ class _WebSocketManager:
         while (
             infinitely_reconnect or retries > 0
         ) and not self.is_connected():
-            logger.info(f"WebSocket {self.ws_name} attempting connection...")
+            logger.info("WebSocket %s attempting connection...", self.ws_name)
             self.ws = websocket.WebSocketApp(
                 url=url,
-                on_message=lambda ws, msg: self._on_message(msg),
-                on_close=lambda ws, *args: self._on_close(),
-                on_open=lambda ws, *args: self._on_open(),
-                on_error=lambda ws, err: self._on_error(err),
-                on_pong=lambda ws, *args: self._on_pong(),
+                on_message=self._on_message,
+                on_close=self._on_close,
+                on_open=self._on_open,
+                on_error=self._on_error,
+                on_pong=self._on_pong,
             )
 
             # Setup the thread running WebSocketApp.
@@ -159,6 +207,7 @@ class _WebSocketManager:
                 target=lambda: self.ws.run_forever(
                     ping_interval=self.ping_interval,
                     ping_timeout=self.ping_timeout,
+                    skip_utf8_validation=self.skip_utf8_validation,
                 )
             )
 
@@ -176,11 +225,12 @@ class _WebSocketManager:
                 self.exit()
                 raise websocket.WebSocketTimeoutException(
                     f"WebSocket {self.ws_name} ({self.endpoint}) connection "
-                    f"failed. Too many connection attempts. pybit will no "
-                    f"longer try to reconnect."
+                    "failed. Too many connection attempts. pybit will no "
+                    "longer try to reconnect."
+
                 )
 
-        logger.info(f"WebSocket {self.ws_name} connected")
+        logger.info("WebSocket %s connected", self.ws_name)
 
         # If given an api_key, authenticate.
         if self.api_key and self.api_secret:
@@ -205,44 +255,61 @@ class _WebSocketManager:
         )
 
         # Authenticate with API.
-        self.ws.send(
+        self._send(
             json.dumps(
                 {"op": "auth", "args": [self.api_key, expires, signature]}
             )
         )
 
-    def _on_error(self, error):
+    def _on_error(self, _, error):
         """
         Exit on errors and raise exception, or attempt reconnect.
         """
-        if type(error).__name__ not in [
-            "WebSocketConnectionClosedException",
-            "ConnectionResetError",
-            "WebSocketTimeoutException",
-        ]:
-            # Raises errors not related to websocket disconnection.
-            self.exit()
-            raise error
-
-        if not self.exited:
-            logger.error(
-                f"WebSocket {self.ws_name} ({self.endpoint}) "
-                f"encountered error: {error}."
+        is_ws_disconnect = any(
+            map(
+                lambda exception: isinstance(error, exception),
+                [
+                    websocket.WebSocketConnectionClosedException,
+                    websocket.WebSocketTimeoutException,
+                ]
             )
-            self.exit()
+        )
+        should_raise = isinstance(error, PybitException) or \
+            (is_ws_disconnect and not self.restart_on_ws_disconnect) or \
+            (not is_ws_disconnect and self.disconnect_on_exception)
 
-        # Reconnect.
-        if self.handle_error and not self.attempting_connection:
+        log_callback = logger.error if is_ws_disconnect else logger.exception
+        log_callback(
+            "WebSocket %(ws_name)s (%(endpoint)s) encountered error: %(error)s.",
+            {"ws_name": self.ws_name, "endpoint": self.endpoint, "error": error},
+        )
+
+        if is_ws_disconnect and self.restart_on_ws_disconnect and not self.attempting_connection:
+            if not self.exited:
+                self.exit()
+            logger.info(
+                "Attempting to reconnect WebSocket %s...",
+                self.ws_name
+            )
             self._reset()
             self._connect(self.endpoint)
 
-    def _on_close(self):
+        if should_raise:
+            self.exit()
+            logger.info(
+                "WebSocket %s closed because an exception was raised. "
+                "If you want to keep the connection open, set disconnect_on_exception=False",
+                self.ws_name
+            )
+            raise error
+
+    def _on_close(self, *args):
         """
         Log WS close.
         """
-        logger.debug(f"WebSocket {self.ws_name} closed.")
+        logger.debug("WebSocket %s closed.", self.ws_name)
 
-    def _on_pong(self):
+    def _on_pong(self, *args):
         """
         Sends a custom ping upon the receipt of the pong frame.
 
@@ -255,7 +322,7 @@ class _WebSocketManager:
         self._send_custom_ping()
 
     def _send_custom_ping(self):
-        self.ws.send(self.custom_ping_message)
+        self._send(self.custom_ping_message)
 
     def _send_initial_ping(self):
         """https://github.com/bybit-exchange/pybit/issues/164"""
@@ -314,8 +381,10 @@ class _V5WebSocketManager(_WebSocketManager):
             self,
             topic: str,
             callback,
-            symbol: (str, list) = False
+            symbol: Union[str, list[str], None] = None,
     ):
+        """ Subscribe to a topic on the websocket stream. """
+        symbol = symbol or []
 
         def prepare_subscription_args(list_of_symbols):
             """
@@ -332,7 +401,7 @@ class _V5WebSocketManager(_WebSocketManager):
                 topics.append(topic.format(symbol=single_symbol))
             return topics
 
-        if type(symbol) == str:
+        if isinstance(symbol, str):
             symbol = [symbol]
 
         subscription_args = prepare_subscription_args(symbol)
@@ -346,7 +415,7 @@ class _V5WebSocketManager(_WebSocketManager):
         while not self.is_connected():
             # Wait until the connection is open before subscribing.
             time.sleep(0.1)
-        self.ws.send(subscription_message)
+        self._send(subscription_message)
         self.subscriptions[req_id] = subscription_message
         for topic in subscription_args:
             self._set_callback(topic, callback)
@@ -368,8 +437,8 @@ class _V5WebSocketManager(_WebSocketManager):
 
         # Make updates according to delta response.
         book_sides = {"b": message["data"]["b"], "a": message["data"]["a"]}
-        self.data[topic]["u"]=message["data"]["u"]
-        self.data[topic]["seq"]=message["data"]["seq"]
+        self.data[topic]["u"] = message["data"]["u"]
+        self.data[topic]["seq"] = message["data"]["seq"]
 
         for side, entries in book_sides.items():
             for entry in entries:
@@ -417,13 +486,13 @@ class _V5WebSocketManager(_WebSocketManager):
     def _process_auth_message(self, message):
         # If we get successful futures auth, notify user
         if message.get("success") is True:
-            logger.debug(f"Authorization for {self.ws_name} successful.")
+            logger.debug("Authorization for %s successful.", self.ws_name)
             self.auth = True
         # If we get unsuccessful auth, notify user.
         elif message.get("success") is False or message.get("type") == "error":
-            raise Exception(
-                f"Authorization for {self.ws_name} failed. Please check your "
-                f"API keys and resync your system time. Raw error: {message}"
+            raise AuthorizationFailedException(
+                ws_name=self.ws_name,
+                raw_message=message,
             )
 
     def _process_subscription_message(self, message):
@@ -436,11 +505,11 @@ class _V5WebSocketManager(_WebSocketManager):
 
         # If we get successful futures subscription, notify user
         if message.get("success") is True:
-            logger.debug(f"Subscription to {sub} successful.")
+            logger.debug("Subscription to %s successful.", sub)
         # Futures subscription fail
         elif message.get("success") is False:
             response = message["ret_msg"]
-            logger.error("Couldn't subscribe to topic." f"Error: {response}.")
+            logger.error("Couldn't subscribe to topic. Error: %s.", response)
             self._pop_callback(sub[0])
 
     def _process_normal_message(self, message):
@@ -489,9 +558,7 @@ class _V5WebSocketManager(_WebSocketManager):
     def _check_callback_directory(self, topics):
         for topic in topics:
             if topic in self.callback_directory:
-                raise Exception(
-                    f"You have already subscribed to this topic: " f"{topic}"
-                )
+                raise AlreadySubscribedTopicException(topic)
 
     def _set_callback(self, topic, callback_function):
         self.callback_directory[topic] = callback_function

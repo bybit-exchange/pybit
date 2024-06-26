@@ -5,10 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-
 ## Unreleased
 ### Added
+- `skip_utf8_validation` parameter (https://github.com/bybit-exchange/pybit/issues/224)
 - [WebSocket Trading](https://bybit-exchange.github.io/docs/v5/websocket/trade/guideline) support
+- added "disconnect_on_exception" argument to `WebSocket` constructor. Pass `False` to keep the connection open on exception.
+
+### Changed
+- Now utf-8 validation is disabled by default. To enable pass `skip_utf8_validation=False` to `WebSocket()`
+- Made all exceptions inherit from `PybitException`
+- replaced base "Exception" exceptions with "PybitException" inherited ones
+- rework on _on_error callback. Won't raise the exception when "disconnect_on_exception" is False
+- now exceptions handled in `WebSocket`'s `_on_error` callback will be logged along with the stacktrace.
+
+### Deprecated
+- `restart_on_error` in `WebSocket` constructor. Use `restart_on_ws_disconnect` instead
+- *Error exceptions. Replaced with *Exception exceptions(Ex.: `InvalidRequestError` replaced with `InvalidRequestException`)
 
 
 ## [5.7.0] - 2024-04-11
