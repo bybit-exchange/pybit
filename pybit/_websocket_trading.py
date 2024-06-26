@@ -1,9 +1,11 @@
-from dataclasses import dataclass, field
+"""Module for the WebSocket Trading API."""
+
 import json
 import uuid
 import logging
 from ._websocket_stream import _WebSocketManager
 from . import _helpers
+from .exceptions import AuthorizationFailedException
 
 
 logger = logging.getLogger(__name__)
@@ -23,38 +25,29 @@ class _V5TradeWebSocketManager(_WebSocketManager):
     def _process_auth_message(self, message):
         # If we get successful auth, notify user
         if message.get("retCode") == 0:
-            logger.debug(f"Authorization for {self.ws_name} successful.")
+            logger.debug("Authorization for %s successful.", self.ws_name)
             self.auth = True
         # If we get unsuccessful auth, notify user.
         else:
-            raise Exception(
-                f"Authorization for {self.ws_name} failed. Please check your "
-                f"API keys and resync your system time. Raw error: {message}"
+            raise AuthorizationFailedException(
+                raw_message=message,
+                ws_name=self.ws_name,
             )
 
     def _process_error_message(self, message):
         logger.error(
-            f"WebSocket request {message['reqId']} hit an error. Enabling "
-            f"traceLogging to reproduce the issue. Raw error: {message}"
+            "WebSocket request %s hit an error. Enabling "
+            "traceLogging to reproduce the issue. Raw error: %s",
+            message['reqId'],
+            message,
+
         )
         self._pop_callback(message["reqId"])
 
     def _handle_incoming_message(self, message):
-        def is_auth_message():
-            if message.get("op") == "auth":
-                return True
-            else:
-                return False
-
-        def is_error_message():
-            if message.get("retCode") != 0:
-                return True
-            else:
-                return False
-
-        if is_auth_message():
+        if message.get("op") == "auth":
             self._process_auth_message(message)
-        elif is_error_message():
+        elif message.get("retCode") != 0:
             self._process_error_message(message)
         else:
             callback_function = self._pop_callback(message["reqId"])
