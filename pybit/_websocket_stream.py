@@ -60,7 +60,7 @@ class _WebSocketManager:
         disconnect_on_exception: bool = True,
         trace_logging=False,
         private_auth_expire=1,
-        skip_utf8_validation=True,
+        skip_utf8_validation=False,
     ):
         self.testnet = testnet
         self.domain = domain
