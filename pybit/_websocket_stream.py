@@ -2,11 +2,11 @@ import websocket
 import threading
 import time
 import json
-from ._http_manager import generate_signature
+from pybit._http_manager._auth import generate_signature
 import logging
 import copy
 from uuid import uuid4
-from . import _helpers
+from pybit import _helpers
 
 
 logger = logging.getLogger(__name__)

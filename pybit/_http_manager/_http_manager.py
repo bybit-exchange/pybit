@@ -1,20 +1,15 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
 import time
-import hmac
-import hashlib
-from Crypto.Hash import SHA256
-from Crypto.PublicKey import RSA
-from Crypto.Signature import PKCS1_v1_5
-import base64
 import json
 import logging
 import requests
 
 from datetime import datetime as dt
 
-from .exceptions import FailedRequestError, InvalidRequestError
-from . import _helpers
+from pybit.exceptions import FailedRequestError, InvalidRequestError
+from pybit import _helpers
+from pybit._http_manager._auth import AuthService
 
 # Requests will use simplejson if available.
 try:
@@ -34,32 +29,10 @@ TLD_NL = "nl"
 TLD_HK = "com.hk"
 
 
-def generate_signature(use_rsa_authentication, secret, param_str):
-    def generate_hmac():
-        hash = hmac.new(
-            bytes(secret, "utf-8"),
-            param_str.encode("utf-8"),
-            hashlib.sha256,
-        )
-        return hash.hexdigest()
-
-    def generate_rsa():
-        hash = SHA256.new(param_str.encode("utf-8"))
-        encoded_signature = base64.b64encode(
-            PKCS1_v1_5.new(RSA.importKey(secret)).sign(
-                hash
-            )
-        )
-        return encoded_signature.decode()
-
-    if not use_rsa_authentication:
-        return generate_hmac()
-    else:
-        return generate_rsa()
-
-
 @dataclass
-class _V5HTTPManager:
+class _V5HTTPManager(
+    AuthService,
+):
     testnet: bool = field(default=False)
     domain: str = field(default=DOMAIN_MAIN)
     tld: str = field(default=TLD_MAIN)
@@ -116,7 +89,7 @@ class _V5HTTPManager:
 
         self.logger.debug("Initializing HTTP session.")
 
-        self.client = requests.Session()
+        self.client = self._init_request_client()
         self.client.headers.update(
             {
                 "Content-Type": "application/json",
@@ -125,6 +98,9 @@ class _V5HTTPManager:
         )
         if self.referral_id:
             self.client.headers.update({"Referer": self.referral_id})
+
+    def _init_request_client(self):
+        return requests.Session()
 
     @staticmethod
     def prepare_payload(method, parameters):
@@ -162,20 +138,6 @@ class _V5HTTPManager:
             cast_values()
             return json.dumps(parameters)
 
-    def _auth(self, payload, recv_window, timestamp):
-        """
-        Prepares authentication signature per Bybit API specifications.
-        """
-
-        if self.api_key is None or self.api_secret is None:
-            raise PermissionError("Authenticated endpoints require keys.")
-
-        param_str = str(timestamp) + self.api_key + str(recv_window) + payload
-
-        return generate_signature(
-            self.rsa_authentication, self.api_secret, param_str
-        )
-
     @staticmethod
     def _verify_string(params, key):
         if key in params:
@@ -205,10 +167,7 @@ class _V5HTTPManager:
 
         # Bug fix: change floating whole numbers to integers to prevent
         # auth signature errors.
-        if query is not None:
-            for i in query.keys():
-                if isinstance(query[i], float) and query[i] == int(query[i]):
-                    query[i] = int(query[i])
+        self._change_floating_numbers_for_auth_signature(query)
 
         # Send request and return headers with body. Retry if failed.
         retries_attempted = self.max_retries
@@ -230,24 +189,7 @@ class _V5HTTPManager:
             req_params = self.prepare_payload(method, query)
 
             # Authenticate if we are using a private endpoint.
-            if auth:
-                # Prepare signature.
-                timestamp = _helpers.generate_timestamp()
-                signature = self._auth(
-                    payload=req_params,
-                    recv_window=recv_window,
-                    timestamp=timestamp,
-                )
-                headers = {
-                    "Content-Type": "application/json",
-                    "X-BAPI-API-KEY": self.api_key,
-                    "X-BAPI-SIGN": signature,
-                    "X-BAPI-SIGN-TYPE": "2",
-                    "X-BAPI-TIMESTAMP": str(timestamp),
-                    "X-BAPI-RECV-WINDOW": str(recv_window),
-                }
-            else:
-                headers = {}
+            headers = self._prepare_auth_headers(recv_window, req_params) if auth else {}
 
             if method == "GET":
                 if req_params:
