@@ -4,18 +4,20 @@ from pybit.exceptions import (
     TopicMismatchError,
     UnauthorizedExceptionError,
 )
-from pybit._v5_misc import MiscHTTP
-from pybit._v5_market import MarketHTTP
-from pybit._v5_trade import TradeHTTP
-from pybit._v5_account import AccountHTTP
-from pybit._v5_asset import AssetHTTP
-from pybit._v5_position import PositionHTTP
-from pybit._v5_pre_upgrade import PreUpgradeHTTP
-from pybit._v5_spot_leverage_token import SpotLeverageHTTP
-from pybit._v5_spot_margin_trade import SpotMarginTradeHTTP
-from pybit._v5_user import UserHTTP
-from pybit._v5_broker import BrokerHTTP
-from pybit._v5_institutional_loan import InstitutionalLoanHTTP
+from pybit.v5_api import (
+    MiscHTTP,
+    MarketHTTP,
+    TradeHTTP,
+    AccountHTTP,
+    AssetHTTP,
+    PositionHTTP,
+    PreUpgradeHTTP,
+    SpotLeverageHTTP,
+    SpotMarginTradeHTTP,
+    UserHTTP,
+    BrokerHTTP,
+    InstitutionalLoanHTTP
+)
 from pybit._websocket_stream import _V5WebSocketManager
 from pybit._websocket_trading import _V5TradeWebSocketManager
 
