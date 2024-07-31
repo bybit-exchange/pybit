@@ -8,8 +8,12 @@ import requests
 from datetime import datetime as dt
 
 from pybit.exceptions import FailedRequestError, InvalidRequestError
-from pybit import _helpers
 from pybit._http_manager._auth import AuthService
+from pybit._http_manager._response_handler import (
+    ResponseHandler,
+    ForceRetryException
+)
+from pybit._http_manager import _http_helpers
 
 # Requests will use simplejson if available.
 try:
@@ -29,9 +33,14 @@ TLD_NL = "nl"
 TLD_HK = "com.hk"
 
 
+RET_CODE = "retCode"
+RET_MSG = "retMsg"
+
+
 @dataclass
 class _V5HTTPManager(
     AuthService,
+    ResponseHandler
 ):
     testnet: bool = field(default=False)
     domain: str = field(default=DOMAIN_MAIN)
@@ -75,17 +84,7 @@ class _V5HTTPManager(
         if not self.retry_codes:
             self.retry_codes = {10002, 10006, 30034, 30035, 130035, 130150}
         self.logger = logging.getLogger(__name__)
-        if len(logging.root.handlers) == 0:
-            # no handler on root logger set -> we add handler just for this logger to not mess with custom logic from outside
-            handler = logging.StreamHandler()
-            handler.setFormatter(
-                logging.Formatter(
-                    fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-                    datefmt="%Y-%m-%d %H:%M:%S",
-                )
-            )
-            handler.setLevel(self.logging_level)
-            self.logger.addHandler(handler)
+        _http_helpers.set_logger_handler(self.logger, self.logging_level)
 
         self.logger.debug("Initializing HTTP session.")
 
@@ -99,7 +98,8 @@ class _V5HTTPManager(
         if self.referral_id:
             self.client.headers.update({"Referer": self.referral_id})
 
-    def _init_request_client(self):
+    @staticmethod
+    def _init_request_client():
         return requests.Session()
 
     @staticmethod
@@ -147,7 +147,35 @@ class _V5HTTPManager(
                 return True
         return True
 
-    def _submit_request(self, method=None, path=None, query=None, auth=False):
+    def _log_request(self, req_params, method, path, headers):
+        if self.log_requests:
+            if req_params:
+                self.logger.debug(
+                    f"Request -> {method} {path}. Body: {req_params}. "
+                    f"Headers: {headers}"
+                )
+            else:
+                self.logger.debug(
+                    f"Request -> {method} {path}. Headers: {headers}"
+                )
+
+    def _prepare_request(self, recv_window, method=None, path=None, query=None, auth=False):
+        req_params = self.prepare_payload(method, query)
+
+        # Authenticate if we are using a private endpoint.
+        headers = self._prepare_auth_headers(recv_window, req_params) if auth else {}
+
+        if method == "GET":
+            path = path + f"?{req_params}" if req_params else path
+            data = None
+        else:
+            data = req_params
+
+        return self.client.prepare_request(
+            requests.Request(method, path, data=data, headers=headers)
+        )
+
+    def _submit_request1(self, method=None, path=None, query=None, auth=False):
         """
         Submits the request to the API.
 
@@ -186,40 +214,10 @@ class _V5HTTPManager(
 
             retries_remaining = f"{retries_attempted} retries remain."
 
-            req_params = self.prepare_payload(method, query)
+            r = self._prepare_request(recv_window, method, path, query, auth)
 
-            # Authenticate if we are using a private endpoint.
-            headers = self._prepare_auth_headers(recv_window, req_params) if auth else {}
-
-            if method == "GET":
-                if req_params:
-                    r = self.client.prepare_request(
-                        requests.Request(
-                            method, path + f"?{req_params}", headers=headers
-                        )
-                    )
-                else:
-                    r = self.client.prepare_request(
-                        requests.Request(method, path, headers=headers)
-                    )
-            else:
-                r = self.client.prepare_request(
-                    requests.Request(
-                        method, path, data=req_params, headers=headers
-                    )
-                )
-            
             # Log the request.
-            if self.log_requests:
-                if req_params:
-                    self.logger.debug(
-                        f"Request -> {method} {path}. Body: {req_params}. "
-                        f"Headers: {r.headers}"
-                    )
-                else:
-                    self.logger.debug(
-                        f"Request -> {method} {path}. Headers: {r.headers}"
-                    )
+            self._log_request(self, req_params, method. path, r.headers)
 
             # Attempt the request.
             try:
@@ -239,71 +237,40 @@ class _V5HTTPManager(
                     raise e
 
             # Check HTTP status code before trying to decode JSON.
-            if s.status_code != 200:
-                if s.status_code == 403:
-                    error_msg = "You have breached the IP rate limit or your IP is from the USA."
-                else:
-                    error_msg = "HTTP status code is not 200."
-                self.logger.debug(f"Response text: {s.text}")
-                raise FailedRequestError(
-                    request=f"{method} {path}: {req_params}",
-                    message=error_msg,
-                    status_code=s.status_code,
-                    time=dt.utcnow().strftime("%H:%M:%S"),
-                    resp_headers=s.headers,
-                )
+            self._check_status_code(s, method, path, req_params)
 
             # Convert response to dictionary, or raise if requests error.
             try:
-                s_json = s.json()
-
-            # If we have trouble converting, handle the error and retry.
-            except JSONDecodeError as e:
-                if self.force_retry:
-                    self.logger.error(f"{e}. {retries_remaining}")
-                    time.sleep(self.retry_delay)
-                    continue
-                else:
-                    self.logger.debug(f"Response text: {s.text}")
-                    raise FailedRequestError(
-                        request=f"{method} {path}: {req_params}",
-                        message="Conflict. Could not decode JSON.",
-                        status_code=409,
-                        time=dt.utcnow().strftime("%H:%M:%S"),
-                        resp_headers=s.headers,
-                    )
-
-            ret_code = "retCode"
-            ret_msg = "retMsg"
+                s_json = self._convert_to_dict(s, method, path, req_params)
+            except ForceRetryException as e:
+                self.logger.error(f"{e}. {retries_remaining}")
+                time.sleep(self.retry_delay)
+                continue
 
             # If Bybit returns an error, raise.
-            if s_json[ret_code]:
+            if s_json[RET_CODE]:
                 # Generate error message.
-                error_msg = f"{s_json[ret_msg]} (ErrCode: {s_json[ret_code]})"
+                error_msg = f"{s_json[RET_MSG]} (ErrCode: {s_json[RET_CODE]})"
 
                 # Set default retry delay.
                 delay_time = self.retry_delay
 
                 # Retry non-fatal whitelisted error requests.
-                if s_json[ret_code] in self.retry_codes:
+                if s_json[RET_CODE] in self.retry_codes:
                     # 10002, recv_window error; add 2.5 seconds and retry.
-                    if s_json[ret_code] == 10002:
+                    if s_json[RET_CODE] == 10002:
                         error_msg += ". Added 2.5 seconds to recv_window"
                         recv_window += 2500
 
                     # 10006, rate limit error; wait until
                     # X-Bapi-Limit-Reset-Timestamp and retry.
-                    elif s_json[ret_code] == 10006:
+                    elif s_json[RET_CODE] == 10006:
                         self.logger.error(
                             f"{error_msg}. Hit the API rate limit. "
                             f"Sleeping, then trying again. Request: {path}"
                         )
 
-                        # Calculate how long we need to wait in milliseconds.
-                        limit_reset_time = int(s.headers["X-Bapi-Limit-Reset-Timestamp"])
-                        limit_reset_str = dt.fromtimestamp(limit_reset_time / 10**3).strftime(
-                            "%H:%M:%S.%f")[:-3]
-                        delay_time = (int(limit_reset_time) - _helpers.generate_timestamp()) / 10**3
+                        delay_time, limit_reset_str = _http_helpers.calculate_rate_limit_delay_time(int(s.headers["X-Bapi-Limit-Reset-Timestamp"]))
                         error_msg = (
                             f"API rate limit will reset at {limit_reset_str}. "
                             f"Sleeping for {int(delay_time * 10**3)} milliseconds"
@@ -314,14 +281,14 @@ class _V5HTTPManager(
                     time.sleep(delay_time)
                     continue
 
-                elif s_json[ret_code] in self.ignore_codes:
+                elif s_json[RET_CODE] in self.ignore_codes:
                     pass
 
                 else:
                     raise InvalidRequestError(
                         request=f"{method} {path}: {req_params}",
-                        message=s_json[ret_msg],
-                        status_code=s_json[ret_code],
+                        message=s_json[RET_MSG],
+                        status_code=s_json[RET_CODE],
                         time=dt.utcnow().strftime("%H:%M:%S"),
                         resp_headers=s.headers,
                     )
