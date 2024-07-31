@@ -18,6 +18,9 @@ from pybit.v5_api import (
     BrokerHTTP,
     InstitutionalLoanHTTP
 )
+from pybit.asyncio.v5_api import (
+    AsyncMarketHTTP
+)
 from pybit._websocket_stream import _V5WebSocketManager
 from pybit._websocket_trading import _V5TradeWebSocketManager
 
@@ -48,6 +51,14 @@ class HTTP(
     UserHTTP,
     BrokerHTTP,
     InstitutionalLoanHTTP,
+):
+    def __init__(self, **args):
+        super().__init__(**args)
+
+
+@dataclass
+class AsyncHTTP(
+    AsyncMarketHTTP
 ):
     def __init__(self, **args):
         super().__init__(**args)
