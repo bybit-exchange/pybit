@@ -1,5 +1,5 @@
-from ._http_manager import _V5HTTPManager
-from .misc import Misc
+from pybit._http_manager import _V5HTTPManager
+from pybit.misc import Misc
 
 
 class MiscHTTP(_V5HTTPManager):

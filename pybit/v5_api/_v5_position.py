@@ -1,5 +1,5 @@
-from ._http_manager import _V5HTTPManager
-from .position import Position
+from pybit._http_manager import _V5HTTPManager
+from pybit.position import Position
 
 
 class PositionHTTP(_V5HTTPManager):

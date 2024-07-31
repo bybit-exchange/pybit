@@ -1,5 +1,5 @@
-from ._http_manager import _V5HTTPManager
-from .asset import Asset
+from pybit._http_manager import _V5HTTPManager
+from pybit.asset import Asset
 
 
 class AssetHTTP(_V5HTTPManager):

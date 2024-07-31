@@ -1,5 +1,5 @@
-from ._http_manager import _V5HTTPManager
-from .market import Market
+from pybit._http_manager import _V5HTTPManager
+from pybit.market import Market
 
 
 class MarketHTTP(_V5HTTPManager):
