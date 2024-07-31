@@ -175,7 +175,7 @@ class _V5HTTPManager(
             requests.Request(method, path, data=data, headers=headers)
         )
 
-    def _submit_request1(self, method=None, path=None, query=None, auth=False):
+    def _submit_request(self, method=None, path=None, query=None, auth=False):
         """
         Submits the request to the API.
 
