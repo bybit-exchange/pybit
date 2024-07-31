@@ -217,7 +217,7 @@ class _V5HTTPManager(
             r = self._prepare_request(recv_window, method, path, query, auth)
 
             # Log the request.
-            self._log_request(self, req_params, method. path, r.headers)
+            self._log_request(req_params, method, path, r.headers)
 
             # Attempt the request.
             try:
