@@ -22,9 +22,6 @@ from websockets.exceptions import ConnectionClosedError
 logger = logging.getLogger(__name__)
 
 
-
-
-
 PING_INTERVAL = 20
 PINT_TIMEOUT = 10
 MESSAGE_TIMEOUT = 5
