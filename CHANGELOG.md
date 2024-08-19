@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.8.1] - 2024-08-19
 ### Added
-- Async HTTP module: `bybit.async`
+- Async HTTP module: `bybit.asyncio`
 
 ## [5.8.0] - 2024-06-26
 ### Added

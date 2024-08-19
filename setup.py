@@ -25,7 +25,7 @@ setup(
         "Programming Language :: Python :: 3.10",
     ],
     keywords="bybit api connector",
-    packages=["pybit", "pybit.legacy", "pybit.async"],
+    packages=["pybit", "pybit.legacy", "pybit.asyncio"],
     python_requires=">=3.6",
     install_requires=[
         "requests",
