@@ -2,7 +2,7 @@ from ._async_http_manager import _V5ASYNCHTTPManager
 from ..spot_leverage_token import SpotLeverageToken
 
 
-class SpotLeverageHTTP(_V5ASYNCHTTPManager):
+class SpotLeverageASYNCHTTP(_V5ASYNCHTTPManager):
     async def get_leveraged_token_info(self, **kwargs):
         """Query leverage token information
 

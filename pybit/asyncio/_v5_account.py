@@ -2,7 +2,7 @@ from ._async_http_manager import _V5ASYNCHTTPManager
 from ..account import Account
 
 
-class AccountHTTP(_V5ASYNCHTTPManager):
+class AccountASYNCHTTP(_V5ASYNCHTTPManager):
     async def get_wallet_balance(self, **kwargs):
         """Obtain wallet balance, query asset information of each currency, and account risk rate information under unified margin mode.
         By default, currency information with assets or liabilities of 0 is not returned.

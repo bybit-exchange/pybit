@@ -2,7 +2,7 @@ from ._async_http_manager import _V5ASYNCHTTPManager
 from ..misc import Misc
 
 
-class MiscHTTP(_V5ASYNCHTTPManager):
+class MiscASYNCHTTP(_V5ASYNCHTTPManager):
     async def get_announcement(self, **kwargs) -> dict:
         """
         Required args:

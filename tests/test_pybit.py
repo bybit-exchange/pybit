@@ -1,5 +1,5 @@
 import unittest, time
-from pybit.exceptions import InvalidChannelTypeError, TopicMismatchError
+from pybit.asyncio.exceptions import InvalidChannelTypeError, TopicMismatchError
 from pybit.unified_trading import HTTP, WebSocket
 
 # session uses Bybit's mainnet endpoint

@@ -2,7 +2,7 @@ from ._async_http_manager import _V5ASYNCHTTPManager
 from ..market import Market
 
 
-class MarketHTTP(_V5ASYNCHTTPManager):
+class MarketASYNCHTTP(_V5ASYNCHTTPManager):
     async def get_server_time(self) -> dict:
         """
         Returns:

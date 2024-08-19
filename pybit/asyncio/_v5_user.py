@@ -2,7 +2,7 @@ from ._async_http_manager import _V5ASYNCHTTPManager
 from ..user import User
 
 
-class UserHTTP(_V5ASYNCHTTPManager):
+class UserASYNCHTTP(_V5ASYNCHTTPManager):
     async def create_sub_uid(self, **kwargs):
         """Create a new sub user id. Use master user's api key only.
 

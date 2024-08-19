@@ -2,7 +2,7 @@ from ._async_http_manager import _V5ASYNCHTTPManager
 from ..institutional_loan import InstitutionalLoan as InsLoan
 
 
-class InstitutionalLoanHTTP(_V5ASYNCHTTPManager):
+class InstitutionalLoanASYNCHTTP(_V5ASYNCHTTPManager):
     async def get_product_info(self, **kwargs) -> dict:
         """
         Returns:

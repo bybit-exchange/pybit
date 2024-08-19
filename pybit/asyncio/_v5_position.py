@@ -2,7 +2,7 @@ from ._async_http_manager import _V5ASYNCHTTPManager
 from ..position import Position
 
 
-class PositionHTTP(_V5ASYNCHTTPManager):
+class PositionASYNCHTTP(_V5ASYNCHTTPManager):
     async def get_positions(self, **kwargs):
         """Query real-time position data, such as position size, cumulative realizedPNL.
 

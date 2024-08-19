@@ -2,7 +2,7 @@ from ._async_http_manager import _V5ASYNCHTTPManager
 from ..asset import Asset
 
 
-class AssetHTTP(_V5ASYNCHTTPManager):
+class AssetASYNCHTTP(_V5ASYNCHTTPManager):
     async def get_coin_exchange_records(self, **kwargs):
         """Query the coin exchange records.
 

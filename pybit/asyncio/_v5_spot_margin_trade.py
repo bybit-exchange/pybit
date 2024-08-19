@@ -2,7 +2,7 @@ from ._async_http_manager import _V5ASYNCHTTPManager
 from ..spot_margin_trade import SpotMarginTrade
 
 
-class SpotMarginTradeHTTP(_V5ASYNCHTTPManager):
+class SpotMarginTradeASYNCHTTP(_V5ASYNCHTTPManager):
     async def spot_margin_trade_get_vip_margin_data(self, **kwargs):
         """
         Returns:

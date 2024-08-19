@@ -1,16 +1,16 @@
 from dataclasses import dataclass
-from ._v5_misc import MiscHTTP
-from ._v5_market import MarketHTTP
-from ._v5_trade import TradeHTTP
-from ._v5_account import AccountHTTP
-from ._v5_asset import AssetHTTP
-from ._v5_position import PositionHTTP
-from ._v5_pre_upgrade import PreUpgradeHTTP
-from ._v5_spot_leverage_token import SpotLeverageHTTP
-from ._v5_spot_margin_trade import SpotMarginTradeHTTP
-from ._v5_user import UserHTTP
-from ._v5_broker import BrokerHTTP
-from ._v5_institutional_loan import InstitutionalLoanHTTP
+from ._v5_misc import MiscASYNCHTTP
+from ._v5_market import MarketASYNCHTTP
+from ._v5_trade import TradeASYNCHTTP
+from ._v5_account import AccountASYNCHTTP
+from ._v5_asset import AssetASYNCHTTP
+from ._v5_position import PositionASYNCHTTP
+from ._v5_pre_upgrade import PreUpgradeASYNCHTTP
+from ._v5_spot_leverage_token import SpotLeverageASYNCHTTP
+from ._v5_spot_margin_trade import SpotMarginTradeASYNCHTTP
+from ._v5_user import UserASYNCHTTP
+from ._v5_broker import BrokerASYNCHTTP
+from ._v5_institutional_loan import InstitutionalLoanASYNCHTTP
 
 
 WSS_NAME = "Unified V5"
@@ -26,18 +26,18 @@ AVAILABLE_CHANNEL_TYPES = [
 
 @dataclass
 class HTTP(
-    MiscHTTP,
-    MarketHTTP,
-    TradeHTTP,
-    AccountHTTP,
-    AssetHTTP,
-    PositionHTTP,
-    PreUpgradeHTTP,
-    SpotLeverageHTTP,
-    SpotMarginTradeHTTP,
-    UserHTTP,
-    BrokerHTTP,
-    InstitutionalLoanHTTP,
+    MiscASYNCHTTP,
+    MarketASYNCHTTP,
+    TradeASYNCHTTP,
+    AccountASYNCHTTP,
+    AssetASYNCHTTP,
+    PositionASYNCHTTP,
+    PreUpgradeASYNCHTTP,
+    SpotLeverageASYNCHTTP,
+    SpotMarginTradeASYNCHTTP,
+    UserASYNCHTTP,
+    BrokerASYNCHTTP,
+    InstitutionalLoanASYNCHTTP,
 ):
     def __init__(self, **args):
         super().__init__(**args)

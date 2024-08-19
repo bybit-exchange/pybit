@@ -2,7 +2,7 @@ from ._async_http_manager import _V5ASYNCHTTPManager
 from ..pre_upgrade import PreUpgrade
 
 
-class PreUpgradeHTTP(_V5ASYNCHTTPManager):
+class PreUpgradeASYNCHTTP(_V5ASYNCHTTPManager):
     async def get_pre_upgrade_order_history(self, **kwargs) -> dict:
         """
         After the account is upgraded to a Unified account, you can get the

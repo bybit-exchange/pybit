@@ -2,7 +2,7 @@ from ._async_http_manager import _V5ASYNCHTTPManager
 from ..trade import Trade
 
 
-class TradeHTTP(_V5ASYNCHTTPManager):
+class TradeASYNCHTTP(_V5ASYNCHTTPManager):
     async def place_order(self, **kwargs):
         """This method supports to create the order for spot, spot margin, linear perpetual, inverse futures and options.
 

@@ -6,8 +6,7 @@ from ._http_manager import generate_signature
 import logging
 import copy
 from uuid import uuid4
-from . import _helpers
-
+from .asyncio import _helpers
 
 logger = logging.getLogger(__name__)
 

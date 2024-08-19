@@ -2,7 +2,7 @@ from ._async_http_manager import _V5ASYNCHTTPManager
 from ..broker import Broker
 
 
-class BrokerHTTP(_V5ASYNCHTTPManager):
+class BrokerASYNCHTTP(_V5ASYNCHTTPManager):
     async def get_broker_earnings(self, **kwargs) -> dict:
         """
         Returns:

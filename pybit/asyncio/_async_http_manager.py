@@ -343,7 +343,7 @@ class _V5ASYNCHTTPManager:
                             limit_reset_time = int(response.headers["X-Bapi-Limit-Reset-Timestamp"])
                             limit_reset_str = dt.fromtimestamp(limit_reset_time / 10**3).strftime(
                                 "%H:%M:%S.%f")[:-3]
-                            delay_time = (int(limit_reset_time) - _helpers.generate_timestamp()) / 10**3
+                            delay_time = (int(limit_reset_time) - _helpers.generate_timestamp()) / 10 ** 3
                             error_msg = (
                                 f"API rate limit will reset at {limit_reset_str}. "
                                 f"Sleeping for {int(delay_time * 10**3)} milliseconds"
