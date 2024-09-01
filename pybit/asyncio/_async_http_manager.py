@@ -290,7 +290,7 @@ class _V5ASYNCHTTPManager:
                         aiohttp.ClientError,
                         aiohttp.ClientResponseError,
                         aiohttp.ClientSSLError,
-                        aiohttp.ClientTimeout,
+                        aiohttp.ConnectionTimeoutError,
                 ) as e:
                     if self.force_retry:
                         self.logger.error(f"{e}. {retries_remaining}")
