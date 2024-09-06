@@ -13,8 +13,8 @@ import requests
 
 from datetime import datetime as dt
 
-from pybit.asyncio.exceptions import FailedRequestError, InvalidRequestError
-from .asyncio import _helpers
+from .exceptions import FailedRequestError, InvalidRequestError
+from . import _helpers
 
 # Requests will use simplejson if available.
 try:
