@@ -1,4 +1,4 @@
-from collections import defaultdict
+from typing import DefaultDict, Any
 from dataclasses import dataclass, field
 import time
 import hmac
@@ -72,7 +72,7 @@ class _V5HTTPManager:
     timeout: int = field(default=10)
     recv_window: bool = field(default=5000)
     force_retry: bool = field(default=False)
-    retry_codes: defaultdict[dict] = field(
+    retry_codes: DefaultDict[dict, Any] = field(
         default_factory=dict,
         init=False,
     )
