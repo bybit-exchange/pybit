@@ -5,6 +5,7 @@ import json
 from ._http_manager import generate_signature
 import logging
 import copy
+import sys
 from uuid import uuid4
 from . import _helpers
 
@@ -42,6 +43,7 @@ class _WebSocketManager:
         self.domain = domain
         self.rsa_authentication = rsa_authentication
         self.demo = demo
+        self.terminate = False
         # Set API keys.
         self.api_key = api_key
         self.api_secret = api_secret
@@ -173,12 +175,14 @@ class _WebSocketManager:
 
             # If connection was not successful, raise error.
             if not infinitely_reconnect and retries <= 0:
-                self.exit()
                 raise websocket.WebSocketTimeoutException(
                     f"WebSocket {self.ws_name} ({self.endpoint}) connection "
                     f"failed. Too many connection attempts. pybit will no "
                     f"longer try to reconnect."
                 )
+                self.terminate = True
+                self.exit()
+
 
         logger.info(f"WebSocket {self.ws_name} connected")
 
@@ -258,7 +262,6 @@ class _WebSocketManager:
         try:
             self.ws.send(self.custom_ping_message)
         except websocket.WebSocketTimeoutException as error:
-            import sys
             # Logging error and exiting hanging, non-reposing app (Let it fall).
             logger.error(f"WebSocket {self.ws_name} not responding, error: {error}")
             sys.exit()
@@ -296,6 +299,8 @@ class _WebSocketManager:
         while self.ws.sock:
             continue
         self.exited = True
+        if self.terminate:
+            sys.exit()
 
 
 class _V5WebSocketManager(_WebSocketManager):
