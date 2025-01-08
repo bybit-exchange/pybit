@@ -255,7 +255,14 @@ class _WebSocketManager:
         self._send_custom_ping()
 
     def _send_custom_ping(self):
-        self.ws.send(self.custom_ping_message)
+        try:
+            self.ws.send(self.custom_ping_message)
+        except websocket.WebSocketTimeoutException as error:
+            import sys
+            # Logging error and exiting hanging, non-reposing app (Let it fall).
+            logger.error(f"WebSocket {self.ws_name} not responding, error: {error}")
+            sys.exit()
+
 
     def _send_initial_ping(self):
         """https://github.com/bybit-exchange/pybit/issues/164"""
