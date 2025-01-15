@@ -3,8 +3,7 @@ import json
 import uuid
 import logging
 from ._websocket_stream import _WebSocketManager
-from . import _helpers
-
+from .asyncio import _helpers
 
 logger = logging.getLogger(__name__)
 
