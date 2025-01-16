@@ -1,9 +1,8 @@
-from dataclasses import dataclass, field
 import json
 import uuid
 import logging
-from ._websocket_stream import _WebSocketManager
-from . import _helpers
+from pybit._websocket_stream import _WebSocketManager
+from pybit import _helpers
 
 
 logger = logging.getLogger(__name__)

@@ -1,5 +1,5 @@
-from ._http_manager import _V5HTTPManager
-from .spot_margin_trade import SpotMarginTrade
+from pybit._http_manager import _V5HTTPManager
+from pybit.spot_margin_trade import SpotMarginTrade
 
 
 class SpotMarginTradeHTTP(_V5HTTPManager):
