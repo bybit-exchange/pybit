@@ -12,6 +12,7 @@ from uuid import uuid4
 from . import _helpers
 
 logger = logging.getLogger(__name__)
+from websocket._exceptions import WebSocketConnectionClosedException
 
 SUBDOMAIN_TESTNET = "stream-testnet"
 SUBDOMAIN_MAINNET = "stream"
@@ -263,7 +264,7 @@ class _WebSocketManager:
     def _send_custom_ping(self):
         try:
             self.ws.send(self.custom_ping_message)
-        except websocket.WebSocketTimeoutException as error:
+        except WebSocketConnectionClosedException as error:
             # Logging error and exiting hanging, non-reposing app (Let it fall).
             logger.error(f"WebSocket {self.ws_name} not responding, error: {error}")
             self.terminate = True
