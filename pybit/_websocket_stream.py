@@ -1,3 +1,5 @@
+import os
+
 import websocket
 import threading
 import time
@@ -5,12 +7,12 @@ import json
 from ._http_manager import generate_signature
 import logging
 import copy
+import sys
 from uuid import uuid4
 from . import _helpers
 
-
 logger = logging.getLogger(__name__)
-
+from websocket._exceptions import WebSocketConnectionClosedException
 
 SUBDOMAIN_TESTNET = "stream-testnet"
 SUBDOMAIN_MAINNET = "stream"
@@ -22,26 +24,27 @@ DOMAIN_ALT = "bytick"
 
 class _WebSocketManager:
     def __init__(
-        self,
-        callback_function,
-        ws_name,
-        testnet,
-        domain="",
-        demo=False,
-        rsa_authentication=False,
-        api_key=None,
-        api_secret=None,
-        ping_interval=20,
-        ping_timeout=10,
-        retries=10,
-        restart_on_error=True,
-        trace_logging=False,
-        private_auth_expire=1,
+            self,
+            callback_function,
+            ws_name,
+            testnet,
+            domain="",
+            demo=False,
+            rsa_authentication=False,
+            api_key=None,
+            api_secret=None,
+            ping_interval=20,
+            ping_timeout=10,
+            retries=10,
+            restart_on_error=True,
+            trace_logging=False,
+            private_auth_expire=1,
     ):
         self.testnet = testnet
         self.domain = domain
         self.rsa_authentication = rsa_authentication
         self.demo = demo
+        self.terminate = False
         # Set API keys.
         self.api_key = api_key
         self.api_secret = api_secret
@@ -50,7 +53,7 @@ class _WebSocketManager:
         self.ws_name = ws_name
         if api_key:
             self.ws_name += " (Auth)"
-        
+
         # Delta time for private auth expiration in seconds
         self.private_auth_expire = private_auth_expire
 
@@ -142,7 +145,7 @@ class _WebSocketManager:
             infinitely_reconnect = False
 
         while (
-            infinitely_reconnect or retries > 0
+                infinitely_reconnect or retries > 0
         ) and not self.is_connected():
             logger.info(f"WebSocket {self.ws_name} attempting connection...")
             self.ws = websocket.WebSocketApp(
@@ -172,13 +175,17 @@ class _WebSocketManager:
                     break
 
             # If connection was not successful, raise error.
-            if not infinitely_reconnect and retries <= 0:
+            try:
+                if not infinitely_reconnect and retries <= 0:
+                    raise websocket.WebSocketTimeoutException(
+                        f"WebSocket {self.ws_name} ({self.endpoint}) connection "
+                        f"failed. Too many connection attempts. pybit will no "
+                        f"longer try to reconnect."
+                    )
+            except websocket.WebSocketTimeoutException as error:
+                logger.error(error)
+                self.terminate = True
                 self.exit()
-                raise websocket.WebSocketTimeoutException(
-                    f"WebSocket {self.ws_name} ({self.endpoint}) connection "
-                    f"failed. Too many connection attempts. pybit will no "
-                    f"longer try to reconnect."
-                )
 
         logger.info(f"WebSocket {self.ws_name} connected")
 
@@ -255,7 +262,13 @@ class _WebSocketManager:
         self._send_custom_ping()
 
     def _send_custom_ping(self):
-        self.ws.send(self.custom_ping_message)
+        try:
+            self.ws.send(self.custom_ping_message)
+        except WebSocketConnectionClosedException as error:
+            # Logging error and exiting hanging, non-reposing app (Let it fall).
+            logger.error(f"WebSocket {self.ws_name} not responding, error: {error}")
+            self.terminate = True
+            self.exit()
 
     def _send_initial_ping(self):
         """https://github.com/bybit-exchange/pybit/issues/164"""
@@ -289,6 +302,10 @@ class _WebSocketManager:
         while self.ws.sock:
             continue
         self.exited = True
+        if self.terminate:
+            import signal
+            p_id = os.getpid()
+            os.kill(p_id, signal.SIGTERM)
 
 
 class _V5WebSocketManager(_WebSocketManager):
@@ -372,8 +389,8 @@ class _V5WebSocketManager(_WebSocketManager):
 
         # Make updates according to delta response.
         book_sides = {"b": message["data"]["b"], "a": message["data"]["a"]}
-        self.data[topic]["u"]=message["data"]["u"]
-        self.data[topic]["seq"]=message["data"]["seq"]
+        self.data[topic]["u"] = message["data"]["u"]
+        self.data[topic]["seq"] = message["data"]["seq"]
 
         for side, entries in book_sides.items():
             for entry in entries:
@@ -467,8 +484,8 @@ class _V5WebSocketManager(_WebSocketManager):
     def _handle_incoming_message(self, message):
         def is_auth_message():
             if (
-                message.get("op") == "auth"
-                or message.get("type") == "AUTH_RESP"
+                    message.get("op") == "auth"
+                    or message.get("type") == "AUTH_RESP"
             ):
                 return True
             else:
@@ -476,8 +493,8 @@ class _V5WebSocketManager(_WebSocketManager):
 
         def is_subscription_message():
             if (
-                message.get("op") == "subscribe"
-                or message.get("type") == "COMMAND_RESP"
+                    message.get("op") == "subscribe"
+                    or message.get("type") == "COMMAND_RESP"
             ):
                 return True
             else:
