@@ -77,8 +77,7 @@ class _V5HTTPManager:
         init=False,
     )
     ignore_codes: dict = field(
-        default_factory=dict,
-        init=False,
+        default_factory=set
     )
     max_retries: bool = field(default=3)
     retry_delay: bool = field(default=3)
@@ -331,27 +330,25 @@ class _V5HTTPManager:
                         resp_headers=s.headers,
                     )
 
-            ret_code = "retCode"
-            ret_msg = "retMsg"
+            ret_code = s_json["retCode"]
+            ret_msg = s_json["retMsg"]
 
-            # If Bybit returns an error, raise.
-            if s_json[ret_code]:
+            # Handle error codes
+            if ret_code and ret_code not in self.ignore_codes:
                 # Generate error message.
-                error_msg = f"{s_json[ret_msg]} (ErrCode: {s_json[ret_code]})"
-
-                # Set default retry delay.
-                delay_time = self.retry_delay
+                error_msg = f"{ret_msg} (ErrCode: {ret_code})"
 
                 # Retry non-fatal whitelisted error requests.
-                if s_json[ret_code] in self.retry_codes:
+                if ret_code in self.retry_codes:
+                    delay_time = self.retry_delay
                     # 10002, recv_window error; add 2.5 seconds and retry.
-                    if s_json[ret_code] == 10002:
+                    if ret_code == 10002:
                         error_msg += ". Added 2.5 seconds to recv_window"
                         recv_window += 2500
 
                     # 10006, rate limit error; wait until
                     # X-Bapi-Limit-Reset-Timestamp and retry.
-                    elif s_json[ret_code] == 10006:
+                    elif ret_code == 10006:
                         self.logger.error(
                             f"{error_msg}. Hit the API rate limit. "
                             f"Sleeping, then trying again. Request: {path}"
@@ -371,27 +368,23 @@ class _V5HTTPManager:
                     self.logger.error(f"{error_msg}. {retries_remaining}")
                     time.sleep(delay_time)
                     continue
-
-                elif s_json[ret_code] in self.ignore_codes:
-                    pass
-
                 else:
                     raise InvalidRequestError(
                         request=f"{method} {path}: {req_params}",
-                        message=s_json[ret_msg],
-                        status_code=s_json[ret_code],
+                        message=ret_msg,
+                        status_code=ret_code,
                         time=dt.utcnow().strftime("%H:%M:%S"),
                         resp_headers=s.headers,
                     )
-            else:
-                if self.log_requests:
-                    self.logger.debug(
-                        f"Response headers: {s.headers}"
-                    )
+            
+            if self.log_requests:
+                self.logger.debug(
+                    f"Response headers: {s.headers}"
+                )
 
-                if self.return_response_headers:
-                    return s_json, s.elapsed, s.headers,
-                elif self.record_request_time:
-                    return s_json, s.elapsed
-                else:
-                    return s_json
+            if self.return_response_headers:
+                return s_json, s.elapsed, s.headers,
+            elif self.record_request_time:
+                return s_json, s.elapsed
+            else:
+                return s_json
