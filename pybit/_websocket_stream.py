@@ -305,6 +305,7 @@ class _WebSocketManager:
         if self.terminate:
             import signal
             p_id = os.getpid()
+            logger.error("Forcing kill after receiving critical error")
             os.kill(p_id, signal.SIGTERM)
 
 
