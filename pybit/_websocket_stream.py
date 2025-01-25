@@ -306,7 +306,7 @@ class _WebSocketManager:
             import signal
             p_id = os.getpid()
             logger.error("Forcing kill after receiving critical error")
-            os.kill(1)
+            os.kill(1, signal.SIGKILL)
 
 
 class _V5WebSocketManager(_WebSocketManager):
