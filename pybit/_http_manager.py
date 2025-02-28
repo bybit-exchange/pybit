@@ -71,7 +71,7 @@ class _V5HTTPManager:
     log_requests: bool = field(default=False)
     timeout: int = field(default=10)
     recv_window: bool = field(default=5000)
-    force_retry: bool = field(default=False)
+    force_retry: bool = field(default=True)
     retry_codes: defaultdict[dict] = field(
         default_factory=dict,
         init=False,
