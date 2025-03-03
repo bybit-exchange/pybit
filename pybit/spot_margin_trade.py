@@ -7,6 +7,7 @@ class SpotMarginTrade(str, Enum):
     SET_LEVERAGE = "/v5/spot-margin-trade/set-leverage"
     VIP_MARGIN_DATA = "/v5/spot-margin-trade/data"
     STATUS_AND_LEVERAGE = "/v5/spot-margin-trade/state"
+    HISTORICAL_INTEREST = "/v5/spot-margin-trade/interest-rate-history"
     # normal mode (non-UTA) endpoints
     NORMAL_GET_VIP_MARGIN_DATA = "/v5/spot-cross-margin-trade/data"
     NORMAL_GET_MARGIN_COIN_INFO = "/v5/spot-cross-margin-trade/pledge-token"

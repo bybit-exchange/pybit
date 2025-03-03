@@ -5,7 +5,7 @@ import json
 import logging
 import requests
 
-from datetime import datetime as dt
+from datetime import datetime as dt, timezone
 
 from pybit.exceptions import FailedRequestError, InvalidRequestError
 from pybit._http_manager._auth import AuthService
@@ -197,6 +197,10 @@ class _V5HTTPManager(
         # auth signature errors.
         self._change_floating_numbers_for_auth_signature(query)
 
+        # Remove params with None value from the request.
+        query = {key: value for key, value in query.items()
+                if value is not None}
+
         # Send request and return headers with body. Retry if failed.
         retries_attempted = self.max_retries
         req_params = None
@@ -208,7 +212,7 @@ class _V5HTTPManager(
                     request=f"{method} {path}: {req_params}",
                     message="Bad Request. Retries exceeded maximum.",
                     status_code=400,
-                    time=dt.utcnow().strftime("%H:%M:%S"),
+                    time=dt.now(timezone.utc).strftime("%H:%M:%S"),
                     resp_headers=None,
                 )
 
@@ -289,7 +293,7 @@ class _V5HTTPManager(
                         request=f"{method} {path}: {req_params}",
                         message=s_json[RET_MSG],
                         status_code=s_json[RET_CODE],
-                        time=dt.utcnow().strftime("%H:%M:%S"),
+                        time=dt.now(timezone.utc).strftime("%H:%M:%S"),
                         resp_headers=s.headers,
                     )
             else:

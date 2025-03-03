@@ -25,6 +25,25 @@ class AccountHTTP(_V5HTTPManager):
             auth=True,
         )
 
+    def get_transferable_amount(self, **kwargs):
+        """Query the available amount to transfer of a specific coin in the Unified wallet.
+
+        Required args:
+            coinName (string): Coin name, uppercase only
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/account/unified-trans-amnt
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Account.GET_TRANSFERABLE_AMOUNT}",
+            query=kwargs,
+            auth=True,
+        )
+
     def upgrade_to_unified_trading_account(self, **kwargs):
         """Upgrade Unified Account
 

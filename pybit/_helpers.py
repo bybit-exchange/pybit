@@ -16,7 +16,7 @@ def identify_ws_method(input_wss_url, wss_dictionary):
     helps ensure that, when subscribing to a custom topic, the topic
     subscription message is sent down the correct WSS connection.
     """
-    path = re.compile("(wss://)?([^/\s]+)(.*)")
+    path = re.compile(r"(wss://)?([^/\s]+)(.*)")
     input_wss_url_path = path.match(input_wss_url).group(3)
     for wss_url, function_call in wss_dictionary.items():
         wss_url_path = path.match(wss_url).group(3)

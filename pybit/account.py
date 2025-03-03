@@ -3,6 +3,7 @@ from enum import Enum
 
 class Account(str, Enum):
     GET_WALLET_BALANCE = "/v5/account/wallet-balance"
+    GET_TRANSFERABLE_AMOUNT = "/v5/account/withdrawal"
     UPGRADE_TO_UNIFIED_ACCOUNT = "/v5/account/upgrade-to-uta"
     GET_BORROW_HISTORY = "/v5/account/borrow-history"
     REPAY_LIABILITY = "/v5/account/quick-repayment"

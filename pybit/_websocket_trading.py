@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 WSS_NAME = "WebSocket Trading"
-TRADE_WSS = "wss://{SUBDOMAIN}.{DOMAIN}.com/v5/trade"
+TRADE_WSS = "wss://{SUBDOMAIN}.{DOMAIN}.{TLD}/v5/trade"
 
 
 class _V5TradeWebSocketManager(_WebSocketManager):

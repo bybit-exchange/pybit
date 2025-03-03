@@ -32,6 +32,9 @@ def handle_amend_order_message(message):
 def handle_cancel_order_message(message):
     print(message)
 
+def handle_batch_place_order_message(message):
+    print(message)
+
 while True:
     # Simplistic example; place an order every 10 seconds.
     ws_trading.place_order(
@@ -42,5 +45,33 @@ while True:
         orderType="Limit",
         price="60000",
         qty="0.001"
+    )
+    sleep(1)
+    # Batch place two orders. Note that batch amend and cancel can be used in
+    # the same way – by passing a list of dictionaries to the request parameter.
+    request = [
+        {
+            "symbol": "BTCUSDT",
+            "side": "Buy",
+            "orderType": "Limit",
+            "qty": "0.001",
+            "price": "82000",
+            "timeInForce": "GTC",
+            "positionIdx": 0
+        },
+        {
+            "symbol": "BTCUSDT",
+            "side": "Buy",
+            "orderType": "Limit",
+            "qty": "0.002",
+            "price": "82005",
+            "timeInForce": "GTC",
+            "positionIdx": 0
+        }
+    ]
+    ws_trading.place_batch_order(
+        handle_batch_place_order_message,
+        category="linear",
+        request=request
     )
     sleep(10)

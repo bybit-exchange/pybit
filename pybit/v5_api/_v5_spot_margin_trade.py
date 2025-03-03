@@ -69,6 +69,25 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
             auth=True,
         )
 
+    def spot_margin_trade_get_historical_interest_rate(self, **kwargs):
+        """UTA only. Queries up to six months of borrowing interest rates.
+
+        Required args:
+            currency (string): Coin name, uppercase only.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/historical-interest
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.HISTORICAL_INTEREST}",
+            query=kwargs,
+            auth=True,
+        )
+
     def spot_margin_trade_normal_get_vip_margin_data(self, **kwargs):
         """
         Returns:

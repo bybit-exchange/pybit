@@ -2,7 +2,7 @@ import logging
 from json import JSONDecodeError
 from dataclasses import dataclass, field
 
-from datetime import datetime as dt
+from datetime import datetime as dt, timezone
 
 from pybit.exceptions import FailedRequestError
 from pybit._http_manager._http_helpers import set_logger_handler
@@ -33,7 +33,7 @@ class ResponseHandler:
                 request=f"{method} {path}: {req_params}",
                 message=error_msg,
                 status_code=response.status_code,
-                time=dt.utcnow().strftime("%H:%M:%S"),
+                time=dt.now(timezone.utc).strftime("%H:%M:%S"),
                 resp_headers=response.headers,
             )
 
@@ -50,6 +50,6 @@ class ResponseHandler:
                     request=f"{method} {path}: {req_params}",
                     message="Conflict. Could not decode JSON.",
                     status_code=409,
-                    time=dt.utcnow().strftime("%H:%M:%S"),
+                    time=dt.now(timezone.utc).strftime("%H:%M:%S"),
                     resp_headers=response.headers,
                 )

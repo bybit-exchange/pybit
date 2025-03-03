@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## Unreleased
+### Changed
+- Renamed the arg `callback_function` in the WebSocket object to `_callback_function` as it's intended to be private and is not useful to the user. This is not the `callback_function` arg you pass when subscribing to a websocket topic. ([https://github.com/bybit-exchange/pybit/issues/270](#270))
+- Allow passing None as a value to an HTTP request, which results in the parameter being disregarded from the final request sent.
+- Add All Liquidation websocket topic.
+- Deprecate old liquidations websocket topic.
+- Add batch WebSocket order methods: `place_batch_order`, `amend_batch_order`, `cancel_batch_order`
+
+
+## [5.9.0] - 2025-01-27
+
+Thanks goes to [Kamsby](https://github.com/Kamsby), [kolya5544](https://github.com/kolya5544), and [LordGhostX](https://github.com/LordGhostX) for contributing to this release.
+
+### Added
+- Add `fast_execution_stream` WebSocket
+- Add `tld` arg to WebSocket. TLD stands for top-level domain.
+- Add `delete_sub_uid` and `get_all_sub_api_keys` – user-related HTTP endpoints
+- Add `spot_margin_trade_get_historical_interest_rate` – a spot margin HTTP endpoint
+- Add `add_or_reduce_margin` – a position HTTP endpoint
+- Add `get_transferable_amount` – an account-related HTTP endpoint to complement `get_wallet_balance`
+- Add `get_exchange_broker_earnings` (see Deprecated)
+
+### Deprecated
+- `get_broker_earnings` HTTP endpoint. Instead use `get_exchange_broker_earnings`.
+
+### Removed
+- All modules under the `legacy` subpackage. All these APIs are offline by this point and their functionality is covered by the V5 API / Unified Trading Account.
+
+
 ## [5.8.0] - 2024-06-26
 ### Added
 - [WebSocket Trading](https://bybit-exchange.github.io/docs/v5/websocket/trade/guideline) support
