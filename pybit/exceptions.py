@@ -56,3 +56,8 @@ class InvalidRequestError(Exception):
             f"{message} (ErrCode: {status_code}) (ErrTime: {time})"
             f".\nRequest → {request}."
         )
+
+
+class InvalidWebsocketSubscription(Exception):
+    def __init__(self, response):
+        self.response = response

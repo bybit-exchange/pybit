@@ -1,5 +1,5 @@
-from ._http_manager import _V5HTTPManager
-from .pre_upgrade import PreUpgrade
+from pybit._http_manager import _V5HTTPManager
+from pybit.pre_upgrade import PreUpgrade
 
 
 class PreUpgradeHTTP(_V5HTTPManager):

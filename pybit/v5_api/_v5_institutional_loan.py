@@ -1,5 +1,5 @@
-from ._http_manager import _V5HTTPManager
-from .institutional_loan import InstitutionalLoan as InsLoan
+from pybit._http_manager import _V5HTTPManager
+from pybit.institutional_loan import InstitutionalLoan as InsLoan
 
 
 class InstitutionalLoanHTTP(_V5HTTPManager):

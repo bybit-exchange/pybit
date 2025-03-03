@@ -1,9 +1,9 @@
-from ._http_manager import _V5HTTPManager
-from .asset import Asset
+from pybit.asyncio._http_manager import _AsyncV5HTTPManager
+from pybit.asset import Asset
 
 
-class AssetHTTP(_V5HTTPManager):
-    def get_coin_exchange_records(self, **kwargs):
+class AsyncAssetHTTP(_AsyncV5HTTPManager):
+    async def get_coin_exchange_records(self, **kwargs):
         """Query the coin exchange records.
 
         Returns:
@@ -12,14 +12,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/exchange
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_COIN_EXCHANGE_RECORDS}",
             query=kwargs,
             auth=True,
         )
 
-    def get_option_delivery_record(self, **kwargs):
+    async def get_option_delivery_record(self, **kwargs):
         """Query option delivery records, sorted by deliveryTime in descending order
 
         Required args:
@@ -31,14 +31,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/option-delivery
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_OPTION_DELIVERY_RECORD}",
             query=kwargs,
             auth=True,
         )
 
-    def get_usdc_contract_settlement(self, **kwargs):
+    async def get_usdc_contract_settlement(self, **kwargs):
         """Query session settlement records of USDC perpetual and futures
 
         Required args:
@@ -50,14 +50,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/settlement
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_USDC_CONTRACT_SETTLEMENT}",
             query=kwargs,
             auth=True,
         )
 
-    def get_spot_asset_info(self, **kwargs):
+    async def get_spot_asset_info(self, **kwargs):
         """Query asset information
 
         Required args:
@@ -69,14 +69,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/asset-info
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_SPOT_ASSET_INFO}",
             query=kwargs,
             auth=True,
         )
 
-    def get_coins_balance(self, **kwargs):
+    async def get_coins_balance(self, **kwargs):
         """You could get all coin balance of all account types under the master account, and sub account.
 
         Required args:
@@ -89,14 +89,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/all-balance
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_ALL_COINS_BALANCE}",
             query=kwargs,
             auth=True,
         )
 
-    def get_coin_balance(self, **kwargs):
+    async def get_coin_balance(self, **kwargs):
         """Query the balance of a specific coin in a specific account type. Supports querying sub UID's balance.
 
         Required args:
@@ -109,14 +109,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/account-coin-balance
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_SINGLE_COIN_BALANCE}",
             query=kwargs,
             auth=True,
         )
 
-    def get_transferable_coin(self, **kwargs):
+    async def get_transferable_coin(self, **kwargs):
         """Query the transferable coin list between each account type
 
         Required args:
@@ -129,14 +129,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/transferable-coin
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_TRANSFERABLE_COIN}",
             query=kwargs,
             auth=True,
         )
 
-    def create_internal_transfer(self, **kwargs):
+    async def create_internal_transfer(self, **kwargs):
         """Create the internal transfer between different account types under the same UID.
 
         Required args:
@@ -152,14 +152,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/create-inter-transfer
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="POST",
             path=f"{self.endpoint}{Asset.CREATE_INTERNAL_TRANSFER}",
             query=kwargs,
             auth=True,
         )
 
-    def get_internal_transfer_records(self, **kwargs):
+    async def get_internal_transfer_records(self, **kwargs):
         """Query the internal transfer records between different account types under the same UID.
 
         Returns:
@@ -168,14 +168,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/inter-transfer-list
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_INTERNAL_TRANSFER_RECORDS}",
             query=kwargs,
             auth=True,
         )
 
-    def get_sub_uid(self, **kwargs):
+    async def get_sub_uid(self, **kwargs):
         """Query the sub UIDs under a main UID
 
         Returns:
@@ -184,14 +184,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/sub-uid-list
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_SUB_UID}",
             query=kwargs,
             auth=True,
         )
 
-    def enable_universal_transfer_for_sub_uid(self, **kwargs):
+    async def enable_universal_transfer_for_sub_uid(self, **kwargs):
         """Transfer between sub-sub or main-sub
 
         Required args:
@@ -204,14 +204,14 @@ class AssetHTTP(_V5HTTPManager):
             https://bybit-exchange.github.io/docs/v5/asset/enable-unitransfer-subuid
         """
         self.logger.warning("enable_universal_transfer_for_sub_uid() is depreciated. You no longer need to configure transferable sub UIDs. Now, all sub UIDs are automatically enabled for universal transfer.")
-        return self._submit_request(
+        return await self._submit_request(
             method="POST",
             path=f"{self.endpoint}{Asset.ENABLE_UT_FOR_SUB_UID}",
             query=kwargs,
             auth=True,
         )
 
-    def create_universal_transfer(self, **kwargs):
+    async def create_universal_transfer(self, **kwargs):
         """Transfer between sub-sub or main-sub. Please make sure you have enabled universal transfer on your sub UID in advance.
 
         Required args:
@@ -229,14 +229,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/unitransfer
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="POST",
             path=f"{self.endpoint}{Asset.CREATE_UNIVERSAL_TRANSFER}",
             query=kwargs,
             auth=True,
         )
 
-    def get_universal_transfer_records(self, **kwargs):
+    async def get_universal_transfer_records(self, **kwargs):
         """Query universal transfer records
 
         Returns:
@@ -245,14 +245,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/unitransfer-list
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_UNIVERSAL_TRANSFER_RECORDS}",
             query=kwargs,
             auth=True,
         )
 
-    def get_allowed_deposit_coin_info(self, **kwargs):
+    async def get_allowed_deposit_coin_info(self, **kwargs):
         """Query allowed deposit coin information. To find out paired chain of coin, please refer coin info api.
 
         Returns:
@@ -261,14 +261,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/deposit-coin-spec
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_ALLOWED_DEPOSIT_COIN_INFO}",
             query=kwargs,
             auth=True,
         )
 
-    def set_deposit_account(self, **kwargs):
+    async def set_deposit_account(self, **kwargs):
         """Set auto transfer account after deposit. The same function as the setting for Deposit on web GUI
 
         Required args:
@@ -280,14 +280,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/set-deposit-acct
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="POST",
             path=f"{self.endpoint}{Asset.SET_DEPOSIT_ACCOUNT}",
             query=kwargs,
             auth=True,
         )
 
-    def get_deposit_records(self, **kwargs):
+    async def get_deposit_records(self, **kwargs):
         """Query deposit records.
 
         Returns:
@@ -296,14 +296,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/deposit-record
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_DEPOSIT_RECORDS}",
             query=kwargs,
             auth=True,
         )
 
-    def get_sub_deposit_records(self, **kwargs):
+    async def get_sub_deposit_records(self, **kwargs):
         """Query subaccount's deposit records by MAIN UID's API key.
 
         Required args:
@@ -315,14 +315,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/sub-deposit-record
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_SUB_ACCOUNT_DEPOSIT_RECORDS}",
             query=kwargs,
             auth=True,
         )
 
-    def get_internal_deposit_records(self, **kwargs):
+    async def get_internal_deposit_records(self, **kwargs):
         """Query deposit records within the Bybit platform. These transactions are not on the blockchain.
 
         Returns:
@@ -331,14 +331,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/internal-deposit-record
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_INTERNAL_DEPOSIT_RECORDS}",
             query=kwargs,
             auth=True,
         )
 
-    def get_master_deposit_address(self, **kwargs):
+    async def get_master_deposit_address(self, **kwargs):
         """Query the deposit address information of MASTER account.
 
         Required args:
@@ -350,14 +350,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/master-deposit-addr
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_MASTER_DEPOSIT_ADDRESS}",
             query=kwargs,
             auth=True,
         )
 
-    def get_sub_deposit_address(self, **kwargs):
+    async def get_sub_deposit_address(self, **kwargs):
         """Query the deposit address information of SUB account.
 
         Required args:
@@ -370,14 +370,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/sub-deposit-addr
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_SUB_DEPOSIT_ADDRESS}",
             query=kwargs,
             auth=True,
         )
 
-    def get_coin_info(self, **kwargs):
+    async def get_coin_info(self, **kwargs):
         """Query coin information, including chain information, withdraw and deposit status.
 
         Returns:
@@ -386,14 +386,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/coin-info
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_COIN_INFO}",
             query=kwargs,
             auth=True,
         )
 
-    def get_withdrawal_records(self, **kwargs):
+    async def get_withdrawal_records(self, **kwargs):
         """Query withdrawal records.
 
         Returns:
@@ -402,14 +402,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/withdraw-record
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_WITHDRAWAL_RECORDS}",
             query=kwargs,
             auth=True,
         )
 
-    def get_withdrawable_amount(self, **kwargs):
+    async def get_withdrawable_amount(self, **kwargs):
         """Get withdrawable amount
 
         Required args:
@@ -421,14 +421,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/delay-amount
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_WITHDRAWABLE_AMOUNT}",
             query=kwargs,
             auth=True,
         )
 
-    def withdraw(self, **kwargs):
+    async def withdraw(self, **kwargs):
         """Withdraw assets from your Bybit account. You can make an off-chain transfer if the target wallet address is from Bybit. This means that no blockchain fee will be charged.
 
         Required args:
@@ -445,14 +445,14 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/withdraw
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="POST",
             path=f"{self.endpoint}{Asset.WITHDRAW}",
             query=kwargs,
             auth=True,
         )
 
-    def cancel_withdrawal(self, **kwargs):
+    async def cancel_withdrawal(self, **kwargs):
         """Cancel the withdrawal
 
         Required args:
@@ -464,7 +464,7 @@ class AssetHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/asset/cancel-withdraw
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="POST",
             path=f"{self.endpoint}{Asset.CANCEL_WITHDRAWAL}",
             query=kwargs,

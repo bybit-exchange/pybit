@@ -1,5 +1,5 @@
-from ._http_manager import _V5HTTPManager
-from .broker import Broker
+from pybit._http_manager import _V5HTTPManager
+from pybit.broker import Broker
 
 
 class BrokerHTTP(_V5HTTPManager):
