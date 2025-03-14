@@ -32,13 +32,6 @@ class _V5TradeWebSocketManager(_WebSocketManager):
                 f"API keys and resync your system time. Raw error: {message}"
             )
 
-    def _process_error_message(self, message):
-        logger.error(
-            f"WebSocket request {message['reqId']} hit an error. Enabling "
-            f"traceLogging to reproduce the issue. Raw error: {message}"
-        )
-        self._pop_callback(message["reqId"])
-
     def _handle_incoming_message(self, message):
         def is_auth_message():
             if message.get("op") == "auth":
@@ -46,16 +39,8 @@ class _V5TradeWebSocketManager(_WebSocketManager):
             else:
                 return False
 
-        def is_error_message():
-            if message.get("retCode") != 0:
-                return True
-            else:
-                return False
-
         if is_auth_message():
             self._process_auth_message(message)
-        elif is_error_message():
-            self._process_error_message(message)
         else:
             callback_function = self._pop_callback(message["reqId"])
             callback_function(message)
