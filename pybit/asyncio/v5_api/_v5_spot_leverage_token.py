@@ -1,9 +1,9 @@
-from ._http_manager import _V5HTTPManager
-from .spot_leverage_token import SpotLeverageToken
+from pybit.asyncio._http_manager import _AsyncV5HTTPManager
+from pybit.spot_leverage_token import SpotLeverageToken
 
 
-class SpotLeverageHTTP(_V5HTTPManager):
-    def get_leveraged_token_info(self, **kwargs):
+class AsyncSpotLeverageHTTP(_AsyncV5HTTPManager):
+    async def get_leveraged_token_info(self, **kwargs):
         """Query leverage token information
 
         Returns:
@@ -12,13 +12,13 @@ class SpotLeverageHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/lt/leverage-token-info
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{SpotLeverageToken.GET_LEVERAGED_TOKEN_INFO}",
             query=kwargs,
         )
 
-    def get_leveraged_token_market(self, **kwargs):
+    async def get_leveraged_token_market(self, **kwargs):
         """Get leverage token market information
 
         Required args:
@@ -30,13 +30,13 @@ class SpotLeverageHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/lt/leverage-token-reference
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{SpotLeverageToken.GET_LEVERAGED_TOKEN_MARKET}",
             query=kwargs,
         )
 
-    def purchase_leveraged_token(self, **kwargs):
+    async def purchase_leveraged_token(self, **kwargs):
         """Purchase levearge token
 
         Required args:
@@ -49,14 +49,14 @@ class SpotLeverageHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/lt/purchase
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="POST",
             path=f"{self.endpoint}{SpotLeverageToken.PURCHASE}",
             query=kwargs,
             auth=True,
         )
 
-    def redeem_leveraged_token(self, **kwargs):
+    async def redeem_leveraged_token(self, **kwargs):
         """Redeem leverage token
 
         Required args:
@@ -69,14 +69,14 @@ class SpotLeverageHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/lt/redeem
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="POST",
             path=f"{self.endpoint}{SpotLeverageToken.REDEEM}",
             query=kwargs,
             auth=True,
         )
 
-    def get_purchase_redemption_records(self, **kwargs):
+    async def get_purchase_redemption_records(self, **kwargs):
         """Get purchase or redeem history
 
         Required args:
@@ -87,7 +87,7 @@ class SpotLeverageHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/lt/order-record
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{SpotLeverageToken.GET_PURCHASE_REDEMPTION_RECORDS}",
             query=kwargs,

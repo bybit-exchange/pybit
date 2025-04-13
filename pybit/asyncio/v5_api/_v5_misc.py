@@ -1,9 +1,9 @@
-from ._http_manager import _V5HTTPManager
-from .misc import Misc
+from pybit.asyncio._http_manager import _AsyncV5HTTPManager
+from pybit.misc import Misc
 
 
-class MiscHTTP(_V5HTTPManager):
-    def get_announcement(self, **kwargs) -> dict:
+class AsyncMiscHTTP(_AsyncV5HTTPManager):
+    async def get_announcement(self, **kwargs) -> dict:
         """
         Required args:
             locale (string): Language symbol
@@ -14,13 +14,13 @@ class MiscHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/announcement
         """
-        return self._submit_request(
+        return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Misc.GET_ANNOUNCEMENT}",
             query=kwargs,
         )
 
-    def request_demo_trading_funds(self) -> dict:
+    async def request_demo_trading_funds(self) -> dict:
         """
         Returns:
             Request results as dictionary.
@@ -33,7 +33,7 @@ class MiscHTTP(_V5HTTPManager):
                 "You must pass demo=True to the pybit HTTP session to use this "
                 "method."
             )
-        return self._submit_request(
+        return await self._submit_request(
             method="POST",
             path=f"{self.endpoint}{Misc.REQUEST_DEMO_TRADING_FUNDS}",
             auth=True,

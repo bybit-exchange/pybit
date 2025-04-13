@@ -1,5 +1,5 @@
-from ._http_manager import _V5HTTPManager
-from .user import User
+from pybit._http_manager import _V5HTTPManager
+from pybit.user import User
 
 
 class UserHTTP(_V5HTTPManager):
