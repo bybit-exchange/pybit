@@ -6,13 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## Unreleased
+## [5.10.1] - 2025-04-08
+
+### Fixed
+- HTTP args `retry_codes` and `ignore_codes`
+
+
+## [5.10.0] - 2025-03-13
+
+### Added
+- `all_liquidation_stream` WebSocket topic.
+- Batch WebSocket order methods: `place_batch_order`, `amend_batch_order`, `cancel_batch_order`
+- HTTP API methods for [Convert](https://bybit-exchange.github.io/docs/v5/asset/convert/guideline), [Earn](https://bybit-exchange.github.io/docs/v5/earn/product-info), and [Crypto Loan](https://bybit-exchange.github.io/docs/v5/crypto-loan/collateral-coin).
+
 ### Changed
-- Renamed the arg `callback_function` in the WebSocket object to `_callback_function` as it's intended to be private and is not useful to the user. This is not the `callback_function` arg you pass when subscribing to a websocket topic. ([https://github.com/bybit-exchange/pybit/issues/270](#270))
-- Allow passing None as a value to an HTTP request, which results in the parameter being disregarded from the final request sent.
-- Add All Liquidation websocket topic.
-- Deprecate old liquidations websocket topic.
-- Add batch WebSocket order methods: `place_batch_order`, `amend_batch_order`, `cancel_batch_order`
+- Renamed the arg `callback_function` in the WebSocket class to `_callback_function` as it's intended to be private and is not useful to the user. This is not the `callback_function` arg you pass when subscribing to a WebSocket topic. ([https://github.com/bybit-exchange/pybit/issues/270](#270))
+- Allow passing `None` as a value to an HTTP request, which results in the parameter being removed the final request sent.
+
+### Deprecated
+- `liquidation_stream` WebSocket topic.
 
 
 ## [5.9.0] - 2025-01-27

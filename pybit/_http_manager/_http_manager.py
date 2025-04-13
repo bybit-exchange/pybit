@@ -54,14 +54,8 @@ class _V5HTTPManager(
     timeout: int = field(default=10)
     recv_window: bool = field(default=5000)
     force_retry: bool = field(default=False)
-    retry_codes: defaultdict[dict] = field(
-        default_factory=dict,
-        init=False,
-    )
-    ignore_codes: dict = field(
-        default_factory=dict,
-        init=False,
-    )
+    retry_codes: defaultdict[dict] = field(default_factory=dict)
+    ignore_codes: dict = field(default_factory=dict)
     max_retries: bool = field(default=3)
     retry_delay: bool = field(default=3)
     referral_id: bool = field(default=None)

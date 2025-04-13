@@ -470,3 +470,95 @@ class AssetHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def get_convert_coin_list(self, **kwargs):
+        """Query for the list of coins you can convert to/from.
+
+        Required args:
+            accountType (string): Wallet type
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert/convert-coin-list
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_CONVERT_COIN_LIST}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def request_a_quote(self, **kwargs):
+        """
+        Required args:
+            fromCoin (string): Convert from coin (coin to sell)
+            toCoin (string): Convert to coin (coin to buy)
+            requestCoin (string): Request coin, same as fromCoin
+            requestAmount (string): request coin amount (the amount you want to sell)
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert/apply-quote
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Asset.REQUEST_A_QUOTE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def confirm_a_quote(self, **kwargs):
+        """
+        Required args:
+            quoteTxId (string): The quoteTxId from request_a_quote
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert/confirm-quote
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Asset.CONFIRM_A_QUOTE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def get_convert_status(self, **kwargs):
+        """
+        Required args:
+            quoteTxId (string): Quote tx ID
+            accountType (string): Wallet type
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert/get-convert-result
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_CONVERT_STATUS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def get_convert_history(self, **kwargs):
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert/get-convert-history
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_CONVERT_HISTORY}",
+            query=kwargs,
+            auth=True,
+        )

@@ -17,7 +17,9 @@ from pybit.v5_api import (
     SpotMarginTradeHTTP,
     UserHTTP,
     BrokerHTTP,
-    InstitutionalLoanHTTP
+    InstitutionalLoanHTTP,
+    CryptoLoanHTTP,
+    EarnHTTP
 )
 from pybit.asyncio.v5_api import (
     AsyncMarketHTTP,
@@ -65,6 +67,8 @@ class HTTP(
     UserHTTP,
     BrokerHTTP,
     InstitutionalLoanHTTP,
+    CryptoLoanHTTP,
+    EarnHTTP,
 ):
     def __init__(self, **args):
         super().__init__(**args)

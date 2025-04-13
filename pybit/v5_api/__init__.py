@@ -10,3 +10,5 @@ from ._v5_spot_leverage_token import SpotLeverageHTTP
 from ._v5_spot_margin_trade import SpotMarginTradeHTTP
 from ._v5_trade import TradeHTTP
 from ._v5_user import UserHTTP
+from ._v5_crypto_loan import CryptoLoanHTTP
+from ._v5_earn import EarnHTTP

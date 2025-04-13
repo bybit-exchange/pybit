@@ -75,7 +75,9 @@ be found in the [examples folder](https://github.com/bybit-exchange/pybit/tree/m
 
 
 ## Contact
-You can reach out for support on the [BybitAPI Telegram](https://t.me/BybitAPI) group chat.
+Reach out for support on your chosen platform:
+- [Telegram](https://t.me/BybitAPI) group chat
+- [Discord](https://discord.com/invite/VBwVwS2HUs) server
 
 ## Contributors
 
@@ -87,13 +89,15 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tr>
     <td align="center"><a href="https://github.com/dextertd"><img src="https://avatars.githubusercontent.com/u/54495183?v=4" width="100px;" alt=""/><br /><sub><b>dextertd</b></sub></a><br /><a href="https://github.com/bybit-exchange/pybit/commits?author=dextertd" title="Code">💻</a> <a href="https://github.com/bybit-exchange/pybit/commits?author=dextertd" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://github.com/ervuks"><img src="https://avatars.githubusercontent.com/u/17198438?v=4" width="100px;" alt=""/><br /><sub><b>ervuks</b></sub></a><br /><a href="https://github.com/bybit-exchange/pybit/commits?author=ervuks" title="Code">💻</a> <a href="https://github.com/bybit-exchange/pybit/commits?author=ervuks" title="Documentation">📖</a></td></td>
+    <td align="center"><a href="https://github.com/ervuks"><img src="https://avatars.githubusercontent.com/u/17198438?v=4" width="100px;" alt=""/><br /><sub><b>ervuks</b></sub></a><br /><a href="https://github.com/bybit-exchange/pybit/commits?author=ervuks" title="Code">💻</a> <a href="https://github.com/bybit-exchange/pybit/commits?author=ervuks" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/verata-veritatis"><img src="https://avatars0.githubusercontent.com/u/9677388?v=4" width="100px;" alt=""/><br /><sub><b>verata-veritatis</b></sub></a><br /><a href="https://github.com/bybit-exchange/pybit/commits?author=verata-veritatis" title="Code">💻</a> <a href="https://github.com/bybit-exchange/pybit/commits?author=verata-veritatis" title="Documentation">📖</a></td>
     <td align="center"><a href="https://github.com/APF20"><img src="https://avatars0.githubusercontent.com/u/74583612?v=4" width="100px;" alt=""/><br /><sub><b>APF20</b></sub></a><br /><a href="https://github.com/bybit-exchange/pybit/commits?author=APF20" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/cameronhh"><img src="https://avatars0.githubusercontent.com/u/30434979?v=4" width="100px;" alt=""/><br /><sub><b>Cameron Harder-Hutton</b></sub></a><br /><a href="https://github.com/bybit-exchange/pybit/commits?author=cameronhh" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/tomcru"><img src="https://avatars0.githubusercontent.com/u/35841182?v=4" width="100px;" alt=""/><br /><sub><b>Tom Rumpf</b></sub></a><br /><a href="https://github.com/bybit-exchange/pybit/commits?author=tomcru" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/sheungon"><img src="https://avatars.githubusercontent.com/u/13306724?v=4" width="100px;" alt=""/><br /><sub><b>OnJohn</b></sub></a><br /><a href="https://github.com/bybit-exchange/pybit/commits?author=sheungon" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/tconley"><img src="https://avatars1.githubusercontent.com/u/1893207?v=4" width="100px;" alt=""/><br /><sub><b>Todd Conley</b></sub></a><br /><a href="https://github.com/tconley/pybit/commits?author=tconley" title="Ideas">🤔</a></td>
+    <td align="center"><a href="https://github.com/kolya5544"><img src="https://avatars.githubusercontent.com/u/20096248?v=4" width="100px;" alt=""/><br /><sub><b>Kolya</b></sub></a><br /><a href="https://github.com/bybit-exchange/pybit/commits?author=kolya5544" title="Code">💻</a></td>
+
   </tr>
 </table>
 
