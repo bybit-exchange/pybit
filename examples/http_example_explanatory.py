@@ -36,7 +36,7 @@ print(session.place_order(
     symbol="BTCUSDT",
     side="Buy",
     orderType="Market",
-    qty=0.001,
+    qty="0.001",
 ))
 
 # Place an order on the Inverse Contract, ETHUSD
@@ -45,14 +45,14 @@ print(session.place_order(
     symbol="ETHUSD",
     side="Buy",
     orderType="Market",
-    qty=1,
+    qty="1",
 ))
 
-# Place an order on the Spot market, BITUSDT
+# Place an order on the Spot market, MNTUSDT
 print(session.place_order(
     category="spot",
-    symbol="BITUSDT",
+    symbol="MNTUSDT",
     side="Buy",
     orderType="Market",
-    qty=10,
+    qty="10",
 ))

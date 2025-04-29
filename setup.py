@@ -8,7 +8,7 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name='pybit',
-    version='5.8.2',
+    version='5.10.2',
     description='Python3 Bybit HTTP/WebSocket API Connector', 
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -25,7 +25,7 @@ setup(
         "Programming Language :: Python :: 3.10",
     ],
     keywords="bybit api connector",
-    packages=["pybit", "pybit.legacy"],
+    packages=["pybit"],
     python_requires=">=3.6",
     install_requires=[
         "requests",

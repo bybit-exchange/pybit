@@ -13,5 +13,5 @@ print(session.place_order(
     symbol="BTCUSDT",
     side="Buy",
     orderType="Market",
-    qty=0.001,
+    qty="0.001",
 ))

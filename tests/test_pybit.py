@@ -1,4 +1,6 @@
-import unittest, time
+import time
+import unittest
+
 from pybit.exceptions import InvalidChannelTypeError, TopicMismatchError
 from pybit.unified_trading import HTTP, WebSocket
 

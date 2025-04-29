@@ -33,6 +33,12 @@ class Asset(str, Enum):
     GET_WITHDRAWABLE_AMOUNT = "/v5/asset/withdraw/withdrawable-amount"
     WITHDRAW = "/v5/asset/withdraw/create"
     CANCEL_WITHDRAWAL = "/v5/asset/withdraw/cancel"
+    # Convert
+    GET_CONVERT_COIN_LIST = "/v5/asset/exchange/query-coin-list"
+    REQUEST_A_QUOTE = "/v5/asset/exchange/quote-apply"
+    CONFIRM_A_QUOTE = "/v5/asset/exchange/convert-execute"
+    GET_CONVERT_STATUS = "/v5/asset/exchange/convert-result-query"
+    GET_CONVERT_HISTORY = "/v5/asset/exchange/query-convert-history"
 
     def __str__(self) -> str:
         return self.value

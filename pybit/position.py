@@ -10,6 +10,7 @@ class Position(str, Enum):
     SET_RISK_LIMIT = "/v5/position/set-risk-limit"
     SET_TRADING_STOP = "/v5/position/trading-stop"
     SET_AUTO_ADD_MARGIN = "/v5/position/set-auto-add-margin"
+    ADD_MARGIN = "/v5/position/add-margin"
     GET_EXECUTIONS = "/v5/execution/list"
     GET_CLOSED_PNL = "/v5/position/closed-pnl"
 

@@ -6,6 +6,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [5.10.1] - 2025-04-08
+
+### Fixed
+- HTTP args `retry_codes` and `ignore_codes`
+
+
+## [5.10.0] - 2025-03-13
+
+### Added
+- `all_liquidation_stream` WebSocket topic.
+- Batch WebSocket order methods: `place_batch_order`, `amend_batch_order`, `cancel_batch_order`
+- HTTP API methods for [Convert](https://bybit-exchange.github.io/docs/v5/asset/convert/guideline), [Earn](https://bybit-exchange.github.io/docs/v5/earn/product-info), and [Crypto Loan](https://bybit-exchange.github.io/docs/v5/crypto-loan/collateral-coin).
+
+### Changed
+- Renamed the arg `callback_function` in the WebSocket class to `_callback_function` as it's intended to be private and is not useful to the user. This is not the `callback_function` arg you pass when subscribing to a WebSocket topic. ([https://github.com/bybit-exchange/pybit/issues/270](#270))
+- Allow passing `None` as a value to an HTTP request, which results in the parameter being removed the final request sent.
+
+### Deprecated
+- `liquidation_stream` WebSocket topic.
+
+
+## [5.9.0] - 2025-01-27
+
+Thanks goes to [Kamsby](https://github.com/Kamsby), [kolya5544](https://github.com/kolya5544), and [LordGhostX](https://github.com/LordGhostX) for contributing to this release.
+
+### Added
+- Add `fast_execution_stream` WebSocket
+- Add `tld` arg to WebSocket. TLD stands for top-level domain.
+- Add `delete_sub_uid` and `get_all_sub_api_keys` – user-related HTTP endpoints
+- Add `spot_margin_trade_get_historical_interest_rate` – a spot margin HTTP endpoint
+- Add `add_or_reduce_margin` – a position HTTP endpoint
+- Add `get_transferable_amount` – an account-related HTTP endpoint to complement `get_wallet_balance`
+- Add `get_exchange_broker_earnings` (see Deprecated)
+
+### Deprecated
+- `get_broker_earnings` HTTP endpoint. Instead use `get_exchange_broker_earnings`.
+
+### Removed
+- All modules under the `legacy` subpackage. All these APIs are offline by this point and their functionality is covered by the V5 API / Unified Trading Account.
+
+
 ## [5.8.0] - 2024-06-26
 ### Added
 - [WebSocket Trading](https://bybit-exchange.github.io/docs/v5/websocket/trade/guideline) support

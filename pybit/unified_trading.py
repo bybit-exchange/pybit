@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from pybit.exceptions import (
     InvalidChannelTypeError,
@@ -16,9 +17,13 @@ from ._v5_spot_margin_trade import SpotMarginTradeHTTP
 from ._v5_user import UserHTTP
 from ._v5_broker import BrokerHTTP
 from ._v5_institutional_loan import InstitutionalLoanHTTP
+from ._v5_crypto_loan import CryptoLoanHTTP
+from ._v5_earn import EarnHTTP
 from ._websocket_stream import _V5WebSocketManager
 from ._websocket_trading import _V5TradeWebSocketManager
 
+
+logger = logging.getLogger(__name__)
 
 WSS_NAME = "Unified V5"
 PRIVATE_WSS = "wss://{SUBDOMAIN}.{DOMAIN}.com/v5/private"
@@ -46,6 +51,8 @@ class HTTP(
     UserHTTP,
     BrokerHTTP,
     InstitutionalLoanHTTP,
+    CryptoLoanHTTP,
+    EarnHTTP,
 ):
     def __init__(self, **args):
         super().__init__(**args)
@@ -128,6 +135,23 @@ class WebSocket(_V5WebSocketManager):
         """
         self._validate_private_topic()
         topic = "execution"
+        self.subscribe(topic, callback)
+
+    def fast_execution_stream(self, callback, categorised_topic=""):
+        """Fast execution stream significantly reduces data latency compared
+        original "execution" stream. However, it pushes limited execution type
+        of trades, and fewer data fields.
+        Use categorised_topic as a filter for a certain `category`. See docs.
+
+        Push frequency: real-time
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/websocket/private/fast-execution
+        """
+        self._validate_private_topic()
+        topic = "execution.fast"
+        if categorised_topic:
+            topic += "." + categorised_topic
         self.subscribe(topic, callback)
 
     def wallet_stream(self, callback):
@@ -234,18 +258,38 @@ class WebSocket(_V5WebSocketManager):
         self.subscribe(topic, callback, symbol)
 
     def liquidation_stream(self, symbol: (str, list), callback):
-        """Subscribe to the klines stream.
+        """
+        Pushes at most one order per second per symbol.
+        As such, this feed does not push all liquidations that occur on Bybit.
 
-        Push frequency: 1-60s
+        Push frequency: 1s
 
         Required args:
             symbol (string/list): Symbol name(s)
 
          Additional information:
-            https://bybit-exchange.github.io/docs/v5/websocket/public/kline
+            https://bybit-exchange.github.io/docs/v5/websocket/public/liquidation
         """
+        logger.warning("liquidation_stream() is deprecated. Please use "
+                       "all_liquidation_stream().")
         self._validate_public_topic()
         topic = "liquidation.{symbol}"
+        self.subscribe(topic, callback, symbol)
+
+    def all_liquidation_stream(self, symbol: (str, list), callback):
+        """Subscribe to the liquidation stream, push all liquidations that
+        occur on Bybit.
+
+        Push frequency: 500ms
+
+        Required args:
+            symbol (string/list): Symbol name(s)
+
+         Additional information:
+            https://bybit-exchange.github.io/docs/v5/websocket/public/all-liquidation
+        """
+        self._validate_public_topic()
+        topic = "allLiquidation.{symbol}"
         self.subscribe(topic, callback, symbol)
 
     def lt_kline_stream(self, interval: int, symbol: (str, list), callback):
@@ -309,4 +353,16 @@ class WebSocketTrading(_V5TradeWebSocketManager):
 
     def cancel_order(self, callback, **kwargs):
         operation = "order.cancel"
+        self._send_order_operation(operation, callback, kwargs)
+
+    def place_batch_order(self, callback, **kwargs):
+        operation = "order.create-batch"
+        self._send_order_operation(operation, callback, kwargs)
+
+    def amend_batch_order(self, callback, **kwargs):
+        operation = "order.amend-batch"
+        self._send_order_operation(operation, callback, kwargs)
+
+    def cancel_batch_order(self, callback, **kwargs):
+        operation = "order.cancel-batch"
         self._send_order_operation(operation, callback, kwargs)
