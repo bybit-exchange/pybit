@@ -331,8 +331,7 @@ class _V5WebSocketManager(_WebSocketManager):
             desired symbols.
             """
 
-            if (topic in self.standard_private_topics or
-                    topic in self.other_private_topics):
+            if topic in self.standard_private_topics:
                 # private topics do not support filters
                 return [topic]
 
