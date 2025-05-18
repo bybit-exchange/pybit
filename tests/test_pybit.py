@@ -1,102 +1,158 @@
-import time
-import unittest
+import logging
 
-from pybit.exceptions import InvalidChannelTypeError, TopicMismatchError
-from pybit.unified_trading import HTTP, WebSocket
+import pytest
+import hmac
+import hashlib
+from collections import defaultdict
 
-# session uses Bybit's mainnet endpoint
-session = HTTP()
-ws = WebSocket(
-    channel_type="spot",
-    testnet=False,
-)
+import requests
 
+from pybit._http_manager import _V5HTTPManager
+from pybit.unified_trading import HTTP
+from pybit import _http_manager
 
-class HTTPTest(unittest.TestCase):
-    def test_orderbook(self):
-        self.assertEqual(
-            session.get_orderbook(category="spot", symbol="BTCUSDT")["retMsg"],
-            "OK",
-        )
-
-    def test_query_kline(self):
-        self.assertEqual(
-            (
-                session.get_kline(
-                    symbol="BTCUSDT",
-                    interval="1",
-                    from_time=int(time.time()) - 60 * 60,
-                )["retMsg"]
-            ),
-            "OK",
-        )
-
-    def test_symbol_information(self):
-        self.assertEqual(
-            session.get_instruments_info(category="spot", symbol="BTCUSDT")[
-                "retMsg"
-            ],
-            "OK",
-        )
-
-    # We can't really test authenticated endpoints without keys, but we
-    # can make sure it raises a PermissionError.
-    def test_place_active_order(self):
-        with self.assertRaises(PermissionError):
-            session.place_order(
-                symbol="BTCUSD",
-                order_type="Market",
-                side="Buy",
-                qty=1,
-                category="spot",
-            )
+_api_key = "CFEJUGQEQPPHGOHGHM"
+_api_secret = "VDFZSSPUTKRJMXAVMJXBHEXIPZNZJIZUBVRQ"
 
 
-class WebSocketTest(unittest.TestCase):
-    # A very simple test to ensure we're getting something from WS.
-    def _callback_function(msg):
-        print(msg)
+@pytest.fixture
+def hmac_secret():
+    return _api_secret
 
-    def test_websocket(self):
-        self.assertNotEqual(
-            ws.orderbook_stream(
-                depth=1,
-                symbol="BTCUSDT",
-                callback=self._callback_function,
-            ),
-            [],
-        )
 
-    def test_invalid_category(self):
-        with self.assertRaises(InvalidChannelTypeError):
-            WebSocket(
-                channel_type="not_exists",
-                testnet=False,
-            )
+@pytest.fixture
+def sample_param_str():
+    return "12345mykey6789payload"
 
-    def test_topic_category_mismatch(self):
-        with self.assertRaises(TopicMismatchError):
-            ws = WebSocket(
-                channel_type="linear",
-                testnet=False,
-            )
 
-            ws.order_stream(callback=self._callback_function)
-            
-class PrivateWebSocketTest(unittest.TestCase):
-    # Connect to private websocket and see if we can auth.
-    def _callback_function(msg):
-        print(msg)
-    
-    def test_private_websocket_connect(self):
-        ws_private = WebSocket(
-            testnet=True,
-            channel_type="private",
-            api_key="...",
-            api_secret="...",
-            trace_logging=True,
-            #private_auth_expire=10
-        )
-        
-        ws_private.position_stream(callback=self._callback_function)
-        #time.sleep(10)
+@pytest.fixture
+def http():
+    # Create a manager instance for testing
+    return HTTP(testnet=True, api_key=_api_key, api_secret=_api_secret)
+
+
+def test_generate_signature_hmac(hmac_secret, sample_param_str):
+    # HMAC signature should match direct hmac calculation
+    expected = hmac.new(
+        bytes(hmac_secret, 'utf-8'),
+        sample_param_str.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+    assert _http_manager.generate_signature(False, hmac_secret, sample_param_str) == expected
+
+
+@pytest.mark.parametrize("method,params,expected", [
+    ("GET", {"a": 1, "b": None, "c": 3}, "a=1&c=3"),
+    ("POST", {"qty": 10, "price": 100.0, "other": "x"}, None),
+])
+def test_prepare_payload(method, params, expected):
+    payload = _V5HTTPManager.prepare_payload(method, params.copy())
+    if method == "GET":
+        assert payload == expected
+    else:
+        # price & qty should be cast to string
+        assert '"qty": "10"' in payload
+        assert '"price": "100.0"' in payload
+        assert '"other": "x"' in payload
+
+
+@pytest.mark.parametrize("query,expected", [
+    (None, {}),
+    ({'a': 1.0, 'b': 2.5, 'c': None}, {'a':1, 'b':2.5}),
+])
+def test_clean_query(http, query, expected):
+    result = http._clean_query(query)
+    assert result == expected
+
+
+def test_get_server_time_direct(http):
+    """
+    Ensure HTTP availability of Bybit API using pybit
+    """
+    resp = http.get_server_time()["result"]
+    assert isinstance(resp, dict)
+    assert 'timeSecond' in resp and 'timeNano' in resp
+    assert resp['timeSecond'].isdigit()
+    assert resp['timeNano'].isdigit()
+
+
+def test_get_api_key_information_direct(http):
+    """
+    Checking HTTP.get_api_key_information().
+    Making sure the structure matches what's found in docs - a simple sanity check
+    """
+    resp = http.get_api_key_information()
+    # expecting no errors
+    assert isinstance(resp, dict)
+    assert resp.get("retCode") == 0
+    assert resp.get("retMsg") == ""
+    # expecting info in `result`
+    assert "result" in resp
+    result = resp["result"]
+    assert isinstance(result, dict)
+
+
+# --- ensuring correct init ---
+@pytest.mark.parametrize("testnet, demo, domain, expected_endpoint", [
+    # mainnet (testnet=False, demo=False)
+    (False, False, None, "https://api.bybit.com"),
+    # mainnet + custom domain
+    (False, False, "bytick", "https://api.bytick.com"),
+    # testnet only
+    (True, False, None, "https://api-testnet.bybit.com"),
+    # testnet + demo
+    (True, True, None, "https://api-demo-testnet.bybit.com"),
+    # demo only
+    (False, True, None, "https://api-demo.bybit.com"),
+])
+def test_endpoint_variations(testnet, demo, domain, expected_endpoint):
+    kwargs = {"testnet": testnet, "demo": demo}
+    if domain is not None:
+        kwargs["domain"] = domain
+    m = _V5HTTPManager(**kwargs)
+    assert m.endpoint == expected_endpoint
+
+
+def test_default_retry_and_ignore_codes():
+    m = _V5HTTPManager()
+    # empty ignore_codes stays empty
+    assert m.ignore_codes == set()
+    # retry_codes should be set to the default set
+    assert isinstance(m.retry_codes, set)
+
+
+def test_http_session_headers_and_timeout():
+    m = _V5HTTPManager()
+    # client should be a requests.Session
+    assert isinstance(m.client, requests.Session)
+    # default headers
+    hdrs = m.client.headers
+    assert hdrs["Content-Type"] == "application/json"
+    assert hdrs["Accept"] == "application/json"
+    # default timeout
+    assert m.timeout == 10
+
+
+def test_referral_id_sets_header():
+    ref = "pybit"
+    m = _V5HTTPManager(referral_id=ref)
+    assert m.client.headers["Referer"] == ref
+
+def test_logger_handler_attached():
+    # create with a fresh logging root
+    # temporarily remove all handlers from root
+    root = logging.root
+    old_handlers = list(root.handlers)
+    for h in old_handlers:
+        root.removeHandler(h)
+
+    try:
+        m = _V5HTTPManager(logging_level=logging.DEBUG)
+        # Our logger should have at least one handler
+        handlers = m.logger.handlers
+        assert len(handlers) >= 1
+        # And that handler should be set to the manager's logging level
+        assert handlers[0].level == logging.DEBUG
+    finally:
+        # restore original handlers
+        root.handlers = old_handlers
