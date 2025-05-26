@@ -71,7 +71,7 @@ class _V5HTTPManager:
     log_requests: bool = field(default=False)
     timeout: int = field(default=10)
     recv_window: bool = field(default=5000)
-    force_retry: bool = field(default=False)
+    force_retry: bool = field(default=True)
     retry_codes: defaultdict[dict] = field(default_factory=dict)
     ignore_codes: dict = field(default_factory=dict)
     max_retries: bool = field(default=3)
@@ -332,8 +332,11 @@ class _V5HTTPManager:
             ret_code = "retCode"
             ret_msg = "retMsg"
 
+            if ret_code not in s_json:
+                logging.info(s_json)
+
             # If Bybit returns an error, raise.
-            if s_json[ret_code]:
+            if s_json.get(ret_code, s_json['ret_code']):
                 # Generate error message.
                 error_msg = f"{s_json[ret_msg]} (ErrCode: {s_json[ret_code]})"
 
