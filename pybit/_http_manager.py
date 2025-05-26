@@ -336,7 +336,7 @@ class _V5HTTPManager:
                 logging.info(s_json)
 
             # If Bybit returns an error, raise.
-            if s_json[ret_code]:
+            if s_json.get(ret_code, s_json['ret_code']):
                 # Generate error message.
                 error_msg = f"{s_json[ret_msg]} (ErrCode: {s_json[ret_code]})"
 
