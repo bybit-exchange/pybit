@@ -332,6 +332,9 @@ class _V5HTTPManager:
             ret_code = "retCode"
             ret_msg = "retMsg"
 
+            if ret_code not in s_json:
+                logging.info(s_json)
+
             # If Bybit returns an error, raise.
             if s_json[ret_code]:
                 # Generate error message.
