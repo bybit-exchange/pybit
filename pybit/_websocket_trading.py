@@ -40,21 +40,9 @@ class _V5TradeWebSocketManager(_WebSocketManager):
         self._pop_callback(message["reqId"])
 
     def _handle_incoming_message(self, message):
-        def is_auth_message():
-            if message.get("op") == "auth":
-                return True
-            else:
-                return False
-
-        def is_error_message():
-            if message.get("retCode") != 0:
-                return True
-            else:
-                return False
-
-        if is_auth_message():
+        if message.get("op") == "auth":
             self._process_auth_message(message)
-        elif is_error_message():
+        elif message.get("retCode", 0) != 0:
             self._process_error_message(message)
         else:
             callback_function = self._pop_callback(message["reqId"])
