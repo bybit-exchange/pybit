@@ -8,7 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [5.12.0] - 2025-09-29
+
 ### Added
+- [API Rate limit](https://bybit-exchange.github.io/docs/v5/rate-limit) HTTP endpoints. *Note that these are only useful to Institutional users.* 
 - Support for API URLs for the EU and Kazakhstan
 
 
