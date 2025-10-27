@@ -79,6 +79,28 @@ class AccountHTTP(_V5HTTPManager):
             auth=True,
         )
 
+    def borrow(self, **kwargs):
+        """
+        https://bybit-exchange.github.io/docs/zh-TW/v5/account/borrow
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Account.BORROW}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def repay(self, **kwargs):
+        """
+        https://bybit-exchange.github.io/docs/zh-TW/v5/account/repay
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Account.REPAY}",
+            query=kwargs,
+            auth=True,
+        )
+
     def get_borrow_history(self, **kwargs):
         """Get interest records, sorted in reverse order of creation time.
 

@@ -20,6 +20,8 @@ class Account(str, Enum):
     SET_MMP = "/v5/account/mmp-modify"
     RESET_MMP = "/v5/account/mmp-reset"
     GET_MMP_STATE = "/v5/account/mmp-state"
+    BORROW = "/v5/account/borrow"
+    REPAY = "/v5/account/repay"
 
     def __str__(self) -> str:
         return self.value
