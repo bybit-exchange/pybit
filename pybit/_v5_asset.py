@@ -393,6 +393,22 @@ class AssetHTTP(_V5HTTPManager):
             auth=True,
         )
 
+    def get_withdrawal_address_list(self, **kwargs):
+        """Query withdrawal address list.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/withdraw/withdraw-address
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_WITHDRAWAL_ADDRESS_LIST}",
+            query=kwargs,
+            auth=True,
+        )
+
     def get_withdrawal_records(self, **kwargs):
         """Query withdrawal records.
 
@@ -424,6 +440,21 @@ class AssetHTTP(_V5HTTPManager):
         return self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_WITHDRAWABLE_AMOUNT}",
+            query=kwargs,
+            auth=True,
+        )
+    
+    def get_exchange_entity_list(self, **kwargs):
+        """Get the list of exchange entities (VASPs) supported for withdrawals.
+
+        Returns:
+            Request results as dictionary.
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/withdraw/vasp-list
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_EXCHANGE_ENTITY_LIST}",
             query=kwargs,
             auth=True,
         )
