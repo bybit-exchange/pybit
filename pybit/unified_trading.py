@@ -25,6 +25,7 @@ from ._v5_spread import (
     SpreadHTTP,
     _V5WebSocketSpreadTrading,
 )
+from ._v5_rate_limit import RateLimitHTTP
 
 
 logger = logging.getLogger(__name__)
@@ -57,6 +58,7 @@ class HTTP(
     InstitutionalLoanHTTP,
     CryptoLoanHTTP,
     EarnHTTP,
+    RateLimitHTTP
 ):
     def __init__(self, **args):
         super().__init__(**args)
