@@ -31,7 +31,7 @@ from ._v5_rate_limit import RateLimitHTTP
 logger = logging.getLogger(__name__)
 
 WSS_NAME = "Unified V5"
-PRIVATE_WSS = "wss://{SUBDOMAIN}.{DOMAIN}.com/v5/private"
+PRIVATE_WSS = "wss://{SUBDOMAIN}.{DOMAIN}.{TLD}/v5/private"
 PUBLIC_WSS = "wss://{SUBDOMAIN}.{DOMAIN}.com/v5/public/{CHANNEL_TYPE}"
 AVAILABLE_CHANNEL_TYPES = [
     "inverse",
