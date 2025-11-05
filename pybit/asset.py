@@ -29,8 +29,10 @@ class Asset(str, Enum):
     GET_MASTER_DEPOSIT_ADDRESS = "/v5/asset/deposit/query-address"
     GET_SUB_DEPOSIT_ADDRESS = "/v5/asset/deposit/query-sub-member-address"
     GET_COIN_INFO = "/v5/asset/coin/query-info"
+    GET_WITHDRAWAL_ADDRESS_LIST = "/v5/asset/withdraw/query-address"
     GET_WITHDRAWAL_RECORDS = "/v5/asset/withdraw/query-record"
     GET_WITHDRAWABLE_AMOUNT = "/v5/asset/withdraw/withdrawable-amount"
+    GET_EXCHANGE_ENTITY_LIST = "/v5/asset/withdraw/vasp/list"
     WITHDRAW = "/v5/asset/withdraw/create"
     CANCEL_WITHDRAWAL = "/v5/asset/withdraw/cancel"
     # Convert
