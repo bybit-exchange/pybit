@@ -487,20 +487,20 @@ class _V5WebSocketManager(_WebSocketManager):
 
     def _process_subscription_message(self, message):
         if message.get("req_id"):
-            sub = self.subscriptions[message["req_id"]]
+            topic = self.subscriptions[message["req_id"]]
         else:
             # if req_id is not supported, guess that the last subscription
             # sent was successful
-            sub = json.loads(list(self.subscriptions.items())[0][1])["args"][0]
+            topic = json.loads(list(self.subscriptions.items())[0][1])["args"][0]
 
         # If we get successful futures subscription, notify user
         if message.get("success") is True:
-            logger.debug(f"Subscription to {sub} successful.")
+            logger.debug(f"Subscription to {topic} successful.")
         # Futures subscription fail
         elif message.get("success") is False:
             response = message["ret_msg"]
             logger.error("Couldn't subscribe to topic." f"Error: {response}.")
-            self._pop_callback(sub[0])
+            self._pop_callback(topic[0])
 
     def _process_unsubscription_message(self,message):
         if message.get("req_id"):
