@@ -361,7 +361,7 @@ class _V5WebSocketManager(_WebSocketManager):
         for topic in subscription_args:
             self._set_callback(topic, callback)
 
-    def unsubscribe(self,topic: str):
+    def unsubscribe(self, topic: str):
 
         """
         Unsubscribe from a given topic.
@@ -384,8 +384,8 @@ class _V5WebSocketManager(_WebSocketManager):
             # allowing `_process_unsubscription_message` to correctly identify and
             # remove the corresponding subscription.
        
-            unsub_message= json.loads(sub)
-            unsub_message["op"]= "unsubscribe"
+            unsub_message = json.loads(sub)
+            unsub_message["op"] = "unsubscribe"
 
             self.ws.send(json.dumps(unsub_message))
             logger.debug("Unsubscribe request sent for topic: %s", topic)
@@ -508,7 +508,7 @@ class _V5WebSocketManager(_WebSocketManager):
                 topic = json.loads(self.subscriptions[message["req_id"]])["args"][0]
                 self.subscriptions.pop(message["req_id"]) # Remove from active subscriptions
                 self._pop_callback(topic) # Remove topic from callbacks
-                logger.debug(f"Unsubscribe from {topic} successful.")
+                logger.debug(f"Unsubscription from {topic} successful.")
             else:
                 logger.error("Unsubscription for request_id '%s' failed. Message: %s", message["req_id"], message)
 
