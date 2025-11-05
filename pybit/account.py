@@ -22,6 +22,7 @@ class Account(str, Enum):
     GET_MMP_STATE = "/v5/account/mmp-state"
     BORROW = "/v5/account/borrow"
     REPAY = "/v5/account/repay"
+    NO_CONVERT_REPAY = "/v5/account/no-convert-repay"
 
     def __str__(self) -> str:
         return self.value
