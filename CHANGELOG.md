@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - WebSocket API: `tld` arg is now applied to the private WebSocket connection (ie, `channel_type="private"`)
+- WebSocket API: `fast_execution_stream` topic throwing exception upon subscription
 
 
 ## [5.12.0] - 2025-09-29
