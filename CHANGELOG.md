@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ## Unreleased
+### Added
+- `get_withdrawal_address_list`, `get_exchange_entity_list` endpoints
 
 ## [5.12.0] - 2025-09-29
 
