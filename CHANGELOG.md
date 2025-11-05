@@ -6,9 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## Unreleased
+## [5.13.0] - 2025-11-05
+
 ### Added
-- `get_withdrawal_address_list`, `get_exchange_entity_list` endpoints
+- HTTP API: `get_withdrawal_address_list`, `get_exchange_entity_list` endpoints
+- WebSocket API: `unsubscribe` function, to unsubscribe from topics whilst keeping the same connection. See the [example file](https://github.com/bybit-exchange/pybit/blob/master/examples/websocket_unsubscribe_example.py) for usage.
+
 
 ## [5.12.0] - 2025-09-29
 

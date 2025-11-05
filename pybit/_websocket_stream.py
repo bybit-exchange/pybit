@@ -361,6 +361,55 @@ class _V5WebSocketManager(_WebSocketManager):
         for topic in subscription_args:
             self._set_callback(topic, callback)
 
+    def unsubscribe(self, topic: str):
+
+        """
+        Unsubscribe from a given topic.
+
+        This method searches the active subscriptions for the specified topic,
+        constructs an unsubscribe message, and sends it through the WebSocket
+        connection.
+        """
+
+        sub = None
+        for _,value in self.subscriptions.items(): # Find subscribe message
+            if topic in value:
+                sub=value
+                break
+
+        if sub:
+            # The original `req_id` from the subscription message is intentionally
+            # left unchanged. Only the `"op"` field is updated to `"unsubscribe"`.
+            # This ensures that when the server responds, it uses the same `req_id`,
+            # allowing `_process_unsubscription_message` to correctly identify and
+            # remove the corresponding subscription.
+       
+            unsub_message = json.loads(sub)
+            unsub_message["op"] = "unsubscribe"
+
+            self.ws.send(json.dumps(unsub_message))
+            logger.debug("Unsubscribe request sent for topic: %s", topic)
+        else:
+            logger.error("Couldn't find active subscription for topic: %s", topic)
+
+    def get_subscription_topics(self):
+        """
+        Retrieve all subscribed topics.
+
+        Returns:
+            list[str]: A list of topic strings that the client is currently subscribed to.
+        """
+        topics = []
+        subscription_values = list(self.subscriptions.values())
+
+        for subscription in subscription_values:
+            data = json.loads(subscription)
+
+            for topic in data["args"]:
+                topics.append(topic)
+
+        return topics
+
     def _initialise_local_data(self, topic):
         # Create self.data
         try:
@@ -438,20 +487,30 @@ class _V5WebSocketManager(_WebSocketManager):
 
     def _process_subscription_message(self, message):
         if message.get("req_id"):
-            sub = self.subscriptions[message["req_id"]]
+            topic = self.subscriptions[message["req_id"]]
         else:
             # if req_id is not supported, guess that the last subscription
             # sent was successful
-            sub = json.loads(list(self.subscriptions.items())[0][1])["args"][0]
+            topic = json.loads(list(self.subscriptions.items())[0][1])["args"][0]
 
         # If we get successful futures subscription, notify user
         if message.get("success") is True:
-            logger.debug(f"Subscription to {sub} successful.")
+            logger.debug(f"Subscription to {topic} successful.")
         # Futures subscription fail
         elif message.get("success") is False:
             response = message["ret_msg"]
             logger.error("Couldn't subscribe to topic." f"Error: {response}.")
-            self._pop_callback(sub[0])
+            self._pop_callback(topic[0])
+
+    def _process_unsubscription_message(self,message):
+        if message.get("req_id"):
+            if message.get("success") is True and message["req_id"] in self.subscriptions:
+                topic = json.loads(self.subscriptions[message["req_id"]])["args"][0]
+                self.subscriptions.pop(message["req_id"]) # Remove from active subscriptions
+                self._pop_callback(topic) # Remove topic from callbacks
+                logger.debug(f"Unsubscription from {topic} successful.")
+            else:
+                logger.error("Unsubscription for request_id '%s' failed. Message: %s", message["req_id"], message)
 
     def _process_normal_message(self, message):
         topic = message["topic"]
@@ -488,11 +547,18 @@ class _V5WebSocketManager(_WebSocketManager):
                 return True
             else:
                 return False
+        def is_unsubscription_message():
+            if message.get("op") == "unsubscribe":
+                return True
+            else:
+                return False
 
         if is_auth_message():
             self._process_auth_message(message)
         elif is_subscription_message():
             self._process_subscription_message(message)
+        elif is_unsubscription_message():
+            self._process_unsubscription_message(message)
         else:
             self._process_normal_message(message)
 
