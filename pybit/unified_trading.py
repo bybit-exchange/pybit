@@ -31,7 +31,7 @@ from ._v5_rate_limit import RateLimitHTTP
 logger = logging.getLogger(__name__)
 
 WSS_NAME = "Unified V5"
-PRIVATE_WSS = "wss://{SUBDOMAIN}.{DOMAIN}.com/v5/private"
+PRIVATE_WSS = "wss://{SUBDOMAIN}.{DOMAIN}.{TLD}/v5/private"
 PUBLIC_WSS = "wss://{SUBDOMAIN}.{DOMAIN}.com/v5/public/{CHANNEL_TYPE}"
 AVAILABLE_CHANNEL_TYPES = [
     "inverse",
@@ -158,7 +158,7 @@ class WebSocket(_V5WebSocketManager):
         topic = "execution.fast"
         if categorised_topic:
             topic += "." + categorised_topic
-        self.subscribe(topic, callback)
+        self.subscribe(topic, callback, categorised_topic)
 
     def wallet_stream(self, callback):
         """Subscribe to the wallet stream to see changes to your wallet in real-time.

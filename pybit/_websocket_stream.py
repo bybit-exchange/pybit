@@ -135,8 +135,7 @@ class _WebSocketManager:
                 subdomain = DEMO_SUBDOMAIN_TESTNET
             else:
                 subdomain = DEMO_SUBDOMAIN_MAINNET
-        url = url.format(SUBDOMAIN=subdomain, DOMAIN=domain, TLD=tld)
-        self.endpoint = url
+        self.endpoint = url.format(SUBDOMAIN=subdomain, DOMAIN=domain, TLD=tld)
 
         # Attempt to connect for X seconds.
         retries = self.retries
@@ -150,7 +149,7 @@ class _WebSocketManager:
         ) and not self.is_connected():
             logger.info(f"WebSocket {self.ws_name} attempting connection...")
             self.ws = websocket.WebSocketApp(
-                url=url,
+                url=self.endpoint,
                 on_message=lambda ws, msg: self._on_message(msg),
                 on_close=lambda ws, *args: self._on_close(),
                 on_open=lambda ws, *args: self._on_open(),

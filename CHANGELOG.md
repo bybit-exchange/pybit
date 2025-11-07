@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HTTP API: `get_withdrawal_address_list`, `get_exchange_entity_list` endpoints
 - WebSocket API: `unsubscribe` function, to unsubscribe from topics whilst keeping the same connection. See the [example file](https://github.com/bybit-exchange/pybit/blob/master/examples/websocket_unsubscribe_example.py) for usage.
 
+### Fixed
+- WebSocket API: `tld` arg is now applied to the private WebSocket connection (ie, `channel_type="private"`)
+- WebSocket API: `fast_execution_stream` topic throwing exception upon subscription
+
 
 ## [5.12.0] - 2025-09-29
 
