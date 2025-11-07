@@ -158,7 +158,7 @@ class WebSocket(_V5WebSocketManager):
         topic = "execution.fast"
         if categorised_topic:
             topic += "." + categorised_topic
-        self.subscribe(topic, callback)
+        self.subscribe(topic, callback, categorised_topic)
 
     def wallet_stream(self, callback):
         """Subscribe to the wallet stream to see changes to your wallet in real-time.
