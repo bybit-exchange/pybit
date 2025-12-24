@@ -31,6 +31,8 @@ setup(
         "requests",
         "websocket-client",
         "pycryptodome",
-        "aiohttp"
+        "aiohttp",
+        "websockets",
+        "websockets_proxy"
     ],
 )

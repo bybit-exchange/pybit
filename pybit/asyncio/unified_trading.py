@@ -15,8 +15,9 @@ from pybit.asyncio.http import (
     AsyncEarnHTTP,
     AsyncRateLimitHTTP
 )
+from pybit.asyncio.ws import AsyncWebsocketClient
 
-__all__ = ["AsyncHTTP"]
+__all__ = ["AsyncHTTP", "AsyncWebsocketClient"]
 
 
 class AsyncHTTP(
