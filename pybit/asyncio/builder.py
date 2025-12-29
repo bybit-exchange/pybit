@@ -21,9 +21,9 @@ class RequestBuilder:
     def clean_query(self, query: Optional[dict]) -> dict:
         return self._http_manager._clean_query(query)
 
-    def prepare_payload(self, method: str, parameters: dict) -> Optional[str]:
+    def prepare_payload(self, method: str, parameters: dict) -> str:
         if not parameters:
-            return None
+            return ""
         return self._http_manager.prepare_payload(method, parameters)
 
     def _auth(self, payload, recv_window, timestamp):
