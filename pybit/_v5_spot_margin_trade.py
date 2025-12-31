@@ -102,6 +102,21 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
             query=kwargs,
         )
 
+    def get_tiered_collateral_ratio(self, **kwargs):
+        """UTA loan tiered collateral ratio
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/tier-collateral-ratio
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.GET_TIERED_COLLATERAL_RATIO}",
+            query=kwargs,
+        )
+
     def spot_margin_trade_normal_get_margin_coin_info(self, **kwargs):
         """Normal (non-UTA) account only. Turn on / off spot margin trade
 

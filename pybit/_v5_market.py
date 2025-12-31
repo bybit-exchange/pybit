@@ -297,3 +297,20 @@ class MarketHTTP(_V5HTTPManager):
             path=f"{self.endpoint}{Market.GET_LONG_SHORT_RATIO}",
             query=kwargs,
         )
+
+    def get_price_limit(self, **kwargs):
+        """
+        Required args:
+            symbol (string): Symbol name
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/market/order-price-limit
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Market.GET_PRICE_LIMIT}",
+            query=kwargs,
+        )
