@@ -238,6 +238,22 @@ class WebSocket(_V5WebSocketManager):
         topic = f"orderbook.{depth}." + "{symbol}"
         self.subscribe(topic, callback, symbol)
 
+    def rpi_orderbook_stream(self, symbol: (str, list), callback):
+        """Subscribe to the orderbook stream. Supports different depths.
+
+        Spot, Perpetual & Futures:
+        Level 50 data, push frequency: 100ms
+
+        Required args:
+            symbol (string/list): Symbol name(s)
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/websocket/public/orderbook-rpi
+        """
+        self._validate_public_topic()
+        topic = f"orderbook.rpi." + "{symbol}"
+        self.subscribe(topic, callback, symbol)
+
     def trade_stream(self, symbol: (str, list), callback):
         """
         Subscribe to the recent trades stream.
@@ -367,6 +383,49 @@ class WebSocket(_V5WebSocketManager):
         topic = "lt.{symbol}"
         self.subscribe(topic, callback, symbol)
 
+    def insurance_pool_stream(self, symbol: str, callback):
+        """Subscribe to the insurance pool stream.
+
+        Push frequency: 1s
+
+        Required args:
+            symbol (string/list): Symbol name(s)
+
+         Additional information:
+            https://bybit-exchange.github.io/docs/v5/websocket/public/insurance-pool
+        """
+        topic = "priceLimit.{symbol}"
+        self.subscribe(topic, callback, symbol)
+
+
+    def price_limit_stream(self, symbol: str, callback):
+        """Subscribe to the order price limit stream.
+
+        Push frequency: 300ms
+
+        Required args:
+            symbol (string/list): Symbol name(s)
+
+         Additional information:
+            https://bybit-exchange.github.io/docs/v5/websocket/public/order-price-limit
+        """
+        topic = "priceLimit.{symbol}"
+        self.subscribe(topic, callback, symbol)
+
+    '''    # System status topics
+    
+        def system_status_stream(self, callback):
+            """Subscribe to the system's status for when there's platform
+            maintenance or a service incident.
+    
+            Push frequency: N/A
+    
+             Additional information:
+                https://bybit-exchange.github.io/docs/v5/websocket/system/system-status
+            """
+            topic = "system.status"
+            self.subscribe(topic, callback)
+    '''
 
 class WebSocketTrading(_V5TradeWebSocketManager):
     def __init__(self, recv_window=0, referral_id="", **kwargs):

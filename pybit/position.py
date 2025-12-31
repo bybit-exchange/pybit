@@ -13,6 +13,9 @@ class Position(str, Enum):
     ADD_MARGIN = "/v5/position/add-margin"
     GET_EXECUTIONS = "/v5/execution/list"
     GET_CLOSED_PNL = "/v5/position/closed-pnl"
+    MOVE_POSITION = "/v5/position/move-positions"
+    GET_MOVE_POSITION_HISTORY = "/v5/position/move-history"
+    GET_CLOSED_OPTIONS_POSITIONS = "/v5/position/get-closed-positions"
 
     def __str__(self) -> str:
         return self.value

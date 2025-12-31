@@ -60,6 +60,23 @@ class UserHTTP(_V5HTTPManager):
             auth=True,
         )
 
+    def get_sub_uid_list_unlimited(self, **kwargs):
+        """This API is applicable to the client who has over 10k subaccounts.
+        Use master user's API key only.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/user/page-subuid
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{User.GET_SUB_UID_LIST_UNLIMITED}",
+            query=kwargs,
+            auth=True,
+        )
+
     def freeze_sub_uid(self, **kwargs):
         """Froze sub uid. Use master user's api key only.
 
@@ -213,6 +230,25 @@ class UserHTTP(_V5HTTPManager):
         return self._submit_request(
             method="GET",
             path=f"{self.endpoint}{User.GET_AFFILIATE_USER_INFO}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def get_affiliate_user_list(self, **kwargs):
+        """This API is used for affiliate to get their users information
+
+        Required args:
+            uid (integer): The master account uid of affiliate's client
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/affiliate/affiliate-user-list
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{User.GET_AFFILIATE_USER_LIST}",
             query=kwargs,
             auth=True,
         )

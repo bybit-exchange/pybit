@@ -593,3 +593,74 @@ class AssetHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def get_small_balance_coins(self, **kwargs):
+        """
+        Required args:
+            accountType (string): Wallet type eb_convert_uta. Only supports the Unified wallet
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert-small-balance/small-balanc-coins
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_SMALL_BALANCE_COINS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def request_a_quote_small_balance(self, **kwargs):
+        """
+        Required args:
+            accountType (string): Wallet type, eb_convert_uta, unified wallet only
+            fromCoinList (string): Source currency list ["BTC", "XRP", "ETH"], up to 20 coins in one transaction
+            toCoin (string): Target currency, each request supports one of MNT, USDT, or USDC
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert-small-balance/request-quote
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Asset.REQUEST_A_QUOTE_SMALL_BALANCE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def confirm_a_quote_small_balance(self, **kwargs):
+        """
+        Required args:
+            quoteId (string): The quote ID from Request a Quote
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert-small-balance/confirm-quote
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Asset.CONFIRM_A_QUOTE_SMALL_BALANCE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def get_exchange_history_small_balance(self, **kwargs):
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert-small-balance/exchange-history
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_EXCHANGE_HISTORY_SMALL_BALANCE}",
+            query=kwargs,
+            auth=True,
+        )

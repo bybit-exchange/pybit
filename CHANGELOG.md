@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [5.14.0rc0] - 2025-12-31
+
+### Added
+- Asset HTTP endpoints for small balance (dust) conversion
+- Exchange Broker HTTP endpoints 
+- Affiliate HTTP endpoint `get_affiliate_user_list()`
+- Crypto Loan (New) HTTP endpoints
+- HTTP endpoint `get_price_limit()`
+- Position HTTP endpoints: `move_position()`, `get_move_position_history()`, `get_closed_options_positions()`
+- `get_tiered_collateral_ratio()`, which is more detailed than existing `get_collateral_info()`
+- Trading HTTP endpoint: `pre_check_order()` for checking margin before placing an order
+- `get_system_status()` HTTP endpoint
+- Public market WebSocket streams `rpi_orderbook_stream`, `insurance_pool_stream`, `price_limit_stream`
+
+### Deprecated
+- Crypto Loan (Old) HTTP endpoints
+
+
 ## [5.13.0] - 2025-11-05
 
 ### Added

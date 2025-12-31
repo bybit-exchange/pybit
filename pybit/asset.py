@@ -41,6 +41,11 @@ class Asset(str, Enum):
     CONFIRM_A_QUOTE = "/v5/asset/exchange/convert-execute"
     GET_CONVERT_STATUS = "/v5/asset/exchange/convert-result-query"
     GET_CONVERT_HISTORY = "/v5/asset/exchange/query-convert-history"
+    # Convert small balances
+    GET_SMALL_BALANCE_COINS = "/v5/asset/covert/small-balance-list"
+    REQUEST_A_QUOTE_SMALL_BALANCE = "/v5/asset/covert/get-quote"
+    CONFIRM_A_QUOTE_SMALL_BALANCE = "/v5/asset/covert/small-balance-execute"
+    GET_EXCHANGE_HISTORY_SMALL_BALANCE = "/v5/asset/covert/small-balance-history"
 
     def __str__(self) -> str:
         return self.value
