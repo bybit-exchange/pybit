@@ -73,6 +73,23 @@ Check out the example python files or the list of endpoints below for more infor
 endpoints and methods. Usage examples on the `HTTP` methods can
 be found in the [examples folder](https://github.com/bybit-exchange/pybit/tree/master/examples).
 
+## Async Usage
+You can retrieve a specific market like so:
+```python
+from pybit.asyncio.unified_trading import AsyncHTTP
+```
+Create an HTTP session:
+```python
+client = AsyncHTTP(
+    testnet=False,
+    api_key="...",
+    api_secret="...",
+)
+await client.init_client()
+# Or use context-manager
+async with AsyncHTTP(testnet=False, api_key="...", api_secret="...") as client:
+    await client.get_orderbook(category="linear", symbol="BTCUSDT")
+```
 
 ## Contact
 Reach out for support on your chosen platform:
