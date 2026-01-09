@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [5.14.0rc1] - 2026-01-09
+
+### Added
+- System WebSocket stream: `system_status_stream` (which uses a new channel type: `channel_type="misc/status"`)
+
+### Fixed
+- WebSocket `insurance_pool_stream` subscription
+- WebSockets `insurance_pool_stream`, `price_limit_stream` to validate `channel_type` so that the correct WebSocket URL is used to connect
+
+
 ## [5.14.0rc0] - 2025-12-31
 
 ### Added

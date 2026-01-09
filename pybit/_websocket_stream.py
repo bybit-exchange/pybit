@@ -319,6 +319,10 @@ class _V5WebSocketManager(_WebSocketManager):
             "execution.fast"
         ]
 
+        self.standard_public_topics = [
+            "system.status",
+        ]
+
     def subscribe(
             self,
             topic: str,
@@ -332,7 +336,7 @@ class _V5WebSocketManager(_WebSocketManager):
             desired symbols.
             """
 
-            if topic in self.standard_private_topics:
+            if topic in self.standard_private_topics + self.standard_public_topics:
                 # private topics do not support filters
                 return [topic]
 
