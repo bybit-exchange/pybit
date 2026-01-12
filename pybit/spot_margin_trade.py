@@ -9,6 +9,8 @@ class SpotMarginTrade(str, Enum):
     STATUS_AND_LEVERAGE = "/v5/spot-margin-trade/state"
     HISTORICAL_INTEREST = "/v5/spot-margin-trade/interest-rate-history"
     GET_TIERED_COLLATERAL_RATIO = "/v5/spot-margin-trade/collateral"
+    GET_AUTO_REPAY_MODE = "/v5/spot-margin-trade/get-auto-repay-mode"
+    SET_AUTO_REPAY_MODE = "/v5/spot-margin-trade/set-auto-repay-mode"
     # normal mode (non-UTA) endpoints
     NORMAL_GET_VIP_MARGIN_DATA = "/v5/spot-cross-margin-trade/data"
     NORMAL_GET_MARGIN_COIN_INFO = "/v5/spot-cross-margin-trade/pledge-token"

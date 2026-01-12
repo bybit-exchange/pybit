@@ -117,6 +117,41 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
             query=kwargs,
         )
 
+    def get_auto_repay_mode(self, **kwargs):
+        """Get spot automatic repayment mode
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/get-auto-repay-mode
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.GET_AUTO_REPAY_MODE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def set_auto_repay_mode(self, **kwargs):
+        """Set spot automatic repayment mode
+
+        Required args:
+            autoRepayMode (string): 1: On;  0: Off.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/set-auto-repay-mode
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{SpotMarginTrade.SET_AUTO_REPAY_MODE}",
+            query=kwargs,
+            auth=True,
+        )
+
     def spot_margin_trade_normal_get_margin_coin_info(self, **kwargs):
         """Normal (non-UTA) account only. Turn on / off spot margin trade
 
