@@ -268,3 +268,19 @@ class UserHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def get_escrow_sub_members(self, **kwargs):
+        """Get the list of escrow sub members.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/user/escrow-sub-members
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{User.GET_ESCROW_SUB_MEMBERS}",
+            query=kwargs,
+            auth=True,
+        )

@@ -17,6 +17,7 @@ class User(str, Enum):
     GET_UID_WALLET_TYPE = "/v5/user/get-member-type"
     DELETE_SUB_UID = "/v5/user/del-submember"
     GET_ALL_SUB_API_KEYS = "/v5/user/sub-apikeys"
+    GET_ESCROW_SUB_MEMBERS = "/v5/user/escrow_sub_members"
 
     def __str__(self) -> str:
         return self.value
