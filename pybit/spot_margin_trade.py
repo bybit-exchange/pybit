@@ -22,6 +22,11 @@ class SpotMarginTrade(str, Enum):
     NORMAL_GET_BORROW_ORDER_DETAIL = "/v5/spot-cross-margin-trade/orders"
     NORMAL_GET_REPAYMENT_ORDER_DETAIL = "/v5/spot-cross-margin-trade/repay-history"
     NORMAL_TOGGLE_MARGIN_TRADE = "/v5/spot-cross-margin-trade/switch"
+    # Additional UTA endpoints
+    GET_MAX_BORROWABLE = "/v5/spot-margin-trade/max-borrowable"
+    GET_POSITION_TIERS = "/v5/spot-margin-trade/position-tiers"
+    GET_COIN_STATE = "/v5/spot-margin-trade/coinstate"
+    GET_REPAYMENT_AVAILABLE_AMOUNT = "/v5/spot-margin-trade/repayment-available-amount"
 
     def __str__(self) -> str:
         return self.value

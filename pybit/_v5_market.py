@@ -314,3 +314,91 @@ class MarketHTTP(_V5HTTPManager):
             path=f"{self.endpoint}{Market.GET_PRICE_LIMIT}",
             query=kwargs,
         )
+
+    def get_rpi_orderbook(self, **kwargs):
+        """Query RPI orderbook data.
+
+        Required args:
+            category (string): Product type. spot, linear, inverse
+            symbol (string): Symbol name
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/market/orderbook-rpi
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Market.GET_RPI_ORDERBOOK}",
+            query=kwargs,
+        )
+
+    def get_new_delivery_price(self, **kwargs):
+        """Get the delivery price for futures.
+
+        Required args:
+            category (string): Product type. linear, inverse
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/market/delivery-price
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Market.GET_NEW_DELIVERY_PRICE}",
+            query=kwargs,
+        )
+
+    def get_index_price_components(self, **kwargs):
+        """Get index price components.
+
+        Required args:
+            symbol (string): Symbol name
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/market/index-price-components
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Market.GET_INDEX_PRICE_COMPONENTS}",
+            query=kwargs,
+        )
+
+    def get_adl_alert(self, **kwargs):
+        """Get ADL alert information.
+
+        Required args:
+            coin (string): Coin name
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/market/adl-alert
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Market.GET_ADL_ALERT}",
+            query=kwargs,
+        )
+
+    def get_fee_group_info(self, **kwargs):
+        """Get fee group information.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/market/fee-group-info
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Market.GET_FEE_GROUP_INFO}",
+            query=kwargs,
+        )
