@@ -309,3 +309,71 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def spot_margin_trade_get_max_borrowable(self, **kwargs):
+        """UTA only. Get the maximum borrowable amount for spot margin.
+
+        Required args:
+            coin (string): Coin name
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/max-borrowable
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.GET_MAX_BORROWABLE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def spot_margin_trade_get_position_tiers(self, **kwargs):
+        """Get spot margin position tiers information.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/position-tiers
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.GET_POSITION_TIERS}",
+            query=kwargs,
+        )
+
+    def spot_margin_trade_get_coin_state(self, **kwargs):
+        """Get spot margin coin state information.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/coinstate
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.GET_COIN_STATE}",
+            query=kwargs,
+        )
+
+    def spot_margin_trade_get_repayment_available_amount(self, **kwargs):
+        """UTA only. Get repayment available amount.
+
+        Required args:
+            coin (string): Coin name
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/repayment-available-amount
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.GET_REPAYMENT_AVAILABLE_AMOUNT}",
+            query=kwargs,
+            auth=True,
+        )

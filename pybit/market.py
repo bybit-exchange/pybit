@@ -19,6 +19,11 @@ class Market(str, Enum):
     GET_OPTION_DELIVERY_PRICE = "/v5/market/delivery-price"
     GET_LONG_SHORT_RATIO = "/v5/market/account-ratio"
     GET_PRICE_LIMIT = "/v5/market/price-limit"
+    GET_RPI_ORDERBOOK = "/v5/market/rpi_orderbook"
+    GET_NEW_DELIVERY_PRICE = "/v5/market/new-delivery-price"
+    GET_INDEX_PRICE_COMPONENTS = "/v5/market/index-price-components"
+    GET_ADL_ALERT = "/v5/market/adlAlert"
+    GET_FEE_GROUP_INFO = "/v5/market/fee-group-info"
 
     def __str__(self) -> str:
         return self.value

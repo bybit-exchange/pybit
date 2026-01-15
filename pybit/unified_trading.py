@@ -19,6 +19,8 @@ from ._v5_broker import BrokerHTTP
 from ._v5_institutional_loan import InstitutionalLoanHTTP
 from ._v5_crypto_loan import CryptoLoanHTTP
 from ._v5_earn import EarnHTTP
+from ._v5_fiat import FiatHTTP
+from ._v5_rfq import RFQHTTP
 from ._websocket_stream import _V5WebSocketManager
 from ._websocket_trading import _V5TradeWebSocketManager
 from ._v5_spread import (
@@ -59,7 +61,10 @@ class HTTP(
     InstitutionalLoanHTTP,
     CryptoLoanHTTP,
     EarnHTTP,
-    RateLimitHTTP
+    FiatHTTP,
+    RFQHTTP,
+    RateLimitHTTP,
+    SpreadHTTP
 ):
     def __init__(self, **args):
         super().__init__(**args)
