@@ -13,7 +13,7 @@ import requests
 
 from datetime import datetime as dt, timezone
 
-from .exceptions import FailedRequestError, InvalidRequestError
+from .exceptions import FailedRequestError, InvalidRequestError, RetryableError
 from . import _helpers
 
 # Requests will use simplejson if available.
@@ -201,6 +201,9 @@ class _V5HTTPManager:
                 self._handle_network_error(e, retries_attempted)
             except JSONDecodeError as e:
                 self._handle_json_error(e, retries_attempted)
+            except RetryableError as e:
+                self._handle_retryable_error(e.response, e.status_code, e.message, recv_window)
+
 
         raise FailedRequestError(
             request=f"{method} {path}: {req_params}",
@@ -275,8 +278,11 @@ class _V5HTTPManager:
             error_msg = f"{s_json[ret_msg]} (ErrCode: {error_code})"
 
             if error_code in self.retry_codes:
-                self._handle_retryable_error(response, error_code, error_msg, recv_window)
-                raise Exception("Retryable error occurred, retrying...")
+                raise RetryableError(
+                    response=response,
+                    message=error_msg,
+                    status_code=error_code
+                )
 
             if error_code not in self.ignore_codes:
                 raise InvalidRequestError(
