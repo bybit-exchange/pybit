@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.14.0] - 2026-02-06
+
+Formally release changes from the pre-releases: 5.14.0rc0, 5.14.0rc1, 5.14.0rc2.
+
+In addition:
+
+### Added
+- Account HTTP endpoints
+- Earn HTTP endpoints
+- *New group:* Fiat HTTP endpoints
+- Institutional Loan HTTP endpoints
+- Market HTTP endpoints
+- *New group:* RFQ HTTP endpoints
+- Spot Margin Trading HTTP endpoints
+- User HTTP endpoints
+
+### Changed
+- HTTP endpoint `set_limit_price_action()` so that you cannot pass any args, as this endpoint doesn't support any request parameters
+
 
 ## [5.14.0rc2] - 2026-01-12
 

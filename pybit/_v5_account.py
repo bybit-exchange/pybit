@@ -441,7 +441,7 @@ class AccountHTTP(_V5HTTPManager):
             auth=True,
         )
 
-    def get_user_setting_config(self, **kwargs):
+    def get_user_setting_config(self):
         """Get user setting configuration.
 
         Returns:
@@ -453,21 +453,23 @@ class AccountHTTP(_V5HTTPManager):
         return self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Account.GET_USER_SETTING_CONFIG}",
-            query=kwargs,
             auth=True,
         )
 
     def set_limit_price_action(self, **kwargs):
-        """Set the limit price action behavior.
+        """Set the price limit action behavior.
 
         Required args:
-            limitPxAction (string): "ForceAdjust" or "RejectOrder"
+            category (string): linear, inverse, spot
+            modifyEnable (boolean):
+                true: allow the system to modify the order price
+                false: reject your order request
 
         Returns:
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/account/set-limit-px-action
+            https://bybit-exchange.github.io/docs/v5/account/set-price-limit
         """
         return self._submit_request(
             method="POST",
