@@ -11,6 +11,16 @@ Formally release changes from the pre-releases: 5.14.0rc0, 5.14.0rc1, 5.14.0rc2.
 
 In addition:
 
+### Added
+- Account HTTP endpoints
+- Earn HTTP endpoints
+- *New group:* Fiat HTTP endpoints
+- Institutional Loan HTTP endpoints
+- Market HTTP endpoints
+- *New group:* RFQ HTTP endpoints
+- Spot Margin Trading HTTP endpoints
+- User HTTP endpoints
+
 ### Changed
 - HTTP endpoint `set_limit_price_action()` so that you cannot pass any args, as this endpoint doesn't support any request parameters
 
