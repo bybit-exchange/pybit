@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from os import path
 
 here = path.abspath(path.dirname(__file__))
@@ -25,7 +25,8 @@ setup(
         "Programming Language :: Python :: 3.10",
     ],
     keywords="bybit api connector",
-    packages=["pybit"],
+    packages=find_packages(exclude=['examples', 'tests']),
+    # packages=["pybit"],
     python_requires=">=3.6",
     install_requires=[
         "requests",

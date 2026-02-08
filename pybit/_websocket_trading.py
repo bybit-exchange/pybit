@@ -18,7 +18,7 @@ class _V5TradeWebSocketManager(_WebSocketManager):
         super().__init__(self._handle_incoming_message, WSS_NAME, **kwargs)
         self.recv_window = recv_window
         self.referral_id = referral_id
-        self._connect(TRADE_WSS)
+        self.start(TRADE_WSS)
 
     def _process_auth_message(self, message):
         # If we get successful auth, notify user

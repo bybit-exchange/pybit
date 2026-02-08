@@ -187,4 +187,4 @@ class _V5WebSocketSpreadTrading(_V5WebSocketManager):
     ):
         super().__init__(WSS_NAME, **kwargs)
         self.WS_URL = PUBLIC_WSS
-        self._connect(self.WS_URL)
+        self.start(self.WS_URL)

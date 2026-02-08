@@ -115,7 +115,7 @@ class WebSocket(_V5WebSocketManager):
                 "API_KEY or API_SECRET is not set. They both are needed in order to access private topics"
             )
 
-        self._connect(self.WS_URL)
+        self.start(self.WS_URL)
 
     # Private topics
 
