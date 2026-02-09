@@ -38,3 +38,16 @@ class MiscHTTP(_V5HTTPManager):
             path=f"{self.endpoint}{Misc.REQUEST_DEMO_TRADING_FUNDS}",
             auth=True,
         )
+
+    def get_system_status(self) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/system-status
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Misc.GET_SYSTEM_STATUS}",
+        )

@@ -5,6 +5,61 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.14.0] - 2026-02-06
+
+Formally release changes from the pre-releases: 5.14.0rc0, 5.14.0rc1, 5.14.0rc2.
+
+In addition:
+
+### Added
+- Account HTTP endpoints
+- Earn HTTP endpoints
+- *New group:* Fiat HTTP endpoints
+- Institutional Loan HTTP endpoints
+- Market HTTP endpoints
+- *New group:* RFQ HTTP endpoints
+- Spot Margin Trading HTTP endpoints
+- User HTTP endpoints
+
+### Changed
+- HTTP endpoint `set_limit_price_action()` so that you cannot pass any args, as this endpoint doesn't support any request parameters
+
+
+## [5.14.0rc2] - 2026-01-12
+
+### Added
+- HTTP endpoints
+  - `get_auto_repay_mode()`
+  - `set_auto_repay_mode()`
+
+
+## [5.14.0rc1] - 2026-01-09
+
+### Added
+- System WebSocket stream: `system_status_stream` (which uses a new channel type: `channel_type="misc/status"`)
+
+### Fixed
+- WebSocket `insurance_pool_stream` subscription
+- WebSockets `insurance_pool_stream`, `price_limit_stream` to validate `channel_type` so that the correct WebSocket URL is used to connect
+
+
+## [5.14.0rc0] - 2025-12-31
+
+### Added
+- Asset HTTP endpoints for small balance (dust) conversion
+- Exchange Broker HTTP endpoints 
+- Affiliate HTTP endpoint `get_affiliate_user_list()`
+- Crypto Loan (New) HTTP endpoints
+- HTTP endpoint `get_price_limit()`
+- Position HTTP endpoints: `move_position()`, `get_move_position_history()`, `get_closed_options_positions()`
+- `get_tiered_collateral_ratio()`, which is more detailed than existing `get_collateral_info()`
+- Trading HTTP endpoint: `pre_check_order()` for checking margin before placing an order
+- `get_system_status()` HTTP endpoint
+- Public market WebSocket streams `rpi_orderbook_stream`, `insurance_pool_stream`, `price_limit_stream`
+
+### Deprecated
+- Crypto Loan (Old) HTTP endpoints
+
 
 ## [5.13.0] - 2025-11-05
 

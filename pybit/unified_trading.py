@@ -19,6 +19,8 @@ from ._v5_broker import BrokerHTTP
 from ._v5_institutional_loan import InstitutionalLoanHTTP
 from ._v5_crypto_loan import CryptoLoanHTTP
 from ._v5_earn import EarnHTTP
+from ._v5_fiat import FiatHTTP
+from ._v5_rfq import RFQHTTP
 from ._websocket_stream import _V5WebSocketManager
 from ._websocket_trading import _V5TradeWebSocketManager
 from ._v5_spread import (
@@ -38,6 +40,7 @@ AVAILABLE_CHANNEL_TYPES = [
     "linear",
     "spot",
     "option",
+    "misc/status",
     "private",
 ]
 
@@ -58,7 +61,10 @@ class HTTP(
     InstitutionalLoanHTTP,
     CryptoLoanHTTP,
     EarnHTTP,
-    RateLimitHTTP
+    FiatHTTP,
+    RFQHTTP,
+    RateLimitHTTP,
+    SpreadHTTP
 ):
     def __init__(self, **args):
         super().__init__(**args)
@@ -73,6 +79,12 @@ class WebSocket(_V5WebSocketManager):
 
     def _validate_private_topic(self):
         if not self.WS_URL.endswith("/private"):
+            raise TopicMismatchError(
+                "Requested topic does not match channel_type"
+            )
+
+    def _validate_system_topic(self):
+        if not self.WS_URL.endswith("misc/status"):
             raise TopicMismatchError(
                 "Requested topic does not match channel_type"
             )
@@ -238,6 +250,22 @@ class WebSocket(_V5WebSocketManager):
         topic = f"orderbook.{depth}." + "{symbol}"
         self.subscribe(topic, callback, symbol)
 
+    def rpi_orderbook_stream(self, symbol: (str, list), callback):
+        """Subscribe to the orderbook stream. Supports different depths.
+
+        Spot, Perpetual & Futures:
+        Level 50 data, push frequency: 100ms
+
+        Required args:
+            symbol (string/list): Symbol name(s)
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/websocket/public/orderbook-rpi
+        """
+        self._validate_public_topic()
+        topic = f"orderbook.rpi." + "{symbol}"
+        self.subscribe(topic, callback, symbol)
+
     def trade_stream(self, symbol: (str, list), callback):
         """
         Subscribe to the recent trades stream.
@@ -366,6 +394,53 @@ class WebSocket(_V5WebSocketManager):
         self._validate_public_topic()
         topic = "lt.{symbol}"
         self.subscribe(topic, callback, symbol)
+
+    def insurance_pool_stream(self, contract_group: (str, list), callback):
+        """Subscribe to the insurance pool stream.
+
+        Push frequency: 1s
+
+        Required args:
+            contract_group (string/list): A contract group, eg "USDT" for
+                USDT-margined contracts
+
+         Additional information:
+            https://bybit-exchange.github.io/docs/v5/websocket/public/insurance-pool
+        """
+        self._validate_public_topic()
+        symbol = contract_group
+        topic = "insurance.{symbol}"
+        self.subscribe(topic, callback, symbol)
+
+    def price_limit_stream(self, symbol: str, callback):
+        """Subscribe to the order price limit stream.
+
+        Push frequency: 300ms
+
+        Required args:
+            symbol (string/list): Symbol name(s)
+
+         Additional information:
+            https://bybit-exchange.github.io/docs/v5/websocket/public/order-price-limit
+        """
+        self._validate_public_topic()
+        topic = "priceLimit.{symbol}"
+        self.subscribe(topic, callback, symbol)
+
+    # System status topics
+    
+    def system_status_stream(self, callback):
+        """Subscribe to the system's status for when there's platform
+        maintenance or a service incident.
+
+        Push frequency: N/A
+
+         Additional information:
+            https://bybit-exchange.github.io/docs/v5/websocket/system/system-status
+        """
+        self._validate_system_topic()
+        topic = "system.status"
+        self.subscribe(topic, callback)
 
 
 class WebSocketTrading(_V5TradeWebSocketManager):

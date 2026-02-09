@@ -102,6 +102,56 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
             query=kwargs,
         )
 
+    def get_tiered_collateral_ratio(self, **kwargs):
+        """UTA loan tiered collateral ratio
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/tier-collateral-ratio
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.GET_TIERED_COLLATERAL_RATIO}",
+            query=kwargs,
+        )
+
+    def get_auto_repay_mode(self, **kwargs):
+        """Get spot automatic repayment mode
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/get-auto-repay-mode
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.GET_AUTO_REPAY_MODE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def set_auto_repay_mode(self, **kwargs):
+        """Set spot automatic repayment mode
+
+        Required args:
+            autoRepayMode (string): 1: On;  0: Off.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/set-auto-repay-mode
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{SpotMarginTrade.SET_AUTO_REPAY_MODE}",
+            query=kwargs,
+            auth=True,
+        )
+
     def spot_margin_trade_normal_get_margin_coin_info(self, **kwargs):
         """Normal (non-UTA) account only. Turn on / off spot margin trade
 
@@ -256,6 +306,74 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
         return self._submit_request(
             method="POST",
             path=f"{self.endpoint}{SpotMarginTrade.NORMAL_TOGGLE_MARGIN_TRADE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def spot_margin_trade_get_max_borrowable(self, **kwargs):
+        """UTA only. Get the maximum borrowable amount for spot margin.
+
+        Required args:
+            coin (string): Coin name
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/max-borrowable
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.GET_MAX_BORROWABLE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def spot_margin_trade_get_position_tiers(self, **kwargs):
+        """Get spot margin position tiers information.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/position-tiers
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.GET_POSITION_TIERS}",
+            query=kwargs,
+        )
+
+    def spot_margin_trade_get_coin_state(self, **kwargs):
+        """Get spot margin coin state information.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/coinstate
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.GET_COIN_STATE}",
+            query=kwargs,
+        )
+
+    def spot_margin_trade_get_repayment_available_amount(self, **kwargs):
+        """UTA only. Get repayment available amount.
+
+        Required args:
+            coin (string): Coin name
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/repayment-available-amount
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.GET_REPAYMENT_AVAILABLE_AMOUNT}",
             query=kwargs,
             auth=True,
         )

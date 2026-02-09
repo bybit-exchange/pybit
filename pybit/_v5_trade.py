@@ -242,3 +242,29 @@ class TradeHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def pre_check_order(self, **kwargs):
+        """This endpoint is used to calculate the changes in IMR and MMR of
+        UTA account before and after placing an order.
+
+        Required args:
+            category (string): Product type Unified account: spot, linear,
+                option. Normal account: linear, inverse. Please note that
+                category is not involved with business logic
+            symbol (string): Symbol name
+            side (string): Buy, Sell
+            orderType (string): Market, Limit
+            qty (string): Order quantity
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/order/pre-check-order
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Trade.PRE_CHECK_ORDER}",
+            query=kwargs,
+            auth=True,
+        )
