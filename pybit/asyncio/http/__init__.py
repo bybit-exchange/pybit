@@ -13,3 +13,5 @@ from .v5_institutional_load import AsyncInstitutionalLoanHTTP
 from .v5_crypto_loan import AsyncCryptoLoanHTTP
 from .v5_earn import AsyncEarnHTTP
 from .v5_rate_limit import AsyncRateLimitHTTP
+from ._v5_fiat import AsyncFiatHTTP
+from ._v5_rfq import AsyncRFQHTTP

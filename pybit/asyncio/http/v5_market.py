@@ -13,7 +13,7 @@ class AsyncMarketHTTP(AsyncClient):
         """
         return await self._submit_request(
             method="GET",
-            path=f"{self.endpoint}{Market.GET_SERVER_TIME}"
+            path=f"{self.endpoint}{Market.GET_SERVER_TIME}",
         )
 
     async def get_kline(self, **kwargs) -> dict:
@@ -295,5 +295,110 @@ class AsyncMarketHTTP(AsyncClient):
         return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Market.GET_LONG_SHORT_RATIO}",
+            query=kwargs,
+        )
+
+    async def get_price_limit(self, **kwargs) -> dict:
+        """
+        Required args:
+            symbol (string): Symbol name
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/market/order-price-limit
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Market.GET_PRICE_LIMIT}",
+            query=kwargs,
+        )
+
+    async def get_rpi_orderbook(self, **kwargs) -> dict:
+        """Query RPI orderbook data.
+
+        Required args:
+            category (string): Product type. spot, linear, inverse
+            symbol (string): Symbol name
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/market/orderbook-rpi
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Market.GET_RPI_ORDERBOOK}",
+            query=kwargs,
+        )
+
+    async def get_new_delivery_price(self, **kwargs) -> dict:
+        """Get the delivery price for futures.
+
+        Required args:
+            category (string): Product type. linear, inverse
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/market/delivery-price
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Market.GET_NEW_DELIVERY_PRICE}",
+            query=kwargs,
+        )
+
+    async def get_index_price_components(self, **kwargs) -> dict:
+        """Get index price components.
+
+        Required args:
+            symbol (string): Symbol name
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/market/index-price-components
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Market.GET_INDEX_PRICE_COMPONENTS}",
+            query=kwargs,
+        )
+
+    async def get_adl_alert(self, **kwargs) -> dict:
+        """Get ADL alert information.
+
+        Required args:
+            coin (string): Coin name
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/market/adl-alert
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Market.GET_ADL_ALERT}",
+            query=kwargs,
+        )
+
+    async def get_fee_group_info(self, **kwargs) -> dict:
+        """Get fee group information.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/market/fee-group-info
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Market.GET_FEE_GROUP_INFO}",
             query=kwargs,
         )

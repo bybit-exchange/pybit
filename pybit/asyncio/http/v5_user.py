@@ -60,6 +60,23 @@ class AsyncUserHTTP(AsyncClient):
             auth=True,
         )
 
+    async def get_sub_uid_list_unlimited(self, **kwargs) -> dict:
+        """This API is applicable to the client who has over 10k subaccounts.
+        Use master user's API key only.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/user/page-subuid
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{User.GET_SUB_UID_LIST_UNLIMITED}",
+            query=kwargs,
+            auth=True,
+        )
+
     async def freeze_sub_uid(self, **kwargs) -> dict:
         """Froze sub uid. Use master user's api key only.
 
@@ -217,6 +234,25 @@ class AsyncUserHTTP(AsyncClient):
             auth=True,
         )
 
+    async def get_affiliate_user_list(self, **kwargs) -> dict:
+        """This API is used for affiliate to get their users information
+
+        Required args:
+            uid (integer): The master account uid of affiliate's client
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/affiliate/affiliate-user-list
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{User.GET_AFFILIATE_USER_LIST}",
+            query=kwargs,
+            auth=True,
+        )
+
     async def get_uid_wallet_type(self, **kwargs) -> dict:
         """Get available wallet types for the master account or sub account
 
@@ -229,6 +265,22 @@ class AsyncUserHTTP(AsyncClient):
         return await self._submit_request(
             method="GET",
             path=f"{self.endpoint}{User.GET_UID_WALLET_TYPE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_escrow_sub_members(self, **kwargs) -> dict:
+        """Get the list of escrow sub members.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/user/escrow-sub-members
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{User.GET_ESCROW_SUB_MEMBERS}",
             query=kwargs,
             auth=True,
         )

@@ -75,3 +75,41 @@ class AsyncEarnHTTP(AsyncClient):
             query=kwargs,
             auth=True,
         )
+
+    async def get_yield(self, **kwargs) -> dict:
+        """Get the yield information for earn products.
+
+        Required args:
+            category (string): FlexibleSaving
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/earn/yield
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Earn.GET_YIELD}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_hourly_yield(self, **kwargs) -> dict:
+        """Get hourly yield information for earn products.
+
+        Required args:
+            category (string): FlexibleSaving
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/earn/hourly-yield
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Earn.GET_HOURLY_YIELD}",
+            query=kwargs,
+            auth=True,
+        )

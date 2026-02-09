@@ -314,3 +314,166 @@ class AsyncAccountHTTP(AsyncClient):
             query=kwargs,
             auth=True,
         )
+
+    async def set_no_convert_repay(self, **kwargs) -> dict:
+        """Turn off auto repayment using liability. Available only for UTA 2.0.
+
+        Required args:
+            noConvertRepay (string): "on" or "off"
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/account/set-no-convert-repay
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Account.SET_NO_CONVERT_REPAY}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def borrow(self, **kwargs) -> dict:
+        """Borrow a certain amount of a coin.
+
+        Required args:
+            coin (string): Coin name
+            qty (string): Amount to borrow
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/account/borrow
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Account.BORROW}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_instruments_info(self, **kwargs) -> dict:
+        """Get available instruments info for unified account.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/account/instruments-info
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Account.GET_INSTRUMENTS_INFO}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def repay(self, **kwargs) -> dict:
+        """Repay a certain amount of a coin.
+
+        Required args:
+            coin (string): Coin name
+            qty (string): Amount to repay
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/account/repay
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Account.REPAY}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def query_dcp_info(self, **kwargs) -> dict:
+        """Query the DCP configuration of the account.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/account/dcp-info
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Account.QUERY_DCP_INFO}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def set_hedging_mode(self, **kwargs) -> dict:
+        """Set hedging mode for the account.
+
+        Required args:
+            hedgingMode (string): "on" or "off"
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/account/set-hedging-mode
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Account.SET_HEDGING_MODE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_smp_group(self, **kwargs) -> dict:
+        """Get the SMP group ID of the account.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/account/smp-group
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Account.GET_SMP_GROUP}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_user_setting_config(self):
+        """Get user setting configuration.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/account/user-setting-config
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Account.GET_USER_SETTING_CONFIG}",
+            auth=True,
+        )
+
+    async def set_limit_price_action(self, **kwargs) -> dict:
+        """Set the price limit action behavior.
+
+        Required args:
+            category (string): linear, inverse, spot
+            modifyEnable (boolean):
+                true: allow the system to modify the order price
+                false: reject your order request
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/account/set-price-limit
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Account.SET_LIMIT_PRICE_ACTION}",
+            query=kwargs,
+            auth=True,
+        )

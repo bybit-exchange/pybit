@@ -98,3 +98,20 @@ class AsyncInstitutionalLoanHTTP(AsyncClient):
             query=kwargs,
             auth=True,
         )
+
+    async def repay_loan(self, **kwargs) -> dict:
+        """
+        Repay the institutional loan.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/otc/repay-loan
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{InsLoan.REPAY_LOAN}",
+            query=kwargs,
+            auth=True,
+        )
