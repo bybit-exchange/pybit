@@ -306,7 +306,12 @@ class _V5HTTPManager:
             recv_window += 2500
         elif error_code == 10006:  # rate limit error
             self.logger.error(f"{error_msg}. Hit the API rate limit on {response.url}. Sleeping then trying again.")
-            limit_reset_time = int(response.headers["X-Bapi-Limit-Reset-Timestamp"])
+            limit_reset_time = int(
+                response.headers.get(
+                    "X-Bapi-Limit-Reset-Timestamp",
+                    _helpers.generate_timestamp() + 2000
+                )
+            )
             limit_reset_str = dt.fromtimestamp(limit_reset_time / 10 ** 3).strftime("%H:%M:%S.%f")[:-3]
             delay_time = (limit_reset_time - _helpers.generate_timestamp()) / 10 ** 3
             error_msg = f"API rate limit will reset at {limit_reset_str}. Sleeping for {int(delay_time * 10 ** 3)} ms"
