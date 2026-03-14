@@ -30,7 +30,7 @@ It was designed with the following vision in mind:
 `pybit` is being actively developed, and new Bybit API changes should arrive on `pybit` very quickly. `pybit` uses `requests` and `websocket-client` for its methods, alongside other built-in modules. Anyone is welcome to branch/fork the repository and add their own upgrades. If you think you've made substantial improvements to the module, submit a pull request and we'll gladly take a look.
 
 ## Installation
-`pybit` requires Python 3.9.1 or higher. The module can be installed manually or via [PyPI](https://pypi.org/project/pybit/) with `pip`:
+`pybit` requires Python 3.10 or higher. The module can be installed manually or via [PyPI](https://pypi.org/project/pybit/) with `pip`:
 ```
 pip install pybit
 ```
