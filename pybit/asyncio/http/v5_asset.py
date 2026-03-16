@@ -1,0 +1,596 @@
+from pybit.asyncio.client import AsyncClient
+from pybit.asset import Asset
+
+
+class AsyncAssetHTTP(AsyncClient):
+    async def get_coin_exchange_records(self, **kwargs) -> dict:
+        """Query the coin exchange records.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/exchange
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_COIN_EXCHANGE_RECORDS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_option_delivery_record(self, **kwargs) -> dict:
+        """Query option delivery records, sorted by deliveryTime in descending order
+
+        Required args:
+            category (string): Product type. option
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/option-delivery
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_OPTION_DELIVERY_RECORD}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_usdc_contract_settlement(self, **kwargs) -> dict:
+        """Query session settlement records of USDC perpetual and futures
+
+        Required args:
+            category (string): Product type. linear
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/settlement
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_USDC_CONTRACT_SETTLEMENT}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_spot_asset_info(self, **kwargs) -> dict:
+        """Query asset information
+
+        Required args:
+            accountType (string): Account type. SPOT
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/asset-info
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_SPOT_ASSET_INFO}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_coins_balance(self, **kwargs) -> dict:
+        """You could get all coin balance of all account types under the master account, and sub account.
+
+        Required args:
+            memberId (string): User Id. It is required when you use master api key to check sub account coin balance
+            accountType (string): Account type
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/all-balance
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_ALL_COINS_BALANCE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_coin_balance(self, **kwargs) -> dict:
+        """Query the balance of a specific coin in a specific account type. Supports querying sub UID's balance.
+
+        Required args:
+            memberId (string): UID. Required when querying sub UID balance
+            accountType (string): Account type
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/account-coin-balance
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_SINGLE_COIN_BALANCE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_transferable_coin(self, **kwargs) -> dict:
+        """Query the transferable coin list between each account type
+
+        Required args:
+            fromAccountType (string): From account type
+            toAccountType (string): To account type
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/transferable-coin
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_TRANSFERABLE_COIN}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def create_internal_transfer(self, **kwargs) -> dict:
+        """Create the internal transfer between different account types under the same UID.
+
+        Required args:
+            transferId (string): UUID. Please manually generate a UUID
+            coin (string): Coin
+            amount (string): Amount
+            fromAccountType (string): From account type
+            toAccountType (string): To account type
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/create-inter-transfer
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Asset.CREATE_INTERNAL_TRANSFER}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_internal_transfer_records(self, **kwargs) -> dict:
+        """Query the internal transfer records between different account types under the same UID.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/inter-transfer-list
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_INTERNAL_TRANSFER_RECORDS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_sub_uid(self, **kwargs) -> dict:
+        """Query the sub UIDs under a main UID
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/sub-uid-list
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_SUB_UID}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def enable_universal_transfer_for_sub_uid(self, **kwargs) -> dict:
+        """Transfer between sub-sub or main-sub
+
+        Required args:
+            subMemberIds (array): This list has a single item. Separate multiple UIDs by comma, e.g., "uid1,uid2,uid3"
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/enable-unitransfer-subuid
+        """
+        self.logger.warning(
+            "enable_universal_transfer_for_sub_uid() is depreciated. You no longer need to configure transferable sub UIDs. Now, all sub UIDs are automatically enabled for universal transfer.")
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Asset.ENABLE_UT_FOR_SUB_UID}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def create_universal_transfer(self, **kwargs) -> dict:
+        """Transfer between sub-sub or main-sub. Please make sure you have enabled universal transfer on your sub UID in advance.
+
+        Required args:
+            transferId (string): UUID. Please manually generate a UUID
+            coin (string): Coin
+            amount (string): Amount
+            fromMemberId (integer): From UID
+            toMemberId (integer): To UID
+            fromAccountType (string): From account type
+            toAccountType (string): To account type
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/unitransfer
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Asset.CREATE_UNIVERSAL_TRANSFER}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_universal_transfer_records(self, **kwargs) -> dict:
+        """Query universal transfer records
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/unitransfer-list
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_UNIVERSAL_TRANSFER_RECORDS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_allowed_deposit_coin_info(self, **kwargs) -> dict:
+        """Query allowed deposit coin information. To find out paired chain of coin, please refer coin info api.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/deposit-coin-spec
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_ALLOWED_DEPOSIT_COIN_INFO}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def set_deposit_account(self, **kwargs) -> dict:
+        """Set auto transfer account after deposit. The same function as the setting for Deposit on web GUI
+
+        Required args:
+            accountType (string): Account type: UNIFIED,SPOT,OPTION,CONTRACT,FUND
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/set-deposit-acct
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Asset.SET_DEPOSIT_ACCOUNT}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_deposit_records(self, **kwargs) -> dict:
+        """Query deposit records.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/deposit-record
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_DEPOSIT_RECORDS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_sub_deposit_records(self, **kwargs) -> dict:
+        """Query subaccount's deposit records by MAIN UID's API key.
+
+        Required args:
+            subMemberId (string): Sub UID
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/sub-deposit-record
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_SUB_ACCOUNT_DEPOSIT_RECORDS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_internal_deposit_records(self, **kwargs) -> dict:
+        """Query deposit records within the Bybit platform. These transactions are not on the blockchain.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/internal-deposit-record
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_INTERNAL_DEPOSIT_RECORDS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_master_deposit_address(self, **kwargs) -> dict:
+        """Query the deposit address information of MASTER account.
+
+        Required args:
+            coin (string): Coin
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/master-deposit-addr
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_MASTER_DEPOSIT_ADDRESS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_sub_deposit_address(self, **kwargs) -> dict:
+        """Query the deposit address information of SUB account.
+
+        Required args:
+            coin (string): Coin
+            chainType (string): Chain, e.g.,ETH
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/sub-deposit-addr
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_SUB_DEPOSIT_ADDRESS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_coin_info(self, **kwargs) -> dict:
+        """Query coin information, including chain information, withdraw and deposit status.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/coin-info
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_COIN_INFO}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_withdrawal_address_list(self, **kwargs) -> dict:
+        """Query withdrawal address list.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/withdraw/withdraw-address
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_WITHDRAWAL_ADDRESS_LIST}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_withdrawal_records(self, **kwargs) -> dict:
+        """Query withdrawal records.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/withdraw-record
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_WITHDRAWAL_RECORDS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_withdrawable_amount(self, **kwargs) -> dict:
+        """Get withdrawable amount
+
+        Required args:
+            coin (string): Coin name
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/delay-amount
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_WITHDRAWABLE_AMOUNT}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_exchange_entity_list(self, **kwargs) -> dict:
+        """Get the list of exchange entities (VASPs) supported for withdrawals.
+
+        Returns:
+            Request results as dictionary.
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/withdraw/vasp-list
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_EXCHANGE_ENTITY_LIST}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def withdraw(self, **kwargs) -> dict:
+        """Withdraw assets from your Bybit account. You can make an off-chain transfer if the target wallet address is from Bybit. This means that no blockchain fee will be charged.
+
+        Required args:
+            coin (string): Coin
+            chain (string): Chain
+            address (string): Wallet address
+            tag (string): Tag. Required if tag exists in the wallet address list
+            amount (string): Withdraw amount
+            timestamp (integer): Current timestamp (ms). Used for preventing from withdraw replay
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/withdraw
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Asset.WITHDRAW}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def cancel_withdrawal(self, **kwargs) -> dict:
+        """Cancel the withdrawal
+
+        Required args:
+            id (string): Withdrawal ID
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/cancel-withdraw
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Asset.CANCEL_WITHDRAWAL}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_convert_coin_list(self, **kwargs) -> dict:
+        """Query for the list of coins you can convert to/from.
+
+        Required args:
+            accountType (string): Wallet type
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert/convert-coin-list
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_CONVERT_COIN_LIST}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def request_a_quote(self, **kwargs) -> dict:
+        """
+        Required args:
+            fromCoin (string): Convert from coin (coin to sell)
+            toCoin (string): Convert to coin (coin to buy)
+            requestCoin (string): Request coin, same as fromCoin
+            requestAmount (string): request coin amount (the amount you want to sell)
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert/apply-quote
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Asset.REQUEST_A_QUOTE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def confirm_a_quote(self, **kwargs) -> dict:
+        """
+        Required args:
+            quoteTxId (string): The quoteTxId from request_a_quote
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert/confirm-quote
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Asset.CONFIRM_A_QUOTE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_convert_status(self, **kwargs) -> dict:
+        """
+        Required args:
+            quoteTxId (string): Quote tx ID
+            accountType (string): Wallet type
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert/get-convert-result
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_CONVERT_STATUS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_convert_history(self, **kwargs) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert/get-convert-history
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_CONVERT_HISTORY}",
+            query=kwargs,
+            auth=True,
+        )
