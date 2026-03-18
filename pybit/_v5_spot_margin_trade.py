@@ -377,3 +377,18 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def spot_margin_trade_get_currency_data(self, **kwargs):
+        """Get spot margin currency data information.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/currency-data
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.GET_CURRENCY_DATA}",
+            query=kwargs,
+        )

@@ -27,6 +27,7 @@ class SpotMarginTrade(str, Enum):
     GET_POSITION_TIERS = "/v5/spot-margin-trade/position-tiers"
     GET_COIN_STATE = "/v5/spot-margin-trade/coinstate"
     GET_REPAYMENT_AVAILABLE_AMOUNT = "/v5/spot-margin-trade/repayment-available-amount"
+    GET_CURRENCY_DATA = "/v5/spot-margin-trade/currency-data"
 
     def __str__(self) -> str:
         return self.value
