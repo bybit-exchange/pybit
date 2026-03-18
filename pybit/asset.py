@@ -46,6 +46,8 @@ class Asset(str, Enum):
     REQUEST_A_QUOTE_SMALL_BALANCE = "/v5/asset/covert/get-quote"
     CONFIRM_A_QUOTE_SMALL_BALANCE = "/v5/asset/covert/small-balance-execute"
     GET_EXCHANGE_HISTORY_SMALL_BALANCE = "/v5/asset/covert/small-balance-history"
+    GET_ASSET_OVERVIEW = "/v5/asset/asset-overview"
+    GET_FUNDING_ACC_HISTORY = "/v5/asset/fundinghistory"
 
     def __str__(self) -> str:
         return self.value
