@@ -680,3 +680,21 @@ class CryptoLoanHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def get_max_loan_amount_new_crypto_loan(self, **kwargs):
+        """
+        Required args:
+            currency (string): Coin to borrow
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/new-crypto-loan/max-loan-amt
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{CryptoLoan.GET_MAX_LOAN_AMOUNT_NEW_CRYPTO_LOAN}",
+            query=kwargs,
+            auth=True,
+        )
