@@ -347,4 +347,3 @@ class PositionHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
-    
