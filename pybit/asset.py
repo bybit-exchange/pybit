@@ -48,6 +48,15 @@ class Asset(str, Enum):
     GET_EXCHANGE_HISTORY_SMALL_BALANCE = "/v5/asset/covert/small-balance-history"
     GET_ASSET_OVERVIEW = "/v5/asset/asset-overview"
     GET_FUNDING_ACC_HISTORY = "/v5/asset/fundinghistory"
+    # Fiat
+    GET_FIAT_BALANCE = "/v5/fiat/balance-query"
+    GET_FIAT_TRADING_PAIR_LIST = "/v5/fiat/query-coin-list"
+    GET_FIAT_CONVERT_HISTORY = "/v5/fiat/query-trade-history"
+    REQUEST_A_QUOTE_FIAT_CONVERT = "/v5/fiat/quote-apply"
+    GET_FIAT_REFERENCE_PRICE = "/v5/fiat/reference-price"
+    CONFIRM_A_QUOTE_FIAT_CONVERT = "/v5/fiat/trade-execute"
+    GET_FIAT_CONVERT_STATUS = "/v5/fiat/trade-query"
+
 
     def __str__(self) -> str:
         return self.value
