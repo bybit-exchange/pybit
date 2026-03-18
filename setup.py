@@ -1,5 +1,6 @@
 from setuptools import setup
 from os import path
+from pybit import VERSION as __version__
 
 here = path.abspath(path.dirname(__file__))
 
@@ -8,7 +9,7 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name='pybit',
-    version='5.15.0rc1',
+    version=__version__,
     description='Python3 Bybit HTTP/WebSocket API Connector', 
     long_description=long_description,
     long_description_content_type="text/markdown",
