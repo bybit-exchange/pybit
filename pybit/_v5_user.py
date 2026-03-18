@@ -284,3 +284,38 @@ class UserHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def sign_agreement(self, **kwargs):
+        """
+        Required args:
+            category (integer): 2: Metals commodity contracts
+            agree (boolean): true
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/user/sign-agreement
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{User.SIGN_AGREEMENT}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def get_friend_referrals(self, **kwargs):
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/user/friend-referral
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{User.GET_FRIEND_REFERRALS}",
+            query=kwargs,
+            auth=True,
+        )
+    
