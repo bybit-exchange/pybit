@@ -664,3 +664,44 @@ class AssetHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def get_asset_overview(self, **kwargs):
+        """Query master account or one subaccounts' total assets and detailed asset holdings across different accounts and product categories.
+
+        Required args:
+            memberId (string): User ID. When using master API key to query sub account assets, this field is required
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/balance/asset-overview
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_ASSET_OVERVIEW}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def get_funding_acc_history(self, **kwargs):
+        """Return transaction log in Funding Account.
+
+        Required args:
+            createTimeFrom (string): Start timestamp (seconds)
+            createTimeTo (string): End timestamp (seconds)
+            limit (string): Limit for data size per page, [1; 100]
+            cursor (string): Cursor, used for pagination
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/fund-history
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_FUNDING_ACC_HISTORY}",
+            query=kwargs,
+            auth=True,
+        )
