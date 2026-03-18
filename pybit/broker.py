@@ -9,6 +9,9 @@ class Broker(str, Enum):
     GET_VOUCHER_SPEC = "/v5/broker/award/info"
     ISSUE_VOUCHER = "/v5/broker/award/distribute-award"
     GET_ISSUED_VOUCHER = "/v5/broker/award/distribution-record"
+    GET_BROKER_ALL_RATE_LIMITS="/v5/broker/apilimit/query-all"
+    GET_BROKER_RATE_LIMIT_CAP="/v5/broker/apilimit/query-cap"
+    SET_BROKER_RATE_LIMIT="/v5/broker/apilimit/set"
 
     def __str__(self) -> str:
         return self.value
