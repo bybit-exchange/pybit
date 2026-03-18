@@ -328,3 +328,23 @@ class PositionHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def confirm_new_risk_limit(self, **kwargs):
+        """
+        Required args:
+            category (string): Product type. linear, inverse
+            symbol (string): Symbol name
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/position/confirm-mmr
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Position.CONFIRM_PENDING_MMR}",
+            query=kwargs,
+            auth=True,
+        )
+    
