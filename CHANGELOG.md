@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.15.0] - 2026-03-27
+
+Formally release changes from the pre-releases: 5.15.0rc1, 5.15.0rc2.
+
+In addition:
+
+### Fixed
+- HTTP retry logic for retriable Bybit API errors, so that retryable `retCode`s now perform another request instead of raising `Exception: Retryable error occurred, retrying...`
+- HTTP retry logic for `retCode` `10002`, so that the expanded `recv_window` is carried into the next retry attempt
+- WebSocket `exit()` so that it cancels the scheduled custom ping and does not raise `WebSocketConnectionClosedException` after shutdown
+
+
 ## [5.15.0rc2] - 2026-03-27
 
 ### Added
