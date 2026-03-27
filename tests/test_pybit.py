@@ -315,3 +315,39 @@ def test_submit_request_retries_with_expanded_recv_window_after_10002():
     assert result["retCode"] == 0
     assert manager.client.send.call_count == 2
     assert captured_recv_windows == [5000, 7500]
+
+
+def test_submit_request_returns_response_when_retcode_is_ignored():
+    manager = _V5HTTPManager(api_key=_api_key, api_secret=_api_secret)
+    manager.ignore_codes.add(110043)
+
+    ignored_response = Mock()
+    ignored_response.status_code = 200
+    ignored_response.headers = {}
+    ignored_response.elapsed = 0
+    ignored_response.url = "https://api-testnet.bybit.com/v5/position/set-leverage"
+    ignored_response.json.return_value = {
+        "retCode": 110043,
+        "retMsg": "leverage not changed",
+        "result": {},
+        "retExtInfo": {},
+        "time": 1234567890,
+    }
+
+    manager.client.send = Mock(return_value=ignored_response)
+
+    result = manager._submit_request(
+        method="POST",
+        path="https://api-testnet.bybit.com/v5/position/set-leverage",
+        query={
+            "category": "linear",
+            "symbol": "BTCUSDT",
+            "buyLeverage": "10",
+            "sellLeverage": "10",
+        },
+        auth=True,
+    )
+
+    assert result["retCode"] == 110043
+    assert result["retMsg"] == "leverage not changed"
+    assert manager.client.send.call_count == 1
