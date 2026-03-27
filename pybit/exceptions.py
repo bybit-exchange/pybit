@@ -56,3 +56,21 @@ class InvalidRequestError(Exception):
             f"{message} (ErrCode: {status_code}) (ErrTime: {time})"
             f".\nRequest → {request}."
         )
+
+
+class RetryableError(Exception):
+    """
+    Exception raised for retryable bybit error code
+
+    Attributes:
+        response -- Response object
+        message -- Explanation of the error.
+        status_code -- The code number returned.
+    """
+
+    def __init__(self, response, message, status_code):
+        self.response = response
+        self.message = message
+        self.status_code = status_code
+
+        super().__init__(f"{message} (ErrCode: {status_code})")
