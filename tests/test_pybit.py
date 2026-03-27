@@ -4,6 +4,7 @@ import pytest
 import hmac
 import hashlib
 from collections import defaultdict
+from unittest.mock import Mock
 
 import requests
 import websocket
@@ -224,3 +225,93 @@ def test_send_custom_ping_skips_disconnected_socket():
     manager._send_custom_ping()
 
     assert manager.ws.sent_messages == []
+
+
+def test_submit_request_retries_when_retcode_is_retryable():
+    manager = _V5HTTPManager(api_key=_api_key, api_secret=_api_secret)
+    manager.retry_delay = 0
+
+    first_response = Mock()
+    first_response.status_code = 200
+    first_response.headers = {}
+    first_response.elapsed = 0
+    first_response.url = "https://api.bybit.com/v5/order/realtime"
+    first_response.json.return_value = {
+        "retCode": 10006,
+        "retMsg": "Too many visits",
+        "result": {},
+        "time": 1234567890,
+    }
+
+    second_response = Mock()
+    second_response.status_code = 200
+    second_response.headers = {}
+    second_response.elapsed = 0
+    second_response.url = "https://api.bybit.com/v5/order/realtime"
+    second_response.json.return_value = {
+        "retCode": 0,
+        "retMsg": "OK",
+        "result": {"list": []},
+        "time": 1234567891,
+    }
+
+    manager.client.send = Mock(side_effect=[first_response, second_response])
+
+    result = manager._submit_request(
+        method="GET",
+        path="https://api.bybit.com/v5/order/realtime",
+        query={"category": "linear"},
+        auth=True,
+    )
+
+    assert result["retCode"] == 0
+    assert manager.client.send.call_count == 2
+
+
+def test_submit_request_retries_with_expanded_recv_window_after_10002():
+    manager = _V5HTTPManager(api_key=_api_key, api_secret=_api_secret)
+    manager.retry_delay = 0
+
+    first_response = Mock()
+    first_response.status_code = 200
+    first_response.headers = {}
+    first_response.elapsed = 0
+    first_response.url = "https://api.bybit.com/v5/order/realtime"
+    first_response.json.return_value = {
+        "retCode": 10002,
+        "retMsg": "invalid request, please check your server timestamp or recv_window param",
+        "result": {},
+        "time": 1234567890,
+    }
+
+    second_response = Mock()
+    second_response.status_code = 200
+    second_response.headers = {}
+    second_response.elapsed = 0
+    second_response.url = "https://api.bybit.com/v5/order/realtime"
+    second_response.json.return_value = {
+        "retCode": 0,
+        "retMsg": "OK",
+        "result": {"list": []},
+        "time": 1234567891,
+    }
+
+    captured_recv_windows = []
+
+    def fake_prepare_headers(payload, recv_window):
+        captured_recv_windows.append(recv_window)
+        return {}
+
+    manager._prepare_headers = fake_prepare_headers
+    manager.client.send = Mock(side_effect=[first_response, second_response])
+
+    result = manager._submit_request(
+        method="GET",
+        path="https://api.bybit.com/v5/order/realtime",
+        query={"category": "linear"},
+        auth=True,
+    )
+
+    assert result["retCode"] == 0
+    assert manager.client.send.call_count == 2
+    assert captured_recv_windows == [5000, 7500]

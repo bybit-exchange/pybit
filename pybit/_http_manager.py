@@ -37,6 +37,12 @@ TLD_KZ = "kz"           # Kazakhstan
 TLD_EU = "eu"           # European Economic Area. ONLY AVAILABLE TO INSTITUTIONS
 
 
+class _RetryableRequestError(Exception):
+    def __init__(self, recv_window):
+        self.recv_window = recv_window
+        super().__init__("Retryable error occurred, retrying...")
+
+
 def generate_signature(use_rsa_authentication, secret, param_str):
     def generate_hmac():
         hash = hmac.new(
@@ -196,6 +202,9 @@ class _V5HTTPManager:
 
                 return self._handle_response(response, method, path, req_params, recv_window, retries_attempted)
 
+            except _RetryableRequestError as e:
+                recv_window = e.recv_window
+                continue
             except (requests.exceptions.ReadTimeout, requests.exceptions.SSLError,
                     requests.exceptions.ConnectionError) as e:
                 self._handle_network_error(e, retries_attempted)
@@ -275,8 +284,10 @@ class _V5HTTPManager:
             error_msg = f"{s_json[ret_msg]} (ErrCode: {error_code})"
 
             if error_code in self.retry_codes:
-                self._handle_retryable_error(response, error_code, error_msg, recv_window)
-                raise Exception("Retryable error occurred, retrying...")
+                recv_window = self._handle_retryable_error(
+                    response, error_code, error_msg, recv_window
+                )
+                raise _RetryableRequestError(recv_window)
 
             if error_code not in self.ignore_codes:
                 raise InvalidRequestError(
@@ -318,6 +329,7 @@ class _V5HTTPManager:
 
         self.logger.error(f"{error_msg}. Retrying...")
         time.sleep(delay_time)
+        return recv_window
 
     def _handle_network_error(self, error, retries_attempted):
         """Handle network-related exceptions."""
