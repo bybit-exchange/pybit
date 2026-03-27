@@ -15,6 +15,7 @@ In addition:
 - HTTP retry logic for retriable Bybit API errors, so that retryable `retCode`s now perform another request instead of raising `Exception: Retryable error occurred, retrying...`
 - HTTP retry logic for `retCode` `10002`, so that the expanded `recv_window` is carried into the next retry attempt
 - WebSocket `exit()` so that it cancels the scheduled custom ping and does not raise `WebSocketConnectionClosedException` after shutdown
+- WebSocket connect and exit loops so that they do not busy-wait on socket state changes
 
 
 ## [5.15.0rc2] - 2026-03-18
