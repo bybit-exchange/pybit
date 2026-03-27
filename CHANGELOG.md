@@ -17,7 +17,7 @@ In addition:
 - WebSocket `exit()` so that it cancels the scheduled custom ping and does not raise `WebSocketConnectionClosedException` after shutdown
 
 
-## [5.15.0rc2] - 2026-03-27
+## [5.15.0rc2] - 2026-03-18
 
 ### Added
 - Account HTTP endpoint `set_delta_mode()`
@@ -50,7 +50,7 @@ In addition:
 - Spread Trading HTTP endpoint names to be prefixed with `spread_`, to avoid clashing with the unified trading methods
 
 
-## [5.15.0rc1] - 2026-03-18
+## [5.15.0rc1] - 2026-03-14
 
 ### Changed
 - Dropped Python 3.6 to 3.9 support, as these versions have reached EOL
