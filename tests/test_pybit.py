@@ -6,8 +6,10 @@ import hashlib
 from collections import defaultdict
 
 import requests
+import websocket
 
 from pybit._http_manager import _V5HTTPManager
+from pybit._websocket_stream import _WebSocketManager
 from pybit.unified_trading import HTTP
 from pybit import _http_manager
 
@@ -140,3 +142,85 @@ def test_logger_handler_attached():
     finally:
         # restore original handlers
         root.handlers = old_handlers
+
+
+class _FakeSock:
+    def __init__(self, connected=True):
+        self.connected = connected
+
+
+class _FakeWS:
+    def __init__(self, connected=True, send_error=None):
+        self.sock = _FakeSock(connected=connected)
+        self.send_error = send_error
+        self.sent_messages = []
+        self.closed = False
+
+    def send(self, message):
+        if self.send_error is not None:
+            raise self.send_error
+        self.sent_messages.append(message)
+
+    def close(self):
+        self.closed = True
+        self.sock = None
+
+
+class _FakeTimer:
+    def __init__(self):
+        self.daemon = False
+        self.started = False
+        self.cancelled = False
+
+    def start(self):
+        self.started = True
+
+    def cancel(self):
+        self.cancelled = True
+
+
+def test_websocket_exit_cancels_custom_ping_timer():
+    manager = _WebSocketManager(
+        lambda _: None,
+        "Test WS",
+        testnet=False,
+    )
+    manager.ws = _FakeWS()
+    timer = _FakeTimer()
+    manager.custom_ping_timer = timer
+
+    manager.exit()
+
+    assert manager.exited is True
+    assert timer.cancelled is True
+    assert manager.custom_ping_timer is None
+    assert manager.ws.closed is True
+
+
+def test_send_custom_ping_ignores_closed_connection():
+    manager = _WebSocketManager(
+        lambda _: None,
+        "Test WS",
+        testnet=False,
+    )
+    manager.ws = _FakeWS(
+        connected=True,
+        send_error=websocket.WebSocketConnectionClosedException(
+            "Connection is already closed."
+        ),
+    )
+
+    manager._send_custom_ping()
+
+
+def test_send_custom_ping_skips_disconnected_socket():
+    manager = _WebSocketManager(
+        lambda _: None,
+        "Test WS",
+        testnet=False,
+    )
+    manager.ws = _FakeWS(connected=False)
+
+    manager._send_custom_ping()
+
+    assert manager.ws.sent_messages == []
