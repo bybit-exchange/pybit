@@ -265,6 +265,7 @@ class _WebSocketManager:
         timer = threading.Timer(
             self.ping_interval, self._send_custom_ping
         )
+        self.ping_timer = timer
         timer.start()
 
     @staticmethod
@@ -287,7 +288,8 @@ class _WebSocketManager:
         """
         Closes the websocket connection.
         """
-
+        if self.ping_timer:
+            self.ping_timer.cancel()
         self.ws.close()
         while self.ws.sock:
             continue
