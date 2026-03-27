@@ -227,6 +227,44 @@ def test_send_custom_ping_skips_disconnected_socket():
     assert manager.ws.sent_messages == []
 
 
+def test_websocket_exit_waits_with_sleep_until_socket_closes(monkeypatch):
+    manager = _WebSocketManager(
+        lambda _: None,
+        "Test WS",
+        testnet=False,
+    )
+
+    class _SlowCloseWS:
+        def __init__(self):
+            self._sock = object()
+            self.close_called = False
+
+        @property
+        def sock(self):
+            return self._sock
+
+        @sock.setter
+        def sock(self, value):
+            self._sock = value
+
+        def close(self):
+            self.close_called = True
+
+    manager.ws = _SlowCloseWS()
+    sleep_calls = []
+
+    def fake_sleep(delay):
+        sleep_calls.append(delay)
+        manager.ws.sock = None
+
+    monkeypatch.setattr("pybit._websocket_stream.time.sleep", fake_sleep)
+
+    manager.exit()
+
+    assert manager.ws.close_called is True
+    assert sleep_calls == [0.01]
+
+
 def test_submit_request_retries_when_retcode_is_retryable():
     manager = _V5HTTPManager(api_key=_api_key, api_secret=_api_secret)
     manager.retry_delay = 0

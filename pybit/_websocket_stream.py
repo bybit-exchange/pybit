@@ -19,6 +19,7 @@ DEMO_SUBDOMAIN_MAINNET = "stream-demo"
 DOMAIN_MAIN = "bybit"
 DOMAIN_ALT = "bytick"
 TLD_MAIN = "com"
+SOCKET_WAIT_INTERVAL = 0.01
 
 
 class _WebSocketManager:
@@ -174,6 +175,7 @@ class _WebSocketManager:
             while self.wst.is_alive():
                 if self.ws.sock and self.is_connected():
                     break
+                time.sleep(SOCKET_WAIT_INTERVAL)
 
             # If connection was not successful, raise error.
             if not infinitely_reconnect and retries <= 0:
@@ -312,7 +314,7 @@ class _WebSocketManager:
 
         self.ws.close()
         while self.ws.sock:
-            continue
+            time.sleep(SOCKET_WAIT_INTERVAL)
 
 
 class _V5WebSocketManager(_WebSocketManager):
