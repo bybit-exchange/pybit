@@ -1,4 +1,5 @@
 import logging
+import io
 
 import pytest
 import hmac
@@ -389,3 +390,115 @@ def test_submit_request_returns_response_when_retcode_is_ignored():
     assert result["retCode"] == 110043
     assert result["retMsg"] == "leverage not changed"
     assert manager.client.send.call_count == 1
+
+
+def test_p2p_method_is_available_on_unified_http(http, monkeypatch):
+    captured = {}
+
+    def fake_submit_request(**kwargs):
+        captured.update(kwargs)
+        return {"retCode": 0}
+
+    monkeypatch.setattr(http, "_submit_request", fake_submit_request)
+
+    result = http.get_ad_details(itemId="123")
+
+    assert result == {"retCode": 0}
+    assert captured == {
+        "method": "POST",
+        "path": "https://api-testnet.bybit.com/v5/p2p/item/info",
+        "query": {"itemId": "123"},
+        "auth": True,
+    }
+
+
+def test_upload_chat_file_is_available_on_unified_http(http, monkeypatch):
+    captured = {}
+
+    def fake_submit_file_request(**kwargs):
+        captured.update(kwargs)
+        return {"retCode": 0}
+
+    monkeypatch.setattr(http, "_submit_file_request", fake_submit_file_request)
+
+    result = http.upload_chat_file(upload_file=b"abc", filename="proof.png")
+
+    assert result == {"retCode": 0}
+    assert captured == {
+        "path": "https://api-testnet.bybit.com/v5/p2p/oss/upload_file",
+        "query": {"upload_file": b"abc", "filename": "proof.png"},
+        "auth": True,
+    }
+
+
+def test_prepare_file_payload_supports_file_like_input():
+    file = io.BytesIO(b"image-bytes")
+    file.name = "receipt.png"
+
+    body, content_type = _V5HTTPManager.prepare_file_payload(
+        {"upload_file": file}
+    )
+
+    assert content_type == "multipart/form-data; boundary=boundary-for-file"
+    assert b'name="upload_file"; filename="receipt.png"' in body
+    assert b"Content-Type: image/png" in body
+    assert b"image-bytes" in body
+
+
+def test_prepare_headers_signs_binary_payload(monkeypatch):
+    manager = _V5HTTPManager(api_key="mykey", api_secret="secret")
+    body, content_type = _V5HTTPManager.prepare_file_payload(
+        {"upload_file": b"abc", "filename": "proof.png"}
+    )
+    monkeypatch.setattr(
+        "pybit._http_manager._helpers.generate_timestamp",
+        lambda: 12345,
+    )
+
+    headers = manager._prepare_headers(
+        body,
+        recv_window=5000,
+        content_type=content_type,
+    )
+    expected_signature = hmac.new(
+        bytes("secret", "utf-8"),
+        b"12345mykey5000" + body,
+        hashlib.sha256,
+    ).hexdigest()
+
+    assert headers["Content-Type"] == content_type
+    assert headers["X-BAPI-SIGN"] == expected_signature
+
+
+def test_upload_chat_file_sends_multipart_request(monkeypatch):
+    manager = HTTP(testnet=True, api_key=_api_key, api_secret=_api_secret)
+    monkeypatch.setattr(
+        "pybit._http_manager._helpers.generate_timestamp",
+        lambda: 12345,
+    )
+
+    response = Mock()
+    response.status_code = 200
+    response.headers = {}
+    response.elapsed = 0
+    response.json.return_value = {
+        "retCode": 0,
+        "retMsg": "OK",
+        "result": {"url": "https://example.com/proof.png"},
+        "time": 1234567890,
+    }
+    manager.client.send = Mock(return_value=response)
+
+    result = manager.upload_chat_file(upload_file=b"abc", filename="proof.png")
+    request = manager.client.send.call_args[0][0]
+
+    assert result["retCode"] == 0
+    assert request.method == "POST"
+    assert request.url == (
+        "https://api-testnet.bybit.com/v5/p2p/oss/upload_file"
+    )
+    assert request.headers["Content-Type"] == (
+        "multipart/form-data; boundary=boundary-for-file"
+    )
+    assert b'name="upload_file"; filename="proof.png"' in request.body
+    assert b"abc" in request.body
