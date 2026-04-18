@@ -13,6 +13,7 @@ import websocket
 from pybit._http_manager import _V5HTTPManager
 from pybit._websocket_stream import _WebSocketManager
 from pybit.unified_trading import HTTP
+from pybit.exceptions import InvalidRequestError
 from pybit import _http_manager
 
 _api_key = "CFEJUGQEQPPHGOHGHM"
@@ -390,6 +391,56 @@ def test_submit_request_returns_response_when_retcode_is_ignored():
     assert result["retCode"] == 110043
     assert result["retMsg"] == "leverage not changed"
     assert manager.client.send.call_count == 1
+
+
+def test_submit_request_handles_p2p_error_response_shape():
+    manager = _V5HTTPManager(api_key=_api_key, api_secret=_api_secret)
+
+    response = Mock()
+    response.status_code = 200
+    response.headers = {}
+    response.elapsed = 0
+    response.json.return_value = {
+        "ret_code": 10001,
+        "ret_msg": "parameter error",
+        "result": {},
+    }
+    manager.client.send = Mock(return_value=response)
+
+    with pytest.raises(InvalidRequestError) as exc_info:
+        manager._submit_request(
+            method="POST",
+            path="https://api-testnet.bybit.com/v5/p2p/item/info",
+            query={"itemId": "123"},
+            auth=True,
+        )
+
+    assert "parameter error" in str(exc_info.value)
+
+
+def test_submit_request_accepts_p2p_success_response_shape():
+    manager = _V5HTTPManager(api_key=_api_key, api_secret=_api_secret)
+
+    response = Mock()
+    response.status_code = 200
+    response.headers = {}
+    response.elapsed = 0
+    response.json.return_value = {
+        "ret_code": 0,
+        "ret_msg": "SUCCESS",
+        "result": {"nickName": "tester"},
+    }
+    manager.client.send = Mock(return_value=response)
+
+    result = manager._submit_request(
+        method="POST",
+        path="https://api-testnet.bybit.com/v5/p2p/user/personal/info",
+        query={},
+        auth=True,
+    )
+
+    assert result["ret_code"] == 0
+    assert result["result"] == {"nickName": "tester"}
 
 
 def test_p2p_method_is_available_on_unified_http(http, monkeypatch):

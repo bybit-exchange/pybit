@@ -457,8 +457,8 @@ class _V5HTTPManager:
         except JSONDecodeError as e:
             raise e  # Will be caught by main loop to retry.
 
-        ret_code = "retCode"
-        ret_msg = "retMsg"
+        ret_code = "retCode" if "retCode" in s_json else "ret_code"
+        ret_msg = "retMsg" if "retMsg" in s_json else "ret_msg"
 
         if s_json.get(ret_code):
             error_code = s_json[ret_code]
