@@ -2,7 +2,6 @@ from enum import Enum
 
 
 class P2P(str, Enum):
-    GET_CURRENT_BALANCE = "/v5/asset/transfer/query-account-coins-balance"
     GET_ACCOUNT_INFORMATION = "/v5/p2p/user/personal/info"
     GET_ADS_LIST = "/v5/p2p/item/personal/list"
     GET_AD_DETAILS = "/v5/p2p/item/info"

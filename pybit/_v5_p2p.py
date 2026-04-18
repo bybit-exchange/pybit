@@ -3,25 +3,6 @@ from .p2p import P2P
 
 
 class P2PHTTP(_V5HTTPManager):
-    def get_current_balance(self, **kwargs):
-        """Get current funding account balance for P2P.
-
-        Required args:
-            accountType (string): Account type
-
-        Returns:
-            Request results as dictionary.
-
-        Additional information:
-            https://bybit-exchange.github.io/docs/p2p/all-balance
-        """
-        return self._submit_request(
-            method="GET",
-            path=f"{self.endpoint}{P2P.GET_CURRENT_BALANCE}",
-            query=kwargs,
-            auth=True,
-        )
-
     def get_account_information(self, **kwargs):
         """Get P2P account information.
 
