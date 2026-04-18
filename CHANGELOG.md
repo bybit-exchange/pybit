@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.16.0] - 2026-04-18
+
+### Added
+- *New group:* P2P HTTP endpoints
+  - `get_account_information()`
+  - `get_ads_list()`
+  - `get_ad_details()`
+  - `update_ad()`
+  - `remove_ad()`
+  - `get_orders()`
+  - `get_pending_orders()`
+  - `get_counterparty_info()`
+  - `get_order_details()`
+  - `release_assets()`
+  - `mark_as_paid()`
+  - `get_chat_messages()`
+  - `upload_chat_file()`
+  - `send_chat_message()`
+  - `post_new_ad()`
+  - `get_online_ads()`
+  - `get_user_payment_types()`
+  - `query_chat_session_list()`
+  - `send_message()`
+  - `get_message_list()`
+
+
 ## [5.15.0] - 2026-03-27
 
 Formally release changes from the pre-releases: 5.15.0rc1, 5.15.0rc2.

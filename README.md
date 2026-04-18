@@ -17,7 +17,6 @@ Official Python3 API connector for Bybit's HTTP and WebSockets APIs.
 - [Usage](#usage)
 - [Contact](#contact)
 - [Contributors](#contributors)
-- [Donations](#donations)
 
 ## About
 Put simply, `pybit` (Python + Bybit) is the official lightweight one-stop-shop module for the Bybit HTTP and WebSocket APIs. Originally created by [Verata Veritatis](https://github.com/verata-veritatis), it's now maintained by Bybit employees – however, you're still welcome to contribute!
@@ -69,6 +68,11 @@ payload["request"] = orders
 # Submit the orders in bulk.
 session.place_batch_order(payload)
 ```
+P2P HTTP methods are available from the same unified trading session:
+```python
+session.get_account_information()
+session.get_ads_list()
+```
 Check out the example python files or the list of endpoints below for more information on available
 endpoints and methods. Usage examples on the `HTTP` methods can
 be found in the [examples folder](https://github.com/bybit-exchange/pybit/tree/master/examples).
@@ -96,7 +100,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/tomcru"><img src="https://avatars0.githubusercontent.com/u/35841182?v=4" width="100px;" alt=""/><br /><sub><b>Tom Rumpf</b></sub></a><br /><a href="https://github.com/bybit-exchange/pybit/commits?author=tomcru" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/sheungon"><img src="https://avatars.githubusercontent.com/u/13306724?v=4" width="100px;" alt=""/><br /><sub><b>OnJohn</b></sub></a><br /><a href="https://github.com/bybit-exchange/pybit/commits?author=sheungon" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/tconley"><img src="https://avatars1.githubusercontent.com/u/1893207?v=4" width="100px;" alt=""/><br /><sub><b>Todd Conley</b></sub></a><br /><a href="https://github.com/tconley/pybit/commits?author=tconley" title="Ideas">🤔</a></td>
-    <td align="center"><a href="https://github.com/kolya5544"><img src="https://avatars.githubusercontent.com/u/20096248?v=4" width="100px;" alt=""/><br /><sub><b>Kolya</b></sub></a><br /><a href="https://github.com/bybit-exchange/pybit/commits?author=kolya5544" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/kolya5544"><img src="https://avatars.githubusercontent.com/u/20096248?v=4" width="100px;" alt=""/><br /><sub><b>Kolya</b></sub></a><br /><a href="https://github.com/bybit-exchange/pybit/commits?author=kolya5544" title="Code">💻</a> <a href="https://github.com/bybit-exchange/pybit/commits?author=kolya5544" title="Documentation">📖</a></td>
 
   </tr>
 </table>
