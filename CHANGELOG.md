@@ -5,6 +5,85 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.16.0] - 2026-04-18
+
+### Added
+- *New group:* P2P HTTP endpoints
+  - `get_account_information()`
+  - `get_ads_list()`
+  - `get_ad_details()`
+  - `update_ad()`
+  - `remove_ad()`
+  - `get_orders()`
+  - `get_pending_orders()`
+  - `get_counterparty_info()`
+  - `get_order_details()`
+  - `release_assets()`
+  - `mark_as_paid()`
+  - `get_chat_messages()`
+  - `upload_chat_file()`
+  - `send_chat_message()`
+  - `post_new_ad()`
+  - `get_online_ads()`
+  - `get_user_payment_types()`
+  - `query_chat_session_list()`
+  - `send_message()`
+  - `get_message_list()`
+
+
+## [5.15.0] - 2026-03-27
+
+Formally release changes from the pre-releases: 5.15.0rc1, 5.15.0rc2.
+
+In addition:
+
+### Fixed
+- HTTP retry logic for retriable Bybit API errors, so that retryable `retCode`s now perform another request instead of raising `Exception: Retryable error occurred, retrying...`
+- HTTP retry logic for `retCode` `10002`, so that the expanded `recv_window` is carried into the next retry attempt
+- WebSocket `exit()` so that it cancels the scheduled custom ping and does not raise `WebSocketConnectionClosedException` after shutdown
+- WebSocket connect and exit loops so that they do not busy-wait on socket state changes
+
+
+## [5.15.0rc2] - 2026-03-18
+
+### Added
+- Account HTTP endpoint `set_delta_mode()`
+- Asset HTTP endpoints
+  - `get_asset_overview()`
+  - `get_funding_acc_history()`
+- Fiat convert HTTP endpoints
+  - `get_fiat_balance()`
+  - `get_fiat_trading_pair_list()`
+  - `get_fiat_convert_history()`
+  - `request_a_quote_fiat_convert()`
+  - `get_fiat_reference_price()`
+  - `confirm_a_quote_fiat_convert()`
+  - `get_fiat_convert_status()`
+- Broker HTTP endpoints
+  - `get_broker_all_rate_limits()`
+  - `get_broker_rate_limit_cap()`
+  - `set_broker_rate_limit()`
+- Crypto Loan HTTP endpoint `get_max_loan_amount_new_crypto_loan()`
+- Position HTTP endpoint `confirm_new_risk_limit()`
+- Spot Margin Trading HTTP endpoint `spot_margin_trade_get_currency_data()`
+- User HTTP endpoints
+  - `sign_agreement()`
+  - `get_friend_referrals()`
+
+### Changed
+- Account HTTP endpoint `set_no_convert_repay()` to `manual_no_convert_repay()`, to match the API's current semantics
+- Account HTTP endpoint `get_instruments_info()` to `get_account_instruments_info()`, to avoid ambiguity with other product groups
+- Account HTTP endpoint `set_hedging_mode()` so that its arg is `setHedgingMode` with values `ON` or `OFF`
+- Spread Trading HTTP endpoint names to be prefixed with `spread_`, to avoid clashing with the unified trading methods
+
+
+## [5.15.0rc1] - 2026-03-14
+
+### Changed
+- Dropped Python 3.6 to 3.9 support, as these versions have reached EOL
+- `pybit` now requires Python 3.10 or higher
+
+
 ## [5.14.0] - 2026-02-06
 
 Formally release changes from the pre-releases: 5.14.0rc0, 5.14.0rc1, 5.14.0rc2.

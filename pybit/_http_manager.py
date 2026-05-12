@@ -9,6 +9,7 @@ from Crypto.Signature import PKCS1_v1_5
 import base64
 import json
 import logging
+import os
 import requests
 
 from datetime import datetime as dt, timezone
@@ -37,6 +38,12 @@ TLD_KZ = "kz"           # Kazakhstan
 TLD_EU = "eu"           # European Economic Area. ONLY AVAILABLE TO INSTITUTIONS
 
 
+class _RetryableRequestError(Exception):
+    def __init__(self, recv_window):
+        self.recv_window = recv_window
+        super().__init__("Retryable error occurred, retrying...")
+
+
 def generate_signature(use_rsa_authentication, secret, param_str):
     def generate_hmac():
         hash = hmac.new(
@@ -48,6 +55,30 @@ def generate_signature(use_rsa_authentication, secret, param_str):
 
     def generate_rsa():
         hash = SHA256.new(param_str.encode("utf-8"))
+        encoded_signature = base64.b64encode(
+            PKCS1_v1_5.new(RSA.importKey(secret)).sign(
+                hash
+            )
+        )
+        return encoded_signature.decode()
+
+    if not use_rsa_authentication:
+        return generate_hmac()
+    else:
+        return generate_rsa()
+
+
+def generate_signature_binary(use_rsa_authentication, secret, param_bytes):
+    def generate_hmac():
+        hash = hmac.new(
+            bytes(secret, "utf-8"),
+            param_bytes,
+            hashlib.sha256,
+        )
+        return hash.hexdigest()
+
+    def generate_rsa():
+        hash = SHA256.new(param_bytes)
         encoded_signature = base64.b64encode(
             PKCS1_v1_5.new(RSA.importKey(secret)).sign(
                 hash
@@ -174,6 +205,22 @@ class _V5HTTPManager:
             self.rsa_authentication, self.api_secret, param_str
         )
 
+    def _auth_binary(self, payload, recv_window, timestamp):
+        """
+        Prepares authentication signature for binary request bodies.
+        """
+
+        if self.api_key is None or self.api_secret is None:
+            raise PermissionError("Authenticated endpoints require keys.")
+
+        param_bytes = (
+            str(timestamp) + self.api_key + str(recv_window)
+        ).encode("utf-8") + payload
+
+        return generate_signature_binary(
+            self.rsa_authentication, self.api_secret, param_bytes
+        )
+
     def _submit_request(self, method=None, path=None, query=None, auth=False):
         """
         Submits the request to the API.
@@ -196,6 +243,9 @@ class _V5HTTPManager:
 
                 return self._handle_response(response, method, path, req_params, recv_window, retries_attempted)
 
+            except _RetryableRequestError as e:
+                recv_window = e.recv_window
+                continue
             except (requests.exceptions.ReadTimeout, requests.exceptions.SSLError,
                     requests.exceptions.ConnectionError) as e:
                 self._handle_network_error(e, retries_attempted)
@@ -204,6 +254,69 @@ class _V5HTTPManager:
 
         raise FailedRequestError(
             request=f"{method} {path}: {req_params}",
+            message="Bad Request. Retries exceeded maximum.",
+            status_code=400,
+            time=dt.now(timezone.utc).strftime("%H:%M:%S"),
+            resp_headers=None,
+        )
+
+    def _submit_file_request(self, path=None, query=None, auth=True):
+        """
+        Submits an authenticated multipart file request to the API.
+        """
+        query = self._clean_query(query)
+        recv_window = self.recv_window
+        retries_attempted = self.max_retries
+
+        while retries_attempted > 0:
+            retries_attempted -= 1
+            try:
+                req_params, content_type = self.prepare_file_payload(query)
+                headers = (
+                    self._prepare_headers(
+                        req_params,
+                        recv_window,
+                        content_type=content_type,
+                    )
+                    if auth else {}
+                )
+
+                request = self._prepare_request(
+                    "POST",
+                    path,
+                    req_params,
+                    headers,
+                )
+                self._log_request("POST", path, "<binary payload>", request.headers)
+
+                response = self.client.send(request, timeout=self.timeout)
+                self._check_status_code(
+                    response,
+                    "POST",
+                    path,
+                    "<binary payload>",
+                )
+
+                return self._handle_response(
+                    response,
+                    "POST",
+                    path,
+                    "<binary payload>",
+                    recv_window,
+                    retries_attempted,
+                )
+
+            except _RetryableRequestError as e:
+                recv_window = e.recv_window
+                continue
+            except (requests.exceptions.ReadTimeout, requests.exceptions.SSLError,
+                    requests.exceptions.ConnectionError) as e:
+                self._handle_network_error(e, retries_attempted)
+            except JSONDecodeError as e:
+                self._handle_json_error(e, retries_attempted)
+
+        raise FailedRequestError(
+            request=f"POST {path}: <binary payload>",
             message="Bad Request. Retries exceeded maximum.",
             status_code=400,
             time=dt.now(timezone.utc).strftime("%H:%M:%S"),
@@ -219,18 +332,95 @@ class _V5HTTPManager:
                 query[key] = int(query[key])
         return {k: v for k, v in query.items() if v is not None}
 
-    def _prepare_headers(self, payload, recv_window):
+    def _prepare_headers(self, payload, recv_window, content_type="application/json"):
         """Prepare headers for authenticated request."""
         timestamp = _helpers.generate_timestamp()
-        signature = self._auth(payload=payload, recv_window=recv_window, timestamp=timestamp)
+        if isinstance(payload, bytes):
+            signature = self._auth_binary(
+                payload=payload,
+                recv_window=recv_window,
+                timestamp=timestamp,
+            )
+        else:
+            signature = self._auth(
+                payload=payload,
+                recv_window=recv_window,
+                timestamp=timestamp,
+            )
         return {
-            "Content-Type": "application/json",
+            "Content-Type": content_type,
             "X-BAPI-API-KEY": self.api_key,
             "X-BAPI-SIGN": signature,
             "X-BAPI-SIGN-TYPE": "2",
             "X-BAPI-TIMESTAMP": str(timestamp),
             "X-BAPI-RECV-WINDOW": str(recv_window),
         }
+
+    @staticmethod
+    def _normalize_upload_input(upload_file, filename=None):
+        if isinstance(upload_file, (bytes, bytearray, memoryview)):
+            if not filename:
+                raise ValueError("filename is required when passing raw bytes.")
+            return bytes(upload_file), filename
+
+        if isinstance(upload_file, (str, os.PathLike)):
+            path = os.fspath(upload_file)
+            with open(path, "rb") as file:
+                return file.read(), filename or os.path.basename(path)
+
+        if hasattr(upload_file, "read"):
+            position = None
+            if hasattr(upload_file, "tell") and hasattr(upload_file, "seek"):
+                try:
+                    position = upload_file.tell()
+                except Exception:
+                    position = None
+
+            data = upload_file.read()
+            if position is not None:
+                try:
+                    upload_file.seek(position)
+                except Exception:
+                    pass
+
+            filename = filename or getattr(upload_file, "name", None)
+            if not filename:
+                raise ValueError(
+                    "filename is required when passing a file-like without name."
+                )
+            if isinstance(data, str):
+                data = data.encode("utf-8")
+            return data, os.path.basename(str(filename))
+
+        raise TypeError(f"Unsupported upload_file type: {type(upload_file)!r}")
+
+    @classmethod
+    def prepare_file_payload(cls, parameters):
+        """
+        Prepares multipart payload for authenticated file uploads.
+        """
+        if "upload_file" not in parameters:
+            raise ValueError("Missing required parameter: upload_file")
+
+        data, filename = cls._normalize_upload_input(
+            parameters["upload_file"],
+            filename=parameters.get("filename"),
+        )
+        boundary = "boundary-for-file"
+        content_type = f"multipart/form-data; boundary={boundary}"
+        body = b"".join(
+            [
+                f"--{boundary}\r\n".encode("utf-8"),
+                (
+                    'Content-Disposition: form-data; name="upload_file"; '
+                    f'filename="{filename}"\r\n'
+                ).encode("utf-8"),
+                b"Content-Type: image/png\r\n\r\n",
+                data,
+                f"\r\n--{boundary}--\r\n".encode("utf-8"),
+            ]
+        )
+        return body, content_type
 
     def _prepare_request(self, method, path, params, headers):
         """Prepare request object."""
@@ -267,16 +457,18 @@ class _V5HTTPManager:
         except JSONDecodeError as e:
             raise e  # Will be caught by main loop to retry.
 
-        ret_code = "retCode"
-        ret_msg = "retMsg"
+        ret_code = "retCode" if "retCode" in s_json else "ret_code"
+        ret_msg = "retMsg" if "retMsg" in s_json else "ret_msg"
 
         if s_json.get(ret_code):
             error_code = s_json[ret_code]
             error_msg = f"{s_json[ret_msg]} (ErrCode: {error_code})"
 
             if error_code in self.retry_codes:
-                self._handle_retryable_error(response, error_code, error_msg, recv_window)
-                raise Exception("Retryable error occurred, retrying...")
+                recv_window = self._handle_retryable_error(
+                    response, error_code, error_msg, recv_window
+                )
+                raise _RetryableRequestError(recv_window)
 
             if error_code not in self.ignore_codes:
                 raise InvalidRequestError(
@@ -306,13 +498,19 @@ class _V5HTTPManager:
             recv_window += 2500
         elif error_code == 10006:  # rate limit error
             self.logger.error(f"{error_msg}. Hit the API rate limit on {response.url}. Sleeping then trying again.")
-            limit_reset_time = int(response.headers["X-Bapi-Limit-Reset-Timestamp"])
+            limit_reset_time = int(
+                response.headers.get(
+                    "X-Bapi-Limit-Reset-Timestamp",
+                    _helpers.generate_timestamp() + 2000
+                )
+            )
             limit_reset_str = dt.fromtimestamp(limit_reset_time / 10 ** 3).strftime("%H:%M:%S.%f")[:-3]
             delay_time = (limit_reset_time - _helpers.generate_timestamp()) / 10 ** 3
             error_msg = f"API rate limit will reset at {limit_reset_str}. Sleeping for {int(delay_time * 10 ** 3)} ms"
 
         self.logger.error(f"{error_msg}. Retrying...")
         time.sleep(delay_time)
+        return recv_window
 
     def _handle_network_error(self, error, retries_attempted):
         """Handle network-related exceptions."""

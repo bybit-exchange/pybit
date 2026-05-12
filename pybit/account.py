@@ -19,7 +19,7 @@ class Account(str, Enum):
     SET_MMP = "/v5/account/mmp-modify"
     RESET_MMP = "/v5/account/mmp-reset"
     GET_MMP_STATE = "/v5/account/mmp-state"
-    SET_NO_CONVERT_REPAY = "/v5/account/no-convert-repay"
+    NO_CONVERT_REPAY = "/v5/account/no-convert-repay"
     BORROW = "/v5/account/borrow"
     GET_INSTRUMENTS_INFO = "/v5/account/instruments-info"
     REPAY = "/v5/account/repay"
@@ -28,6 +28,7 @@ class Account(str, Enum):
     GET_SMP_GROUP = "/v5/account/smp-group"
     GET_USER_SETTING_CONFIG = "/v5/account/user-setting-config"
     SET_LIMIT_PRICE_ACTION = "/v5/account/set-limit-px-action"
+    SET_DELTA_MODE = "/v5/account/set-delta-mode"
 
     def __str__(self) -> str:
         return self.value

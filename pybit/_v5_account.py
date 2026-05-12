@@ -315,11 +315,12 @@ class AccountHTTP(_V5HTTPManager):
             auth=True,
         )
 
-    def set_no_convert_repay(self, **kwargs):
-        """Turn off auto repayment using liability. Available only for UTA 2.0.
+    def manual_no_convert_repay(self, **kwargs):
+        """Manual Repay Without Asset Conversion
 
         Required args:
-            noConvertRepay (string): "on" or "off"
+            coin (string): coin name, uppercase only
+            amount (string): Repay amount.
 
         Returns:
             Request results as dictionary.
@@ -329,7 +330,7 @@ class AccountHTTP(_V5HTTPManager):
         """
         return self._submit_request(
             method="POST",
-            path=f"{self.endpoint}{Account.SET_NO_CONVERT_REPAY}",
+            path=f"{self.endpoint}{Account.NO_CONVERT_REPAY}",
             query=kwargs,
             auth=True,
         )
@@ -354,7 +355,7 @@ class AccountHTTP(_V5HTTPManager):
             auth=True,
         )
 
-    def get_instruments_info(self, **kwargs):
+    def get_account_instruments_info(self, **kwargs):
         """Get available instruments info for unified account.
 
         Returns:
@@ -410,7 +411,7 @@ class AccountHTTP(_V5HTTPManager):
         """Set hedging mode for the account.
 
         Required args:
-            hedgingMode (string): "on" or "off"
+            setHedgingMode (string): "ON" or "OFF"
 
         Returns:
             Request results as dictionary.
@@ -474,6 +475,27 @@ class AccountHTTP(_V5HTTPManager):
         return self._submit_request(
             method="POST",
             path=f"{self.endpoint}{Account.SET_LIMIT_PRICE_ACTION}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def set_delta_mode(self, **kwargs):
+        """Delta Neutral Mode is designed to enhance the trading experience for users running delta-neutral strategies.
+
+        Required args:
+            deltaEnable (string):
+                "1": enable
+                "0": disable
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/account/set-delta-mode
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Account.SET_DELTA_MODE}",
             query=kwargs,
             auth=True,
         )

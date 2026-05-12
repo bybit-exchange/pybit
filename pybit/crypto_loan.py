@@ -22,6 +22,7 @@ class CryptoLoan(str, Enum):
     ADJUST_COLLATERAL_AMOUNT_NEW_CRYPTO_LOAN = "/v5/crypto-loan-common/adjust-ltv"
     GET_LTV_ADJUSTMENT_HISTORY_NEW_CRYPTO_LOAN = "/v5/crypto-loan-common/adjustment-history"
     GET_POSITION_NEW_CRYPTO_LOAN = "/v5/crypto-loan-common/position"
+    GET_MAX_LOAN_AMOUNT_NEW_CRYPTO_LOAN = "/v5/crypto-loan-common/max-loan"
 
     # Flexible loans
     BORROW_FLEXIBLE_CRYPTO_LOAN = "/v5/crypto-loan-flexible/borrow"

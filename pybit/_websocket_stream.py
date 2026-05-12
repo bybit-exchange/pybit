@@ -19,6 +19,7 @@ DEMO_SUBDOMAIN_MAINNET = "stream-demo"
 DOMAIN_MAIN = "bybit"
 DOMAIN_ALT = "bytick"
 TLD_MAIN = "com"
+SOCKET_WAIT_INTERVAL = 0.01
 
 
 class _WebSocketManager:
@@ -71,6 +72,7 @@ class _WebSocketManager:
         self.ping_interval = ping_interval
         self.ping_timeout = ping_timeout
         self.custom_ping_message = json.dumps({"op": "ping"})
+        self.custom_ping_timer = None
         self.retries = retries
 
         # Other optional data handling settings.
@@ -173,6 +175,7 @@ class _WebSocketManager:
             while self.wst.is_alive():
                 if self.ws.sock and self.is_connected():
                     break
+                time.sleep(SOCKET_WAIT_INTERVAL)
 
             # If connection was not successful, raise error.
             if not infinitely_reconnect and retries <= 0:
@@ -258,14 +261,29 @@ class _WebSocketManager:
         self._send_custom_ping()
 
     def _send_custom_ping(self):
-        self.ws.send(self.custom_ping_message)
+        if self.exited or not self.is_connected():
+            return
+
+        try:
+            self.ws.send(self.custom_ping_message)
+        except websocket.WebSocketConnectionClosedException:
+            logger.debug(
+                f"WebSocket {self.ws_name} closed before custom ping could be sent."
+            )
 
     def _send_initial_ping(self):
         """https://github.com/bybit-exchange/pybit/issues/164"""
-        timer = threading.Timer(
+        self._stop_custom_ping_timer()
+        self.custom_ping_timer = threading.Timer(
             self.ping_interval, self._send_custom_ping
         )
-        timer.start()
+        self.custom_ping_timer.daemon = True
+        self.custom_ping_timer.start()
+
+    def _stop_custom_ping_timer(self):
+        if self.custom_ping_timer is not None:
+            self.custom_ping_timer.cancel()
+            self.custom_ping_timer = None
 
     @staticmethod
     def _is_custom_pong(message):
@@ -279,6 +297,7 @@ class _WebSocketManager:
         """
         Set state booleans and initialize dictionary.
         """
+        self._stop_custom_ping_timer()
         self.exited = False
         self.auth = False
         self.data = {}
@@ -287,11 +306,15 @@ class _WebSocketManager:
         """
         Closes the websocket connection.
         """
+        self.exited = True
+        self._stop_custom_ping_timer()
+
+        if not hasattr(self, "ws"):
+            return
 
         self.ws.close()
         while self.ws.sock:
-            continue
-        self.exited = True
+            time.sleep(SOCKET_WAIT_INTERVAL)
 
 
 class _V5WebSocketManager(_WebSocketManager):

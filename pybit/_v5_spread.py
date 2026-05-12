@@ -8,7 +8,7 @@ PUBLIC_WSS = "wss://{SUBDOMAIN}.{DOMAIN}.com/v5/public/spread"
 
 
 class SpreadHTTP(_V5HTTPManager):
-    def get_instruments_info(self, **kwargs) -> dict:
+    def spread_get_instruments_info(self, **kwargs) -> dict:
         """
         Returns:
             Request results as dictionary.
@@ -23,7 +23,7 @@ class SpreadHTTP(_V5HTTPManager):
         )
         return request
 
-    def get_orderbook(self, **kwargs) -> dict:
+    def spread_get_orderbook(self, **kwargs) -> dict:
         """
         Returns:
             Request results as dictionary.
@@ -37,7 +37,7 @@ class SpreadHTTP(_V5HTTPManager):
             query=kwargs,
         )
 
-    def get_tickers(self, **kwargs) -> dict:
+    def spread_get_tickers(self, **kwargs) -> dict:
         """
         Returns:
             Request results as dictionary.
@@ -51,7 +51,7 @@ class SpreadHTTP(_V5HTTPManager):
             query=kwargs,
         )
 
-    def get_public_trade_history(self, **kwargs) -> dict:
+    def spread_get_public_trade_history(self, **kwargs) -> dict:
         """
         Returns:
             Request results as dictionary.
@@ -65,7 +65,7 @@ class SpreadHTTP(_V5HTTPManager):
             query=kwargs,
         )
 
-    def place_order(self, **kwargs) -> dict:
+    def spread_place_order(self, **kwargs) -> dict:
         """
         Required args:
             category (string): Product type Unified account: spot, linear, optionNormal account: linear, inverse. Please note that category is not involved with business logic
@@ -86,7 +86,7 @@ class SpreadHTTP(_V5HTTPManager):
             auth=True,
         )
 
-    def amend_order(self, **kwargs) -> dict:
+    def spread_amend_order(self, **kwargs) -> dict:
         """
         Required args:
             symbol (string): Spread combination symbol name
@@ -104,7 +104,7 @@ class SpreadHTTP(_V5HTTPManager):
             auth=True,
         )
 
-    def cancel_order(self, **kwargs) -> dict:
+    def spread_cancel_order(self, **kwargs) -> dict:
         """
         Returns:
             Request results as dictionary.
@@ -119,7 +119,7 @@ class SpreadHTTP(_V5HTTPManager):
             auth=True,
         )
 
-    def cancel_all_orders(self, **kwargs) -> dict:
+    def spread_cancel_all_orders(self, **kwargs) -> dict:
         """
         Returns:
             Request results as dictionary.
@@ -134,7 +134,7 @@ class SpreadHTTP(_V5HTTPManager):
             auth=True,
         )
 
-    def get_open_orders(self, **kwargs) -> dict:
+    def spread_get_open_orders(self, **kwargs) -> dict:
         """
         Returns:
             Request results as dictionary.
@@ -149,7 +149,7 @@ class SpreadHTTP(_V5HTTPManager):
             auth=True,
         )
 
-    def get_order_history(self, **kwargs) -> dict:
+    def spread_get_order_history(self, **kwargs) -> dict:
         """
         Returns:
             Request results as dictionary.
@@ -164,7 +164,7 @@ class SpreadHTTP(_V5HTTPManager):
             auth=True,
         )
 
-    def get_trade_history(self, **kwargs) -> dict:
+    def spread_get_trade_history(self, **kwargs) -> dict:
         """
         Returns:
             Request results as dictionary.

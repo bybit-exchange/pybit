@@ -18,6 +18,8 @@ class User(str, Enum):
     DELETE_SUB_UID = "/v5/user/del-submember"
     GET_ALL_SUB_API_KEYS = "/v5/user/sub-apikeys"
     GET_ESCROW_SUB_MEMBERS = "/v5/user/escrow_sub_members"
+    SIGN_AGREEMENT = "/v5/user/agreement"
+    GET_FRIEND_REFERRALS = "/v5/user/invitation/referrals"
 
     def __str__(self) -> str:
         return self.value

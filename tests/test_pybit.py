@@ -1,14 +1,19 @@
 import logging
+import io
 
 import pytest
 import hmac
 import hashlib
 from collections import defaultdict
+from unittest.mock import Mock
 
 import requests
+import websocket
 
 from pybit._http_manager import _V5HTTPManager
+from pybit._websocket_stream import _WebSocketManager
 from pybit.unified_trading import HTTP
+from pybit.exceptions import InvalidRequestError
 from pybit import _http_manager
 
 _api_key = "CFEJUGQEQPPHGOHGHM"
@@ -140,3 +145,411 @@ def test_logger_handler_attached():
     finally:
         # restore original handlers
         root.handlers = old_handlers
+
+
+class _FakeSock:
+    def __init__(self, connected=True):
+        self.connected = connected
+
+
+class _FakeWS:
+    def __init__(self, connected=True, send_error=None):
+        self.sock = _FakeSock(connected=connected)
+        self.send_error = send_error
+        self.sent_messages = []
+        self.closed = False
+
+    def send(self, message):
+        if self.send_error is not None:
+            raise self.send_error
+        self.sent_messages.append(message)
+
+    def close(self):
+        self.closed = True
+        self.sock = None
+
+
+class _FakeTimer:
+    def __init__(self):
+        self.daemon = False
+        self.started = False
+        self.cancelled = False
+
+    def start(self):
+        self.started = True
+
+    def cancel(self):
+        self.cancelled = True
+
+
+def test_websocket_exit_cancels_custom_ping_timer():
+    manager = _WebSocketManager(
+        lambda _: None,
+        "Test WS",
+        testnet=False,
+    )
+    manager.ws = _FakeWS()
+    timer = _FakeTimer()
+    manager.custom_ping_timer = timer
+
+    manager.exit()
+
+    assert manager.exited is True
+    assert timer.cancelled is True
+    assert manager.custom_ping_timer is None
+    assert manager.ws.closed is True
+
+
+def test_send_custom_ping_ignores_closed_connection():
+    manager = _WebSocketManager(
+        lambda _: None,
+        "Test WS",
+        testnet=False,
+    )
+    manager.ws = _FakeWS(
+        connected=True,
+        send_error=websocket.WebSocketConnectionClosedException(
+            "Connection is already closed."
+        ),
+    )
+
+    manager._send_custom_ping()
+
+
+def test_send_custom_ping_skips_disconnected_socket():
+    manager = _WebSocketManager(
+        lambda _: None,
+        "Test WS",
+        testnet=False,
+    )
+    manager.ws = _FakeWS(connected=False)
+
+    manager._send_custom_ping()
+
+    assert manager.ws.sent_messages == []
+
+
+def test_websocket_exit_waits_with_sleep_until_socket_closes(monkeypatch):
+    manager = _WebSocketManager(
+        lambda _: None,
+        "Test WS",
+        testnet=False,
+    )
+
+    class _SlowCloseWS:
+        def __init__(self):
+            self._sock = object()
+            self.close_called = False
+
+        @property
+        def sock(self):
+            return self._sock
+
+        @sock.setter
+        def sock(self, value):
+            self._sock = value
+
+        def close(self):
+            self.close_called = True
+
+    manager.ws = _SlowCloseWS()
+    sleep_calls = []
+
+    def fake_sleep(delay):
+        sleep_calls.append(delay)
+        manager.ws.sock = None
+
+    monkeypatch.setattr("pybit._websocket_stream.time.sleep", fake_sleep)
+
+    manager.exit()
+
+    assert manager.ws.close_called is True
+    assert sleep_calls == [0.01]
+
+
+def test_submit_request_retries_when_retcode_is_retryable():
+    manager = _V5HTTPManager(api_key=_api_key, api_secret=_api_secret)
+    manager.retry_delay = 0
+
+    first_response = Mock()
+    first_response.status_code = 200
+    first_response.headers = {}
+    first_response.elapsed = 0
+    first_response.url = "https://api.bybit.com/v5/order/realtime"
+    first_response.json.return_value = {
+        "retCode": 10006,
+        "retMsg": "Too many visits",
+        "result": {},
+        "time": 1234567890,
+    }
+
+    second_response = Mock()
+    second_response.status_code = 200
+    second_response.headers = {}
+    second_response.elapsed = 0
+    second_response.url = "https://api.bybit.com/v5/order/realtime"
+    second_response.json.return_value = {
+        "retCode": 0,
+        "retMsg": "OK",
+        "result": {"list": []},
+        "time": 1234567891,
+    }
+
+    manager.client.send = Mock(side_effect=[first_response, second_response])
+
+    result = manager._submit_request(
+        method="GET",
+        path="https://api.bybit.com/v5/order/realtime",
+        query={"category": "linear"},
+        auth=True,
+    )
+
+    assert result["retCode"] == 0
+    assert manager.client.send.call_count == 2
+
+
+def test_submit_request_retries_with_expanded_recv_window_after_10002():
+    manager = _V5HTTPManager(api_key=_api_key, api_secret=_api_secret)
+    manager.retry_delay = 0
+
+    first_response = Mock()
+    first_response.status_code = 200
+    first_response.headers = {}
+    first_response.elapsed = 0
+    first_response.url = "https://api.bybit.com/v5/order/realtime"
+    first_response.json.return_value = {
+        "retCode": 10002,
+        "retMsg": "invalid request, please check your server timestamp or recv_window param",
+        "result": {},
+        "time": 1234567890,
+    }
+
+    second_response = Mock()
+    second_response.status_code = 200
+    second_response.headers = {}
+    second_response.elapsed = 0
+    second_response.url = "https://api.bybit.com/v5/order/realtime"
+    second_response.json.return_value = {
+        "retCode": 0,
+        "retMsg": "OK",
+        "result": {"list": []},
+        "time": 1234567891,
+    }
+
+    captured_recv_windows = []
+
+    def fake_prepare_headers(payload, recv_window):
+        captured_recv_windows.append(recv_window)
+        return {}
+
+    manager._prepare_headers = fake_prepare_headers
+    manager.client.send = Mock(side_effect=[first_response, second_response])
+
+    result = manager._submit_request(
+        method="GET",
+        path="https://api.bybit.com/v5/order/realtime",
+        query={"category": "linear"},
+        auth=True,
+    )
+
+    assert result["retCode"] == 0
+    assert manager.client.send.call_count == 2
+    assert captured_recv_windows == [5000, 7500]
+
+
+def test_submit_request_returns_response_when_retcode_is_ignored():
+    manager = _V5HTTPManager(api_key=_api_key, api_secret=_api_secret)
+    manager.ignore_codes.add(110043)
+
+    ignored_response = Mock()
+    ignored_response.status_code = 200
+    ignored_response.headers = {}
+    ignored_response.elapsed = 0
+    ignored_response.url = "https://api-testnet.bybit.com/v5/position/set-leverage"
+    ignored_response.json.return_value = {
+        "retCode": 110043,
+        "retMsg": "leverage not changed",
+        "result": {},
+        "retExtInfo": {},
+        "time": 1234567890,
+    }
+
+    manager.client.send = Mock(return_value=ignored_response)
+
+    result = manager._submit_request(
+        method="POST",
+        path="https://api-testnet.bybit.com/v5/position/set-leverage",
+        query={
+            "category": "linear",
+            "symbol": "BTCUSDT",
+            "buyLeverage": "10",
+            "sellLeverage": "10",
+        },
+        auth=True,
+    )
+
+    assert result["retCode"] == 110043
+    assert result["retMsg"] == "leverage not changed"
+    assert manager.client.send.call_count == 1
+
+
+def test_submit_request_handles_p2p_error_response_shape():
+    manager = _V5HTTPManager(api_key=_api_key, api_secret=_api_secret)
+
+    response = Mock()
+    response.status_code = 200
+    response.headers = {}
+    response.elapsed = 0
+    response.json.return_value = {
+        "ret_code": 10001,
+        "ret_msg": "parameter error",
+        "result": {},
+    }
+    manager.client.send = Mock(return_value=response)
+
+    with pytest.raises(InvalidRequestError) as exc_info:
+        manager._submit_request(
+            method="POST",
+            path="https://api-testnet.bybit.com/v5/p2p/item/info",
+            query={"itemId": "123"},
+            auth=True,
+        )
+
+    assert "parameter error" in str(exc_info.value)
+
+
+def test_submit_request_accepts_p2p_success_response_shape():
+    manager = _V5HTTPManager(api_key=_api_key, api_secret=_api_secret)
+
+    response = Mock()
+    response.status_code = 200
+    response.headers = {}
+    response.elapsed = 0
+    response.json.return_value = {
+        "ret_code": 0,
+        "ret_msg": "SUCCESS",
+        "result": {"nickName": "tester"},
+    }
+    manager.client.send = Mock(return_value=response)
+
+    result = manager._submit_request(
+        method="POST",
+        path="https://api-testnet.bybit.com/v5/p2p/user/personal/info",
+        query={},
+        auth=True,
+    )
+
+    assert result["ret_code"] == 0
+    assert result["result"] == {"nickName": "tester"}
+
+
+def test_p2p_method_is_available_on_unified_http(http, monkeypatch):
+    captured = {}
+
+    def fake_submit_request(**kwargs):
+        captured.update(kwargs)
+        return {"retCode": 0}
+
+    monkeypatch.setattr(http, "_submit_request", fake_submit_request)
+
+    result = http.get_ad_details(itemId="123")
+
+    assert result == {"retCode": 0}
+    assert captured == {
+        "method": "POST",
+        "path": "https://api-testnet.bybit.com/v5/p2p/item/info",
+        "query": {"itemId": "123"},
+        "auth": True,
+    }
+
+
+def test_upload_chat_file_is_available_on_unified_http(http, monkeypatch):
+    captured = {}
+
+    def fake_submit_file_request(**kwargs):
+        captured.update(kwargs)
+        return {"retCode": 0}
+
+    monkeypatch.setattr(http, "_submit_file_request", fake_submit_file_request)
+
+    result = http.upload_chat_file(upload_file=b"abc", filename="proof.png")
+
+    assert result == {"retCode": 0}
+    assert captured == {
+        "path": "https://api-testnet.bybit.com/v5/p2p/oss/upload_file",
+        "query": {"upload_file": b"abc", "filename": "proof.png"},
+        "auth": True,
+    }
+
+
+def test_prepare_file_payload_supports_file_like_input():
+    file = io.BytesIO(b"image-bytes")
+    file.name = "receipt.png"
+
+    body, content_type = _V5HTTPManager.prepare_file_payload(
+        {"upload_file": file}
+    )
+
+    assert content_type == "multipart/form-data; boundary=boundary-for-file"
+    assert b'name="upload_file"; filename="receipt.png"' in body
+    assert b"Content-Type: image/png" in body
+    assert b"image-bytes" in body
+
+
+def test_prepare_headers_signs_binary_payload(monkeypatch):
+    manager = _V5HTTPManager(api_key="mykey", api_secret="secret")
+    body, content_type = _V5HTTPManager.prepare_file_payload(
+        {"upload_file": b"abc", "filename": "proof.png"}
+    )
+    monkeypatch.setattr(
+        "pybit._http_manager._helpers.generate_timestamp",
+        lambda: 12345,
+    )
+
+    headers = manager._prepare_headers(
+        body,
+        recv_window=5000,
+        content_type=content_type,
+    )
+    expected_signature = hmac.new(
+        bytes("secret", "utf-8"),
+        b"12345mykey5000" + body,
+        hashlib.sha256,
+    ).hexdigest()
+
+    assert headers["Content-Type"] == content_type
+    assert headers["X-BAPI-SIGN"] == expected_signature
+
+
+def test_upload_chat_file_sends_multipart_request(monkeypatch):
+    manager = HTTP(testnet=True, api_key=_api_key, api_secret=_api_secret)
+    monkeypatch.setattr(
+        "pybit._http_manager._helpers.generate_timestamp",
+        lambda: 12345,
+    )
+
+    response = Mock()
+    response.status_code = 200
+    response.headers = {}
+    response.elapsed = 0
+    response.json.return_value = {
+        "retCode": 0,
+        "retMsg": "OK",
+        "result": {"url": "https://example.com/proof.png"},
+        "time": 1234567890,
+    }
+    manager.client.send = Mock(return_value=response)
+
+    result = manager.upload_chat_file(upload_file=b"abc", filename="proof.png")
+    request = manager.client.send.call_args[0][0]
+
+    assert result["retCode"] == 0
+    assert request.method == "POST"
+    assert request.url == (
+        "https://api-testnet.bybit.com/v5/p2p/oss/upload_file"
+    )
+    assert request.headers["Content-Type"] == (
+        "multipart/form-data; boundary=boundary-for-file"
+    )
+    assert b'name="upload_file"; filename="proof.png"' in request.body
+    assert b"abc" in request.body
