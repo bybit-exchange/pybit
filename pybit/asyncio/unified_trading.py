@@ -15,7 +15,10 @@ from pybit.asyncio.http import (
     AsyncEarnHTTP,
     AsyncRateLimitHTTP,
     AsyncFiatHTTP,
-    AsyncRFQHTTP
+    AsyncRFQHTTP,
+    P2PHTTP,
+    SpreadHTTP
+
 )
 from pybit.asyncio.ws import AsyncWebsocketClient
 
@@ -37,8 +40,10 @@ class AsyncHTTP(
     AsyncInstitutionalLoanHTTP,
     AsyncCryptoLoanHTTP,
     AsyncEarnHTTP,
-    AsyncRateLimitHTTP,
     AsyncFiatHTTP,
-    AsyncRFQHTTP
+    AsyncRFQHTTP,
+    AsyncRateLimitHTTP,
+    P2PHTTP,
+    SpreadHTTP
 ):
     ...

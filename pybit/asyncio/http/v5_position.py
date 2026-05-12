@@ -267,3 +267,83 @@ class AsyncPositionHTTP(AsyncClient):
             query=kwargs,
             auth=True,
         )
+    
+    async def move_position(self, **kwargs) -> dict:
+        """You can move positions between sub-master, master-sub, or sub-sub UIDs.
+
+        Required args:
+            fromUid (string): From UID
+            toUid (string): To UID
+            list (array): Object. Up to 25 legs per request
+                symbol (string): Symbol name
+                price (string): Trade price
+                side (string): Trading side of fromUid
+                qty (string): Executed qty
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/position/move-position
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Position. MOVE_POSITION}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_move_position_history(self, **kwargs) -> dict:
+        """You can query moved position data by master UID's API key
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/position/move-position-history
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Position.GET_MOVE_POSITION_HISTORY}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_closed_options_positions(self, **kwargs) -> dict:
+        """Query user's closed options positions, sorted by closeTime in
+        descending order.
+
+        Required args:
+            category (string): "option"
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/position/close-position
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Position.GET_CLOSED_OPTIONS_POSITIONS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def confirm_new_risk_limit(self, **kwargs) -> dict:
+        """
+        Required args:
+            category (string): Product type. linear, inverse
+            symbol (string): Symbol name
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/position/confirm-mmr
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Position.CONFIRM_PENDING_MMR}",
+            query=kwargs,
+            auth=True,
+        )

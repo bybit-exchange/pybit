@@ -284,3 +284,37 @@ class AsyncUserHTTP(AsyncClient):
             query=kwargs,
             auth=True,
         )
+
+    async def sign_agreement(self, **kwargs) -> dict:
+        """
+        Required args:
+            category (integer): 2: Metals commodity contracts
+            agree (boolean): true
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/user/sign-agreement
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{User.SIGN_AGREEMENT}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_friend_referrals(self, **kwargs) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/user/friend-referral
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{User.GET_FRIEND_REFERRALS}",
+            query=kwargs,
+            auth=True,
+        )

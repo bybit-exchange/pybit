@@ -477,3 +477,24 @@ class AsyncAccountHTTP(AsyncClient):
             query=kwargs,
             auth=True,
         )
+
+    async def set_delta_mode(self, **kwargs):
+        """Delta Neutral Mode is designed to enhance the trading experience for users running delta-neutral strategies.
+
+        Required args:
+            deltaEnable (string):
+                "1": enable
+                "0": disable
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/account/set-delta-mode
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Account.SET_DELTA_MODE}",
+            query=kwargs,
+            auth=True,
+        )

@@ -594,3 +594,234 @@ class AsyncAssetHTTP(AsyncClient):
             query=kwargs,
             auth=True,
         )
+    
+    async def get_small_balance_coins(self, **kwargs) -> dict:
+        """
+        Required args:
+            accountType (string): Wallet type eb_convert_uta. Only supports the Unified wallet
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert-small-balance/small-balanc-coins
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_SMALL_BALANCE_COINS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def request_a_quote_small_balance(self, **kwargs) -> dict:
+        """
+        Required args:
+            accountType (string): Wallet type, eb_convert_uta, unified wallet only
+            fromCoinList (string): Source currency list ["BTC", "XRP", "ETH"], up to 20 coins in one transaction
+            toCoin (string): Target currency, each request supports one of MNT, USDT, or USDC
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert-small-balance/request-quote
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Asset.REQUEST_A_QUOTE_SMALL_BALANCE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def confirm_a_quote_small_balance(self, **kwargs) -> dict:
+        """
+        Required args:
+            quoteId (string): The quote ID from Request a Quote
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert-small-balance/confirm-quote
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Asset.CONFIRM_A_QUOTE_SMALL_BALANCE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_exchange_history_small_balance(self, **kwargs) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/convert-small-balance/exchange-history
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_EXCHANGE_HISTORY_SMALL_BALANCE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_asset_overview(self, **kwargs) -> dict:
+        """Query master account or one subaccounts' total assets and detailed asset holdings across different accounts and product categories.
+
+        Required args:
+            memberId (string): User ID. When using master API key to query sub account assets, this field is required
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/balance/asset-overview
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_ASSET_OVERVIEW}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_funding_acc_history(self, **kwargs) -> dict:
+        """Return transaction log in Funding Account.
+
+        Required args:
+            createTimeFrom (string): Start timestamp (seconds)
+            createTimeTo (string): End timestamp (seconds)
+            limit (string): Limit for data size per page, [1; 100]
+            cursor (string): Cursor, used for pagination
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/fund-history
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_FUNDING_ACC_HISTORY}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_fiat_balance(self, **kwargs) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/fiat-convert/balance-query
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_FIAT_BALANCE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_fiat_trading_pair_list(self, **kwargs) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/fiat-convert/query-coin-list
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_FIAT_TRADING_PAIR_LIST}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_fiat_convert_history(self, **kwargs) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/fiat-convert/query-trade-history
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_FIAT_CONVERT_HISTORY}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def request_a_quote_fiat_convert(self, **kwargs) -> dict:
+        """
+        Required args:
+            fromCoin (string): Convert from coin (coin to sell)
+            fromCoinType (string): fiat or crypto
+            toCoin (string): Convert to coin (coin to buy)
+            toCoinType (string): fiat or crypto
+            requestAmount (string): Request coin amount (the amount you want to sell)
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/fiat-convert/quote-apply
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Asset.REQUEST_A_QUOTE_FIAT_CONVERT}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_fiat_reference_price(self, **kwargs) -> dict:
+        """
+        Required args:
+            symbol (string): Coin pair, such as EUR-USDT
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/fiat-convert/reference-price
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_FIAT_REFERENCE_PRICE}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def confirm_a_quote_fiat_convert(self, **kwargs) -> dict:
+        """
+        Required args:
+            quoteTxId (string): The quote tx ID from Request a Quote
+            subUserId (string): The user's sub userId in bybit
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/fiat-convert/confirm-quote
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Asset.CONFIRM_A_QUOTE_FIAT_CONVERT}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def get_fiat_convert_status(self, **kwargs) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/fiat-convert/query-trade
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_FIAT_CONVERT_STATUS}",
+            query=kwargs,
+            auth=True,
+        )

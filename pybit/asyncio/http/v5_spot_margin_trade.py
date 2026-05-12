@@ -377,3 +377,18 @@ class AsyncSpotMarginTradeHTTP(AsyncClient):
             query=kwargs,
             auth=True,
         )
+
+    async def spot_margin_trade_get_currency_data(self, **kwargs) -> dict:
+        """Get spot margin currency data information.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/currency-data
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.GET_CURRENCY_DATA}",
+            query=kwargs,
+        )

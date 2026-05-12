@@ -15,3 +15,5 @@ from .v5_earn import AsyncEarnHTTP
 from .v5_rate_limit import AsyncRateLimitHTTP
 from ._v5_fiat import AsyncFiatHTTP
 from ._v5_rfq import AsyncRFQHTTP
+from ._v5_spread import SpreadHTTP
+from ._v5_p2p import P2PHTTP
