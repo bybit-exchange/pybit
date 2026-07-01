@@ -189,3 +189,29 @@ class BrokerHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def create_f_mart_bot(self, **kwargs):
+        """Create a new futures Martingale bot with DCA averaging strategy
+
+        Required args:
+            symbol (string):
+            martingale_mode (string):
+            leverage (string):
+            price_float_percent (string):
+            add_position_percent (string):
+            add_position_num (integer):
+            init_margin (string):
+            round_tp_percent (string):
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/fmartingalebot/create
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Broker.CREATE_F_MART_BOT}",
+            query=kwargs,
+            auth=True,
+        )

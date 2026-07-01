@@ -347,3 +347,24 @@ class PositionHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def move_positions(self, **kwargs):
+        """Move positions between UIDs via block trade.
+
+        Required args:
+            fromUid (string): Transfer out UID
+            toUid (string): Transfer in UID
+            list (array): Array of position legs to move
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/position/move-position
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Position.MOVE_POSITIONS}",
+            query=kwargs,
+            auth=True,
+        )
