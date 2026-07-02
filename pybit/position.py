@@ -17,7 +17,6 @@ class Position(str, Enum):
     GET_MOVE_POSITION_HISTORY = "/v5/position/move-history"
     GET_CLOSED_OPTIONS_POSITIONS = "/v5/position/get-closed-positions"
     CONFIRM_PENDING_MMR = "/v5/position/confirm-pending-mmr"
-    MOVE_POSITIONS = "/v5/position/move-positions"
 
     def __str__(self) -> str:
         return self.value

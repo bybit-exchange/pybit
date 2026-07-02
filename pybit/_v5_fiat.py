@@ -130,22 +130,3 @@ class FiatHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
-
-    def post_upload_chat_file(self, **kwargs):
-        """Upload a chat file to Bybit P2P OSS storage.
-
-        Required args:
-            upload_file (string): File to upload
-
-        Returns:
-            Request results as dictionary.
-
-        Additional information:
-            https://bybit-exchange.github.io/docs/v5/p2p/oss/upload-file
-        """
-        return self._submit_request(
-            method="POST",
-            path=f"{self.endpoint}{Fiat.POST_UPLOAD_CHAT_FILE}",
-            query=kwargs,
-            auth=True,
-        )

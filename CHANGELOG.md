@@ -7,9 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 5.16.1 — 2026-07-01
 
-### New Methods (67)
+### New Methods (64)
 - get_affiliate_sub_list
-- create_f_mart_bot
 - add_liquidity
 - add_margin
 - claim_liquidity_interest
@@ -73,12 +72,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - reinvest_liquidity
 - remove_liquidity
 - set_fixed_term_auto_invest
-- post_upload_chat_file
-- move_positions
 
-### New Endpoint Keys (67)
+### New Endpoint Keys (64)
 - User.GET_AFFILIATE_SUB_LIST
-- Broker.CREATE_F_MART_BOT
 - Earn.ADD_LIQUIDITY
 - Earn.ADD_MARGIN
 - Earn.CLAIM_LIQUIDITY_INTEREST
@@ -142,8 +138,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Earn.REINVEST_LIQUIDITY
 - Earn.REMOVE_LIQUIDITY
 - Earn.SET_FIXED_TERM_AUTO_INVEST
-- Fiat.POST_UPLOAD_CHAT_FILE
-- Position.MOVE_POSITIONS
 
 
 ## [5.16.0] - 2026-04-18

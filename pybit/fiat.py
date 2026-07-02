@@ -9,7 +9,6 @@ class Fiat(str, Enum):
     QUERY_TRADE = "/v5/fiat/trade-query"
     GET_TRADE_HISTORY = "/v5/fiat/query-trade-history"
     GET_BALANCE = "/v5/fiat/balance-query"
-    POST_UPLOAD_CHAT_FILE = "/v5/p2p/oss/upload_file"
 
     def __str__(self) -> str:
         return self.value

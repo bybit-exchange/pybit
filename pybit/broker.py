@@ -12,7 +12,6 @@ class Broker(str, Enum):
     GET_BROKER_ALL_RATE_LIMITS="/v5/broker/apilimit/query-all"
     GET_BROKER_RATE_LIMIT_CAP="/v5/broker/apilimit/query-cap"
     SET_BROKER_RATE_LIMIT="/v5/broker/apilimit/set"
-    CREATE_F_MART_BOT = "/v5/fmartingalebot/create"
 
     def __str__(self) -> str:
         return self.value
