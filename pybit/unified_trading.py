@@ -449,29 +449,45 @@ class WebSocketTrading(_V5TradeWebSocketManager):
     def __init__(self, recv_window=0, referral_id="", **kwargs):
         super().__init__(recv_window, referral_id, **kwargs)
 
-    def place_order(self, callback, **kwargs):
+    def place_order(self, callback, error_callback=None, **kwargs):
+        """Send an order.create request.
+
+        ``callback`` is invoked only for successful responses (retCode == 0).
+        If ``error_callback`` is provided, it is invoked for error responses
+        (retCode != 0); otherwise error responses are logged and dropped.
+        """
         operation = "order.create"
-        self._send_order_operation(operation, callback, kwargs)
+        self._send_order_operation(operation, callback, kwargs, error_callback)
 
-    def amend_order(self, callback, **kwargs):
+    def amend_order(self, callback, error_callback=None, **kwargs):
+        """Send an order.amend request. See :meth:`place_order` for the
+        ``callback`` / ``error_callback`` contract."""
         operation = "order.amend"
-        self._send_order_operation(operation, callback, kwargs)
+        self._send_order_operation(operation, callback, kwargs, error_callback)
 
-    def cancel_order(self, callback, **kwargs):
+    def cancel_order(self, callback, error_callback=None, **kwargs):
+        """Send an order.cancel request. See :meth:`place_order` for the
+        ``callback`` / ``error_callback`` contract."""
         operation = "order.cancel"
-        self._send_order_operation(operation, callback, kwargs)
+        self._send_order_operation(operation, callback, kwargs, error_callback)
 
-    def place_batch_order(self, callback, **kwargs):
+    def place_batch_order(self, callback, error_callback=None, **kwargs):
+        """Send an order.create-batch request. See :meth:`place_order` for the
+        ``callback`` / ``error_callback`` contract."""
         operation = "order.create-batch"
-        self._send_order_operation(operation, callback, kwargs)
+        self._send_order_operation(operation, callback, kwargs, error_callback)
 
-    def amend_batch_order(self, callback, **kwargs):
+    def amend_batch_order(self, callback, error_callback=None, **kwargs):
+        """Send an order.amend-batch request. See :meth:`place_order` for the
+        ``callback`` / ``error_callback`` contract."""
         operation = "order.amend-batch"
-        self._send_order_operation(operation, callback, kwargs)
+        self._send_order_operation(operation, callback, kwargs, error_callback)
 
-    def cancel_batch_order(self, callback, **kwargs):
+    def cancel_batch_order(self, callback, error_callback=None, **kwargs):
+        """Send an order.cancel-batch request. See :meth:`place_order` for the
+        ``callback`` / ``error_callback`` contract."""
         operation = "order.cancel-batch"
-        self._send_order_operation(operation, callback, kwargs)
+        self._send_order_operation(operation, callback, kwargs, error_callback)
 
 
 class WebsocketSpreadTrading(_V5WebSocketSpreadTrading):

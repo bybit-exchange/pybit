@@ -12,6 +12,7 @@ import websocket
 
 from pybit._http_manager import _V5HTTPManager
 from pybit._websocket_stream import _WebSocketManager
+from pybit._websocket_trading import _V5TradeWebSocketManager
 from pybit.unified_trading import HTTP
 from pybit.exceptions import InvalidRequestError
 from pybit import _http_manager
@@ -494,6 +495,211 @@ def test_prepare_file_payload_supports_file_like_input():
     assert b'name="upload_file"; filename="receipt.png"' in body
     assert b"Content-Type: image/png" in body
     assert b"image-bytes" in body
+
+
+def _make_trade_manager():
+    """Build a _V5TradeWebSocketManager without opening a real WS connection."""
+    manager = _V5TradeWebSocketManager.__new__(_V5TradeWebSocketManager)
+    manager.callback_directory = {}
+    manager.ws_name = "Test Trade WS"
+    manager.auth = False
+    return manager
+
+
+_TRADE_LOGGER = "pybit._websocket_trading"
+
+
+def _records(caplog, *, level, contains):
+    return [
+        r for r in caplog.records
+        if r.name == _TRADE_LOGGER
+        and r.levelno == level
+        and contains in r.getMessage()
+    ]
+
+
+def test_trade_ws_dispatches_success_to_callback():
+    manager = _make_trade_manager()
+    received = []
+    errors = []
+    manager._set_callback("req-1", received.append, errors.append)
+
+    payload = {"reqId": "req-1", "retCode": 0, "retMsg": "OK", "data": {}}
+    manager._handle_incoming_message(payload)
+
+    assert received == [payload]
+    assert received[0] is payload
+    assert errors == []
+    assert "req-1" not in manager.callback_directory
+
+
+def test_trade_ws_dispatches_error_to_error_callback():
+    manager = _make_trade_manager()
+    success = []
+    errors = []
+    manager._set_callback("req-2", success.append, errors.append)
+
+    payload = {"reqId": "req-2", "retCode": 10001, "retMsg": "boom"}
+    manager._handle_incoming_message(payload)
+
+    assert success == []
+    assert errors == [payload]
+    assert errors[0] is payload
+    assert "req-2" not in manager.callback_directory
+
+
+def test_trade_ws_drops_error_when_no_error_callback(caplog):
+    manager = _make_trade_manager()
+    success = []
+    manager._set_callback("req-3", success.append)
+
+    with caplog.at_level(logging.WARNING, logger=_TRADE_LOGGER):
+        manager._handle_incoming_message(
+            {"reqId": "req-3", "retCode": 10001, "retMsg": "boom"}
+        )
+
+    assert success == []
+    assert "req-3" not in manager.callback_directory
+    # Observability contract: silent drop is a regression — assert the warning
+    # is emitted with the reqId, retCode, and retMsg operators need to alert on.
+    warnings_ = _records(caplog, level=logging.WARNING, contains="req-3")
+    assert len(warnings_) == 1
+    msg = warnings_[0].getMessage()
+    assert "10001" in msg
+    assert "boom" in msg
+
+
+def test_trade_ws_swallows_callback_exception(caplog):
+    manager = _make_trade_manager()
+
+    def bad_callback(_):
+        raise RuntimeError("user code broke")
+
+    manager._set_callback("req-4", bad_callback)
+
+    with caplog.at_level(logging.ERROR, logger=_TRADE_LOGGER):
+        # Must not raise — a raise here would tear down the WS read thread.
+        manager._handle_incoming_message(
+            {"reqId": "req-4", "retCode": 0, "retMsg": "OK"}
+        )
+
+    assert "req-4" not in manager.callback_directory
+    errors = _records(caplog, level=logging.ERROR, contains="req-4")
+    assert len(errors) == 1
+    # logger.exception must attach the traceback — a silent swap to
+    # logger.error(f'... {req_id}') would lose it.
+    assert errors[0].exc_info is not None
+    assert errors[0].exc_info[0] is RuntimeError
+    assert "user code broke" in str(errors[0].exc_info[1])
+
+
+def test_trade_ws_swallows_error_callback_exception(caplog):
+    manager = _make_trade_manager()
+
+    def bad_error_callback(_):
+        raise RuntimeError("user error handler broke")
+
+    manager._set_callback("req-5", lambda _: None, bad_error_callback)
+
+    with caplog.at_level(logging.ERROR, logger=_TRADE_LOGGER):
+        manager._handle_incoming_message(
+            {"reqId": "req-5", "retCode": 10001, "retMsg": "boom"}
+        )
+
+    assert "req-5" not in manager.callback_directory
+    errors = _records(caplog, level=logging.ERROR, contains="req-5")
+    assert len(errors) == 1
+    assert errors[0].exc_info is not None
+    assert errors[0].exc_info[0] is RuntimeError
+
+
+def test_trade_ws_ignores_unknown_req_id(caplog):
+    manager = _make_trade_manager()
+
+    with caplog.at_level(logging.WARNING, logger=_TRADE_LOGGER):
+        # Must not raise KeyError — that would tear down the WS read thread,
+        # the exact failure mode the fix advertises fixing.
+        manager._handle_incoming_message(
+            {"reqId": "req-99", "retCode": 0, "retMsg": "OK"}
+        )
+
+    assert manager.callback_directory == {}
+    assert _records(caplog, level=logging.WARNING, contains="req-99")
+
+
+def test_trade_ws_ignores_missing_req_id(caplog):
+    manager = _make_trade_manager()
+
+    with caplog.at_level(logging.WARNING, logger=_TRADE_LOGGER):
+        manager._handle_incoming_message({"retCode": 0, "retMsg": "OK"})
+
+    assert manager.callback_directory == {}
+
+
+def test_trade_ws_auth_success_sets_auth_flag():
+    manager = _make_trade_manager()
+
+    manager._handle_incoming_message({"op": "auth", "retCode": 0, "retMsg": "OK"})
+
+    assert manager.auth is True
+    # No callback lookup should have happened.
+    assert manager.callback_directory == {}
+
+
+def test_trade_ws_auth_failure_raises():
+    manager = _make_trade_manager()
+
+    with pytest.raises(Exception, match="Authorization for"):
+        manager._handle_incoming_message(
+            {"op": "auth", "retCode": 10003, "retMsg": "invalid api key"}
+        )
+
+    assert manager.auth is False
+
+
+@pytest.mark.parametrize(
+    "method_name,expected_op",
+    [
+        ("place_order", "order.create"),
+        ("amend_order", "order.amend"),
+        ("cancel_order", "order.cancel"),
+        ("place_batch_order", "order.create-batch"),
+        ("amend_batch_order", "order.amend-batch"),
+        ("cancel_batch_order", "order.cancel-batch"),
+    ],
+)
+def test_websocket_trading_public_api_registers_error_callback(
+    method_name, expected_op
+):
+    import json as _json
+    from pybit.unified_trading import WebSocketTrading
+
+    ws_trade = WebSocketTrading.__new__(WebSocketTrading)
+    ws_trade.callback_directory = {}
+    ws_trade.recv_window = 0
+    ws_trade.referral_id = ""
+    ws_trade.ws = Mock()
+
+    cb, ecb = Mock(), Mock()
+    getattr(ws_trade, method_name)(cb, error_callback=ecb, symbol="BTCUSDT")
+
+    ((req_id, (registered_cb, registered_ecb)),) = (
+        ws_trade.callback_directory.items()
+    )
+    assert registered_cb is cb
+    assert registered_ecb is ecb
+
+    sent = _json.loads(ws_trade.ws.send.call_args[0][0])
+    assert sent["op"] == expected_op
+    assert sent["reqId"] == req_id
+    assert sent["args"] == [{"symbol": "BTCUSDT"}]
+
+    # Error frame reaches ecb, not cb.
+    ws_trade._handle_incoming_message(
+        {"reqId": req_id, "retCode": 10001, "retMsg": "nope"}
+    )
+    ecb.assert_called_once()
+    cb.assert_not_called()
 
 
 def test_prepare_headers_signs_binary_payload(monkeypatch):
