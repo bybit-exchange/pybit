@@ -5,6 +5,74 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.17.0] - 2026-07-08
+
+### New Methods (64)
+- `get_affiliate_sub_list()`
+- `add_liquidity()`
+- `add_margin()`
+- `claim_liquidity_interest()`
+- `get_advance_earn_order()`
+- `get_advance_earn_position()`
+- `get_advance_earn_product()`
+- `get_advance_earn_product_extra_info()`
+- `get_double_win_leverage()`
+- `get_earn_apr_history()`
+- `get_fixed_term_order()`
+- `get_fixed_term_position()`
+- `get_fixed_term_product()`
+- `get_hold_to_earn_product()`
+- `get_hold_to_earn_yield_history()`
+- `get_liquidity_mining_liquidation_records()`
+- `get_liquidity_mining_orders()`
+- `get_liquidity_mining_positions()`
+- `get_liquidity_mining_products()`
+- `get_liquidity_mining_yield_records()`
+- `get_rwa_nav_chart()`
+- `get_rwa_order_list()`
+- `get_rwa_position_list()`
+- `get_rwa_product_list()`
+- `get_smart_leverage_redeem_est_amount_list()`
+- `get_token_daily_yield()`
+- `get_token_historical_apr()`
+- `get_token_hourly_yield()`
+- `get_token_order_list()`
+- `get_token_position()`
+- `get_token_product()`
+- `list_earn_coupons()`
+- `modify_earn_position()`
+- `place_advance_earn_order()`
+- `place_fixed_term_order()`
+- `place_rwa_order()`
+- `place_token_order()`
+- `pwm_asset_trend()`
+- `pwm_claim()`
+- `pwm_create_custom_plan()`
+- `pwm_fund_nav()`
+- `pwm_fund_transfer()`
+- `pwm_get_new_plan_detail()`
+- `pwm_get_plan_detail()`
+- `pwm_inst_create_fund()`
+- `pwm_inst_create_investment_plan()`
+- `pwm_inst_create_sub_account()`
+- `pwm_inst_get_investment_plans()`
+- `pwm_inst_list_funds()`
+- `pwm_inst_list_orders()`
+- `pwm_inst_manage_investment_plan()`
+- `pwm_inst_manage_order()`
+- `pwm_inst_settle_profit()`
+- `pwm_invest_more()`
+- `pwm_list_investment_plans()`
+- `pwm_list_order()`
+- `pwm_list_product_cards()`
+- `pwm_query_fund_transfer_result()`
+- `pwm_redeem()`
+- `pwm_subscribe()`
+- `redeem_fixed_term()`
+- `reinvest_liquidity()`
+- `remove_liquidity()`
+- `set_fixed_term_auto_invest()`
+
 ## [5.16.1] - 2026-07-07
 - *Release:* Add autoRelease
 

@@ -20,6 +20,7 @@ class User(str, Enum):
     GET_ESCROW_SUB_MEMBERS = "/v5/user/escrow_sub_members"
     SIGN_AGREEMENT = "/v5/user/agreement"
     GET_FRIEND_REFERRALS = "/v5/user/invitation/referrals"
+    GET_AFFILIATE_SUB_LIST = "/v5/affiliate/affiliate-sub-list"
 
     def __str__(self) -> str:
         return self.value
