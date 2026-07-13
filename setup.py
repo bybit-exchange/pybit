@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from os import path
 from pybit import VERSION as __version__
 
@@ -26,11 +26,14 @@ setup(
         "Programming Language :: Python :: 3.11",
     ],
     keywords="bybit api connector",
-    packages=["pybit"],
+    packages=find_packages(include=["pybit", "pybit.*"]),
     python_requires=">=3.10",
     install_requires=[
         "requests",
         "websocket-client",
         "pycryptodome",
+        "aiohttp",
+        "websockets",
+        "websockets_proxy"
     ],
 )
