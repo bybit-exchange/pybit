@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.17.0] - 2026-07-08
 
+### Changed
+- `WebSocketTrading.place_order` / `amend_order` / `cancel_order` and the
+  three `*_batch_order` variants now accept an optional `error_callback`
+  parameter. When provided, it is invoked for responses with
+  `retCode != 0` (previously such frames were logged at `error` and
+  silently dropped, so the success `callback` never saw them). When
+  omitted, error frames are logged at `warning` and dropped — preserving
+  the previous default behavior. User callbacks are now wrapped in
+  `try/except` so an exception inside a callback no longer tears down
+  the WS read thread. Frames whose `reqId` has no registered callback
+  (stray / duplicate / post-restart) are logged at `warning` and dropped
+  instead of raising `KeyError` on the read thread.
+
+  Migration: to observe order errors, pass `error_callback=` alongside
+  `callback=`:
+
+  ```python
+  ws.place_order(callback=on_ack, error_callback=on_err, ...)
+  ```
+
 ### New Methods (64)
 - `get_affiliate_sub_list()`
 - `add_liquidity()`

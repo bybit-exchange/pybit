@@ -32,41 +32,56 @@ class _V5TradeWebSocketManager(_WebSocketManager):
                 f"API keys and resync your system time. Raw error: {message}"
             )
 
-    def _process_error_message(self, message):
-        logger.error(
-            f"WebSocket request {message['reqId']} hit an error. Enabling "
-            f"traceLogging to reproduce the issue. Raw error: {message}"
-        )
-        self._pop_callback(message["reqId"])
-
     def _handle_incoming_message(self, message):
-        def is_auth_message():
-            if message.get("op") == "auth":
-                return True
-            else:
-                return False
-
-        def is_error_message():
-            if message.get("retCode") != 0:
-                return True
-            else:
-                return False
-
-        if is_auth_message():
+        if message.get("op") == "auth":
             self._process_auth_message(message)
-        elif is_error_message():
-            self._process_error_message(message)
-        else:
-            callback_function = self._pop_callback(message["reqId"])
-            callback_function(message)
+            return
 
-    def _set_callback(self, topic, callback_function):
-        self.callback_directory[topic] = callback_function
+        req_id = message.get("reqId")
+        callback, error_callback = self._pop_callback(req_id)
+
+        if message.get("retCode") != 0:
+            logger.warning(
+                f"WebSocket request {req_id} returned an error "
+                f"(retCode={message.get('retCode')}, "
+                f"retMsg={message.get('retMsg')!r}). Raw response: {message}"
+            )
+            if error_callback is None:
+                return
+            self._invoke_user_callback(error_callback, message, req_id)
+            return
+
+        if callback is None:
+            # Unknown or missing reqId: no registered callback to invoke.
+            # Log at warning so operators can spot stray frames without
+            # tearing down the WS read thread on a KeyError.
+            logger.warning(
+                f"WebSocket response for unregistered reqId {req_id!r}; "
+                f"dropping. Raw response: {message}"
+            )
+            return
+
+        self._invoke_user_callback(callback, message, req_id)
+
+    @staticmethod
+    def _invoke_user_callback(func, message, req_id):
+        try:
+            func(message)
+        except Exception:
+            logger.exception(
+                f"User callback for WebSocket request {req_id} raised an "
+                f"exception; suppressing to keep the WS read thread alive."
+            )
+
+    def _set_callback(self, topic, callback_function, error_callback=None):
+        self.callback_directory[topic] = (callback_function, error_callback)
 
     def _pop_callback(self, topic):
-        return self.callback_directory.pop(topic)
+        return self.callback_directory.pop(topic, (None, None))
 
-    def _send_order_operation(self, operation, callback, request):
+    def _send_order_operation(
+        self, operation, callback, request, error_callback=None
+    ):
         request_id = str(uuid.uuid4())
 
         message = {
@@ -86,4 +101,4 @@ class _V5TradeWebSocketManager(_WebSocketManager):
             message["header"]["Referer"] = self.referral_id
 
         self.ws.send(json.dumps(message))
-        self._set_callback(request_id, callback)
+        self._set_callback(request_id, callback, error_callback)
