@@ -203,6 +203,16 @@ class AsyncClient:
                 # message instead of the generic "Bad Request".
                 last_retry_reason = e.reason
                 continue
+            except (JSONDecodeError, aiohttp.ContentTypeError) as e:
+                # ``ContentTypeError`` is a subclass of ``ClientResponseError``,
+                # so this branch MUST come first — otherwise the network-error
+                # tuple below catches ContentTypeError, and _handle_json_error
+                # (with its FailedRequestError('Could not decode JSON', 409)
+                # contract and method/path context) is unreachable.
+                last_exc = e
+                await self._handle_json_error(
+                    e, retries_attempted, method, path, req_params or query,
+                )
             except (
                 aiohttp.ClientSSLError,
                 aiohttp.ClientResponseError,
@@ -211,11 +221,6 @@ class AsyncClient:
             ) as e:
                 last_exc = e
                 await self._handle_network_error(e, retries_attempted)
-            except (JSONDecodeError, aiohttp.ContentTypeError) as e:
-                last_exc = e
-                await self._handle_json_error(
-                    e, retries_attempted, method, path, req_params or query,
-                )
 
         message = (
             f"Retries exceeded maximum ({self.max_retries}). "
@@ -364,11 +369,17 @@ class AsyncClient:
             )
 
         self.logger.error(f"{error_msg}. Retrying...")
-        # Clamp both ways: negative durations (clock skew / expired reset)
-        # would silently sleep 0; a malformed far-future timestamp would
-        # otherwise wedge the retry for minutes-to-hours before Cancel is
-        # observed. 30s covers Bybit's real rate-limit windows with margin.
-        await asyncio.sleep(max(0, min(30, delay_time)))
+        # Clamp both ways:
+        #  - Upper 30s: guards against a malformed far-future timestamp
+        #    wedging the retry for minutes to hours.
+        #  - Lower bound: clock skew or an already-expired reset window
+        #    would otherwise produce a negative duration → sleep(0), and
+        #    the retry loop would burn through max_retries in milliseconds
+        #    while the endpoint is still rate-limited. For 10006 (rate
+        #    limit) enforce a real minimum of 0.5s; other retryable codes
+        #    respect the user-configured ``retry_delay``.
+        floor = 0.5 if error_code == 10006 else max(0.0, self.retry_delay)
+        await asyncio.sleep(max(floor, min(30, delay_time)))
         return recv_window
 
     async def _handle_network_error(self, error, retries_attempted):

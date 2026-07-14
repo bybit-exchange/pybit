@@ -70,6 +70,7 @@ class AsyncWebsocketClient:
             rsa_authentication: bool = False,
             proxy: Optional[str] = None,
             tld: str = "com",
+            domain: Optional[str] = None,
             private_auth_expire: int = 1,
     ):
         self.testnet = testnet
@@ -78,6 +79,9 @@ class AsyncWebsocketClient:
         self.rsa_authentication = rsa_authentication
         self.proxy = proxy
         self.tld = tld
+        # Matches sync's ``domain='bytick'`` fallback for users in regions
+        # where bybit.com is blocked. ``None`` → default DOMAIN_MAIN.
+        self.domain = domain
         self.private_auth_expire = private_auth_expire
 
         if channel_type not in AVAILABLE_CHANNEL_TYPES:
@@ -134,6 +138,7 @@ class AsyncWebsocketClient:
             api_secret=self.api_secret if private else None,
             proxy=self.proxy,
             tld=self.tld,
+            domain=self.domain,
             private_auth_expire=self.private_auth_expire,
         )
 
@@ -192,15 +197,21 @@ class AsyncWebsocketClient:
         :attr:`SPOT_MAX_CONNECTION_ARGS` args, so this splits ``topics`` into
         chunks and sends one subscribe frame per chunk.
         """
+        topics = list(topics)
+        if not topics:
+            raise ValueError("spot_kline_stream requires at least one topic")
         return self._manager(
-            self._public_url(), self._subscription_messages(list(topics)),
+            self._public_url(), self._subscription_messages(topics),
             private=False,
         )
 
     def futures_kline_stream(self, topics: List[str]) -> AsyncWebsocketManager:
         """Raw public linear / inverse / option subscribe: full topic strings."""
+        topics = list(topics)
+        if not topics:
+            raise ValueError("futures_kline_stream requires at least one topic")
         return self._manager(
-            self._public_url(), self._subscription_messages(list(topics)),
+            self._public_url(), self._subscription_messages(topics),
             private=False,
         )
 
@@ -280,32 +291,6 @@ class AsyncWebsocketClient:
         """
         self._require_private("spread_execution_stream")
         return self._manager_from_topic("spread.execution", None, private=True)
-
-    # Preserved for parity with the initial async release, which only
-    # exposed these two private helpers. They now delegate to
-    # ``order_stream`` — a Bybit v5 private ``order`` subscription surfaces
-    # linear and spot updates on the same connection.
-    def user_futures_stream(self) -> AsyncWebsocketManager:
-        """Deprecated alias — use :meth:`order_stream`."""
-        self._require_private("user_futures_stream")
-        # ``order.linear`` is the historical filter form; keep it working
-        # for callers already on the initial release.
-        subscription_message = json.dumps({
-            "op": "subscribe",
-            "req_id": str(uuid4()),
-            "args": ["order.linear"],
-        })
-        return self._manager(PRIVATE_WSS, [subscription_message], private=True)
-
-    def user_spot_stream(self) -> AsyncWebsocketManager:
-        """Deprecated alias — use :meth:`order_stream`."""
-        self._require_private("user_spot_stream")
-        subscription_message = json.dumps({
-            "op": "subscribe",
-            "req_id": str(uuid4()),
-            "args": ["order.spot"],
-        })
-        return self._manager(PRIVATE_WSS, [subscription_message], private=True)
 
     # ------------------------------------------------------------------
     # Public streams — require a public channel_type.

@@ -20,7 +20,6 @@ class Account(str, Enum):
     RESET_MMP = "/v5/account/mmp-reset"
     GET_MMP_STATE = "/v5/account/mmp-state"
     NO_CONVERT_REPAY = "/v5/account/no-convert-repay"
-    SET_NO_CONVERT_REPAY = "/v5/account/no-convert-repay"
     BORROW = "/v5/account/borrow"
     GET_INSTRUMENTS_INFO = "/v5/account/instruments-info"
     REPAY = "/v5/account/repay"

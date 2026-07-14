@@ -335,22 +335,6 @@ class AsyncAccountHTTP(AsyncClient):
             auth=True,
         )
 
-    async def set_no_convert_repay(self, **kwargs) -> dict:
-        """Deprecated alias for :meth:`manual_no_convert_repay`.
-
-        The upstream endpoint no longer accepts ``noConvertRepay=on|off``;
-        pass ``coin`` and ``amount`` instead. This alias will be removed in a
-        future release.
-        """
-        import warnings
-        warnings.warn(
-            "set_no_convert_repay is deprecated; use manual_no_convert_repay "
-            "with coin/amount instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return await self.manual_no_convert_repay(**kwargs)
-
     async def borrow(self, **kwargs) -> dict:
         """Borrow a certain amount of a coin.
 

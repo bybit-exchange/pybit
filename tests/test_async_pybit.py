@@ -360,15 +360,15 @@ def test_log_request_masks_api_key(caplog):
 # AsyncWebsocketClient guard rails.
 # ---------------------------------------------------------------------------
 
-def test_user_streams_require_private_channel():
+def test_private_streams_require_private_channel():
     from pybit import exceptions
     from pybit.asyncio.ws import AsyncWebsocketClient
 
     c = AsyncWebsocketClient(channel_type="linear", testnet=True)
     with pytest.raises(exceptions.InvalidChannelTypeError):
-        c.user_futures_stream()
+        c.order_stream()
     with pytest.raises(exceptions.InvalidChannelTypeError):
-        c.user_spot_stream()
+        c.position_stream()
 
 
 def test_private_channel_requires_keys():
@@ -390,7 +390,7 @@ def test_client_forwards_rsa_flag_and_proxy():
         rsa_authentication=True,
         proxy="http://user:pass@proxy.example:8080",
     )
-    mgr = c.user_futures_stream()
+    mgr = c.order_stream()
     assert mgr.rsa_authentication is True
     assert mgr.proxy == "http://user:pass@proxy.example:8080"
     assert mgr.api_key == _API_KEY
@@ -570,19 +570,20 @@ def test_async_account_no_mro_clash_with_market():
     assert hasattr(AsyncHTTP, "get_instruments_info")
 
 
-def test_set_no_convert_repay_enum_reachable():
-    """API-02: Account.NO_CONVERT_REPAY must resolve at import time.
-
-    Both ``manual_no_convert_repay`` (current) and ``set_no_convert_repay``
-    (deprecated alias) are exposed to keep the previously-released API
-    reachable for one release cycle.
-    """
+def test_no_convert_repay_endpoint_reachable():
+    """API-02: Account.NO_CONVERT_REPAY resolves at import time and
+    ``manual_no_convert_repay`` is the only public entry point (the pre-rename
+    ``set_no_convert_repay`` alias was removed because its shim silently
+    passed the deprecated ``noConvertRepay=on|off`` kwargs to an endpoint
+    that no longer accepts them — an AttributeError is a clearer migration
+    signal than a mysterious server-side error)."""
     from pybit.account import Account
     from pybit.asyncio.unified_trading import AsyncHTTP
 
     assert str(Account.NO_CONVERT_REPAY) == "/v5/account/no-convert-repay"
     assert hasattr(AsyncHTTP, "manual_no_convert_repay")
-    assert hasattr(AsyncHTTP, "set_no_convert_repay")
+    assert not hasattr(AsyncHTTP, "set_no_convert_repay")
+    assert not hasattr(Account, "SET_NO_CONVERT_REPAY")
 
 
 def test_affiliate_sub_list_available():
@@ -1321,3 +1322,329 @@ def test_connect_logs_empty_subscription(caplog):
 
     combined = " ".join(r.getMessage() for r in caplog.records)
     assert "No subscription messages provided" in combined
+
+
+# ---------------------------------------------------------------------------
+# Round-2 regressions: fixes for the bugs surfaced by the multi-angle review.
+# ---------------------------------------------------------------------------
+
+def test_process_frame_handles_null_ret_msg():
+    """Regression: server may emit ``ret_msg: null`` on a subscribe failure.
+    ``frame.get('ret_msg', '')`` returns None (default fires only for a
+    missing key, not a JSON-null value), which pre-fix crashed on
+    ``None.lower()`` and drove a churn storm via the read loop's
+    ``except Exception`` counter."""
+    from pybit.asyncio.ws.manager import AsyncWebsocketManager, WSState
+
+    m = AsyncWebsocketManager(
+        channel_type="linear", url="wss://x/y", subscription_message=[],
+    )
+    m.ws_state = WSState.STREAMING
+    # Must not raise.
+    _run(m._process_frame({
+        "op": "subscribe", "success": False, "ret_msg": None,
+    }))
+    # Non-auth path: state preserved, frame enqueued to consumer.
+    assert m.ws_state == WSState.STREAMING
+
+
+def test_unauthorized_subscribe_emits_terminal_contract():
+    """Regression: unauthorized subscribe must emit the ``type='terminal'``
+    sentinel so consumers using ``if frame.get('type') == 'terminal': break``
+    actually see the shutdown signal. Pre-fix only ``success/ret_msg/op``
+    were emitted, and the read loop then exited silently."""
+    from pybit.asyncio.ws.manager import AsyncWebsocketManager, WSState
+
+    m = AsyncWebsocketManager(
+        channel_type="private", url="wss://x/y", subscription_message=[],
+    )
+    m.ws_state = WSState.STREAMING
+
+    _run(m._process_frame({
+        "op": "subscribe", "success": False,
+        "ret_msg": "Request not authorized",
+    }))
+    assert m.ws_state == WSState.EXITING
+    sentinel = m.queue.get_nowait()
+    assert sentinel["type"] == "terminal"
+    assert sentinel["reason"] == "auth_failed"
+    assert sentinel["success"] is False
+
+
+def test_close_after_max_reconnect_does_not_double_terminal(monkeypatch):
+    """Regression: after ``connect()`` exhausts MAX_RECONNECTS and emits a
+    terminal, a follow-up ``close_connection()`` must NOT enqueue a second
+    terminal (was broken because the idempotency guard checked for a
+    cleared ``_handle_read_loop`` that connect() didn't clear)."""
+    from pybit.asyncio.ws import manager as manager_mod
+    from pybit.asyncio.ws.manager import AsyncWebsocketManager, WSState
+
+    monkeypatch.setattr(AsyncWebsocketManager, "MAX_RECONNECTS", 1)
+    monkeypatch.setattr(manager_mod, "get_reconnect_wait", lambda attempt: 0)
+
+    m = AsyncWebsocketManager(
+        channel_type="linear", url="wss://x/y", subscription_message=[],
+    )
+
+    async def _boom():
+        raise ConnectionError("transport dead")
+
+    m._open_conn = _boom
+    m._close_conn = AsyncMock()
+
+    async def _drive():
+        await m.connect()
+        await m.close_connection()
+
+    _run(_drive())
+
+    frames = []
+    while not m.queue.empty():
+        frames.append(m.queue.get_nowait())
+    terminals = [f for f in frames if f.get("type") == "terminal"]
+    assert len(terminals) == 1, f"expected exactly one terminal, got: {terminals}"
+    assert terminals[0]["reason"] == "max_reconnect"
+
+
+def test_close_after_auth_failed_does_not_double_terminal():
+    """Regression: same as above for the auth_failed exit path."""
+    from pybit.asyncio.ws.manager import (
+        AsyncWebsocketManager, AuthFailedError, WSState,
+    )
+
+    m = AsyncWebsocketManager(
+        channel_type="private", url="wss://x/y", subscription_message=[],
+        api_key=_API_KEY, api_secret=_API_SECRET,
+    )
+
+    async def _open():
+        m.ws = MagicMock()
+
+    async def _close():
+        m.ws = None
+
+    async def _auth():
+        raise AuthFailedError("WS auth failed: bad key")
+
+    m._open_conn = _open
+    m._close_conn = _close
+    m._auth = _auth
+
+    async def _drive():
+        await m.connect()
+        await m.close_connection()
+
+    _run(_drive())
+
+    frames = []
+    while not m.queue.empty():
+        frames.append(m.queue.get_nowait())
+    terminals = [f for f in frames if f.get("type") == "terminal"]
+    assert len(terminals) == 1
+    assert terminals[0]["reason"] == "auth_failed"
+
+
+def test_auth_failed_closes_underlying_connection():
+    """Regression: AuthFailedError path must call ``_close_conn()`` to
+    release the socket + connection context ``_open_conn`` established.
+    Pre-fix the ws / _conn refs stayed live until process exit."""
+    from pybit.asyncio.ws.manager import (
+        AsyncWebsocketManager, AuthFailedError,
+    )
+
+    m = AsyncWebsocketManager(
+        channel_type="private", url="wss://x/y", subscription_message=[],
+        api_key=_API_KEY, api_secret=_API_SECRET,
+    )
+    close_calls = []
+
+    async def _open():
+        m.ws = MagicMock()
+
+    async def _close():
+        close_calls.append(1)
+        m.ws = None
+
+    async def _auth():
+        raise AuthFailedError("bad key")
+
+    m._open_conn = _open
+    m._close_conn = _close
+    m._auth = _auth
+
+    _run(m.connect())
+    # At least the auth-branch close, plus the pre-open ``_close_conn`` guard.
+    assert len(close_calls) >= 2
+
+
+def test_content_type_error_dispatched_to_json_handler():
+    """Regression: aiohttp.ContentTypeError subclasses ClientResponseError,
+    so the except-clause ordering matters. It must dispatch to the
+    JSON-error handler (which produces FailedRequestError with 409 status
+    + method/path context), not the network handler."""
+    import aiohttp
+    from pybit.asyncio.client import AsyncClient
+
+    c = AsyncClient(
+        api_key=_API_KEY, api_secret=_API_SECRET,
+        retry_delay=0, force_retry=False, max_retries=1,
+    )
+    bad = _make_response_mock(200, {})
+    bad.json = AsyncMock(
+        side_effect=aiohttp.ContentTypeError(
+            request_info=MagicMock(), history=(),
+        )
+    )
+    _install_side_effects(c, [bad])
+
+    with pytest.raises(FailedRequestError) as exc_info:
+        _run(
+            c._submit_request(
+                method="POST", path="/v5/order/create",
+                query={"foo": "bar"}, auth=True,
+            )
+        )
+    # From _handle_json_error's contract:
+    assert exc_info.value.status_code == 409
+    assert "POST" in str(exc_info.value)
+    assert "/v5/order/create" in str(exc_info.value)
+
+
+def test_10006_negative_delay_time_clamps_to_min_floor(monkeypatch):
+    """Regression: a negative delay_time (from clock skew or already-expired
+    reset window) must not clamp to sleep(0) — the retry loop would burn
+    max_retries in milliseconds against a still-rate-limited endpoint.
+    Enforce a minimum 0.5s floor for 10006 specifically."""
+    from pybit.asyncio.client import AsyncClient
+
+    # Pin ``now`` past the reset timestamp so delay_time goes negative.
+    now_ms = 1_700_000_000_000
+    monkeypatch.setattr(
+        "pybit.asyncio.client._helpers.generate_timestamp", lambda: now_ms
+    )
+
+    c = AsyncClient(retry_delay=0)
+    past_reset = now_ms - 10_000  # 10 s in the past → raw delay -10 s
+    resp = _make_response_mock(
+        200, {"retCode": 10006, "retMsg": "rate limit"},
+        headers={"X-Bapi-Limit-Reset-Timestamp": str(past_reset)},
+    )
+    slept = []
+
+    async def _fake_sleep(t):
+        slept.append(t)
+
+    monkeypatch.setattr("pybit.asyncio.client.asyncio.sleep", _fake_sleep)
+    _run(c._handle_retryable_error(resp, 10006, "rate limit", recv_window=5000))
+    assert slept == [0.5]
+
+
+def test_downtime_callback_awaits_future(monkeypatch):
+    """Regression: downtime_callback returning a Future / Task / any
+    Awaitable was silently dropped when ``iscoroutine`` was used; must
+    now be awaited via ``inspect.isawaitable``."""
+    from pybit.asyncio.ws.manager import AsyncWebsocketManager
+
+    awaited = []
+
+    async def _payload():
+        awaited.append("done")
+
+    def _cb():
+        # Wrap the coroutine in a Task — ``iscoroutine`` would return False
+        # here; ``isawaitable`` returns True.
+        return asyncio.ensure_future(_payload())
+
+    m = AsyncWebsocketManager(
+        channel_type="linear", url="wss://x/y", subscription_message=[],
+        downtime_callback=_cb,
+    )
+
+    async def _open():
+        m.ws = MagicMock()
+        m.ws.send = AsyncMock()
+
+    m._open_conn = _open
+    m._close_conn = AsyncMock()
+    m._read_loop = AsyncMock()
+    m._keepalive_task = AsyncMock()
+
+    _run(m.connect())
+    assert awaited == ["done"]
+
+
+def test_pong_detection_requires_op_ping_for_ret_msg_form():
+    """Regression: pong detection was ``op == 'pong' or ret_msg == 'pong'``,
+    so any control frame echoing ret_msg='pong' (unrelated ACKs, proxy
+    rewrites) refreshed _last_pong and could mask a half-open pipe.
+    Must now require ``op == 'ping'`` when checking the ret_msg form."""
+    from pybit.asyncio.ws.manager import AsyncWebsocketManager, WSState
+
+    m = AsyncWebsocketManager(
+        channel_type="linear", url="wss://x/y", subscription_message=[],
+    )
+    m.ws_state = WSState.STREAMING
+    m._last_pong = 0.0
+    # Not a pong: op is 'subscribe', ret_msg happens to be 'pong'.
+    _run(m._process_frame({"op": "subscribe", "success": True, "ret_msg": "pong"}))
+    assert m._last_pong == 0.0
+    # Real pong (ping-op form): must refresh.
+    _run(m._process_frame({"op": "ping", "ret_msg": "pong", "success": True}))
+    assert m._last_pong > 0.0
+
+
+def test_ws_client_accepts_and_forwards_domain():
+    """Regression: sync WS accepts ``domain='bytick'`` (fallback host for
+    blocked regions). Async must too — pre-fix ``AsyncWebsocketClient``
+    silently dropped the kwarg and the manager hardcoded DOMAIN_MAIN."""
+    from pybit.asyncio.ws import AsyncWebsocketClient
+
+    c = AsyncWebsocketClient(
+        channel_type="linear", testnet=True, domain="bytick",
+    )
+    mgr = c.orderbook_stream(1, "BTCUSDT")
+    assert mgr.domain == "bytick"
+
+
+def test_raw_shortcut_rejects_empty_topics():
+    """Regression: spot_kline_stream([]) / futures_kline_stream([]) used to
+    silently produce zero subscribe frames — a live socket that never
+    pushed data. Must now raise so the caller notices the misconfig."""
+    from pybit.asyncio.ws import AsyncWebsocketClient
+
+    linear = AsyncWebsocketClient(channel_type="linear", testnet=True)
+    with pytest.raises(ValueError, match="at least one topic"):
+        linear.futures_kline_stream([])
+
+    spot = AsyncWebsocketClient(channel_type="spot", testnet=True)
+    with pytest.raises(ValueError, match="at least one topic"):
+        spot.spot_kline_stream([])
+
+
+def test_request_builder_bypasses_sync_manager_side_effects():
+    """Regression: RequestBuilder used to instantiate the full sync
+    _V5HTTPManager, whose __post_init__ opened a requests.Session and
+    attached a logging.StreamHandler. Must not."""
+    from pybit.asyncio.builder import RequestBuilder
+
+    rb = RequestBuilder(
+        api_key=_API_KEY, api_secret=_API_SECRET, rsa_authentication=False,
+    )
+    # No stray requests.Session on the underlying manager instance.
+    assert not hasattr(rb._http_manager, "client")
+    # No stray logger with a StreamHandler bound.
+    assert not hasattr(rb._http_manager, "logger")
+
+
+def test_deleted_set_no_convert_repay_is_gone():
+    """Regression: the broken deprecation shim was deleted — it silently
+    forwarded old ``noConvertRepay=on|off`` kwargs to a renamed endpoint
+    that no longer accepts them. AttributeError is a clearer migration
+    signal than a mysterious server error."""
+    from pybit.unified_trading import HTTP as SyncHTTP
+    from pybit.asyncio.unified_trading import AsyncHTTP
+
+    assert not hasattr(SyncHTTP, "set_no_convert_repay")
+    assert not hasattr(AsyncHTTP, "set_no_convert_repay")
+    assert hasattr(SyncHTTP, "manual_no_convert_repay")
+    assert hasattr(AsyncHTTP, "manual_no_convert_repay")

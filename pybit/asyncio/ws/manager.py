@@ -1,5 +1,6 @@
 import asyncio
 import enum
+import inspect
 import json
 import logging
 import time
@@ -101,6 +102,7 @@ class AsyncWebsocketManager:
             proxy: Optional[str] = None,
             queue: Optional[asyncio.Queue] = None,
             tld: Optional[str] = TLD_MAIN,
+            domain: Optional[str] = None,
             private_auth_expire: int = 1,
             downtime_callback: Optional[Callable] = None,
             queue_maxsize: Optional[int] = None,
@@ -115,6 +117,11 @@ class AsyncWebsocketManager:
         self.proxy = proxy
         self.rsa_authentication = rsa_authentication
         self.tld = tld
+        # ``None`` → default DOMAIN_MAIN ('bybit'). Sync users pass
+        # ``domain='bytick'`` for the fallback host and users in some regions
+        # need this route; hardcoding DOMAIN_MAIN silently sent them to a
+        # blocked host.
+        self.domain = domain or DOMAIN_MAIN
         self.private_auth_expire = private_auth_expire
         self.downtime_callback = downtime_callback
 
@@ -133,6 +140,11 @@ class AsyncWebsocketManager:
         self._keepalive: Optional[asyncio.Task] = None
         self._handle_read_loop: Optional[asyncio.Task] = None
         self._last_pong = 0.0
+        # Guards against duplicate terminal sentinels: the exit paths in
+        # connect() (max_reconnect / auth_failed / non-auth subscribe error)
+        # and close_connection() (user_close) each try to enqueue exactly one
+        # terminal frame — this flag makes sure a second caller is a no-op.
+        self._terminal_emitted = False
 
     @property
     def queue(self) -> asyncio.Queue:
@@ -154,28 +166,36 @@ class AsyncWebsocketManager:
     async def _process_frame(self, frame: dict) -> None:
         """Handle control frames; put stream data on the queue."""
         op = frame.get("op")
-        # Bybit v5 sends pong ACKs as ``{"op": "ping", "ret_msg": "pong", ...}``
-        # rather than ``op == "pong"``. Recognise both forms — otherwise
-        # ``_last_pong`` never advances and the half-open detector fires
-        # after 30s, triggering an endless reconnect loop.
-        if op == "pong" or frame.get("ret_msg") == "pong":
+        # Bybit v5 sends pong ACKs as ``{"op": "ping", "ret_msg": "pong", ...}``.
+        # Require the op prefix so an unrelated subscribe/auth ACK that
+        # happens to echo ``ret_msg: "pong"`` (or a proxy that rewrites it)
+        # can't refresh ``_last_pong`` and mask a genuine half-open pipe.
+        if op == "pong" or (op == "ping" and frame.get("ret_msg") == "pong"):
             self._last_pong = time.monotonic()
             return
         if op == "ping":
+            # Server-initiated ping without ret_msg=="pong" — servers we've
+            # observed don't require a client-side pong echo (our own periodic
+            # ping via _keepalive_task is what Bybit correlates on), so ignore.
             return
         if op == "subscribe":
             if frame.get("success") is False:
-                ret_msg = frame.get("ret_msg", "")
+                # ``frame.get(..., "")`` only fires when the KEY is missing;
+                # a JSON-``null`` value comes through as Python None. Coerce
+                # explicitly so ``.lower()`` never crashes.
+                ret_msg = frame.get("ret_msg") or ""
                 if "not authorized" in ret_msg.lower():
-                    # Terminal auth error — surface to consumer instead of
-                    # tearing down the read loop with a bare CancelledError.
+                    # Terminal auth error — emit the terminal-contract
+                    # sentinel so consumers using the documented
+                    # ``if frame.get("type") == "terminal": break`` guard
+                    # actually see the shutdown signal.
                     logger.error(f"Subscription rejected (unauthorized): {frame}")
-                    await self._enqueue({
-                        "success": False,
-                        "ret_msg": ret_msg or "Request not authorized",
-                        "op": "subscribe",
-                    })
-                    self.ws_state = WSState.EXITING
+                    await self._emit_terminal(
+                        reason="auth_failed",
+                        success=False,
+                        ret_msg=ret_msg or "Request not authorized",
+                        extra={"op": "subscribe"},
+                    )
                     return
                 # Non-auth subscribe failure (e.g. invalid topic): surface to
                 # the consumer and keep the socket alive. Triggering a
@@ -187,6 +207,34 @@ class AsyncWebsocketManager:
                 logger.error(f"Subscribe error: {frame}")
                 await self._enqueue(frame)
             return
+        await self._enqueue(frame)
+
+    async def _emit_terminal(
+            self,
+            reason: str,
+            success: bool,
+            ret_msg: str,
+            extra: Optional[dict] = None,
+    ) -> None:
+        """Enqueue at most one terminal sentinel and transition to EXITING.
+
+        Guards against the double-terminal case where connect() already
+        emitted one (max_reconnect / auth_failed) and a subsequent
+        close_connection() would enqueue a second.
+        """
+        if self._terminal_emitted:
+            self.ws_state = WSState.EXITING
+            return
+        self._terminal_emitted = True
+        self.ws_state = WSState.EXITING
+        frame = {
+            "type": "terminal",
+            "reason": reason,
+            "success": success,
+            "ret_msg": ret_msg,
+        }
+        if extra:
+            frame.update(extra)
         await self._enqueue(frame)
 
     async def _enqueue(self, item: dict) -> None:
@@ -335,7 +383,7 @@ class AsyncWebsocketManager:
         endpoint = (
             self.url
             .replace("{SUBDOMAIN}", subdomain)
-            .replace("{DOMAIN}", DOMAIN_MAIN)
+            .replace("{DOMAIN}", self.domain)
             .replace("{TLD}", self.tld)
         )
         if self.proxy:
@@ -419,9 +467,19 @@ class AsyncWebsocketManager:
                 for msg in self.subscription_message:
                     await self.ws.send(msg)
 
-                # (Re)start keepalive.
+                # (Re)start keepalive. Await the old task after cancel — a
+                # bare cancel() only *schedules* CancelledError; without the
+                # await, the old coroutine can wake once from
+                # asyncio.sleep(PING_INTERVAL) and send a ping on the new
+                # socket in parallel with the new keepalive task.
                 if self._keepalive:
                     self._keepalive.cancel()
+                    try:
+                        await self._keepalive
+                    except asyncio.CancelledError:
+                        pass
+                    except Exception:
+                        logger.exception("Error while shutting down old keepalive")
                 self._keepalive = asyncio.create_task(self._keepalive_task())
 
                 # Start the read loop once — subsequent reconnects reuse it.
@@ -432,7 +490,10 @@ class AsyncWebsocketManager:
                 if self.downtime_callback is not None:
                     try:
                         result = self.downtime_callback()
-                        if asyncio.iscoroutine(result):
+                        # ``inspect.isawaitable`` (not ``iscoroutine``) so a
+                        # callback returning a Future / Task / any Awaitable
+                        # is awaited instead of silently dropped.
+                        if inspect.isawaitable(result):
                             await result
                     except Exception:
                         logger.exception("Downtime callback error")
@@ -444,17 +505,24 @@ class AsyncWebsocketManager:
                 # error to the consumer and bail out. Retrying up to
                 # MAX_RECONNECTS times risks Bybit rate-limiting the IP.
                 logger.error(f"Auth failed, aborting: {e}")
-                await self._enqueue({
-                    "type": "terminal",
-                    "reason": "auth_failed",
-                    "success": False,
-                    "ret_msg": str(e),
-                    "op": "auth",
-                })
-                self.ws_state = WSState.EXITING
+                await self._emit_terminal(
+                    reason="auth_failed", success=False,
+                    ret_msg=str(e), extra={"op": "auth"},
+                )
                 if self._keepalive is not None:
                     self._keepalive.cancel()
+                    try:
+                        await self._keepalive
+                    except asyncio.CancelledError:
+                        pass
+                    except Exception:
+                        logger.exception("Error while shutting down keepalive")
                     self._keepalive = None
+                # Close the ws + underlying connection context that
+                # ``_open_conn()`` just established — otherwise the socket
+                # stays half-open until process exit, leaking an FD and
+                # producing ResourceWarning under Python 3.11+.
+                await self._close_conn()
                 return
             except Exception:
                 logger.exception(f"Connect attempt {attempt + 1} failed")
@@ -469,20 +537,24 @@ class AsyncWebsocketManager:
 
         # Exhausted attempts — inform consumer with a distinct sentinel.
         logger.error("Max reconnections reached")
-        self.ws_state = WSState.EXITING
         # Cancel keepalive here — otherwise the task keeps sleeping at
         # PING_INTERVAL forever until close_connection() runs. Consumers who
         # treat the "Max reconnect reached" sentinel as authoritative and drop
         # the manager would otherwise leak the task.
         if self._keepalive is not None:
             self._keepalive.cancel()
+            try:
+                await self._keepalive
+            except asyncio.CancelledError:
+                pass
+            except Exception:
+                logger.exception("Error while shutting down keepalive")
             self._keepalive = None
-        await self._enqueue({
-            "type": "terminal",
-            "reason": "max_reconnect",
-            "success": False,
-            "ret_msg": "Max reconnect reached",
-        })
+        await self._close_conn()
+        await self._emit_terminal(
+            reason="max_reconnect", success=False,
+            ret_msg="Max reconnect reached",
+        )
 
     async def _reconnect(self):
         """Trigger a reconnect from within the read loop or keepalive."""
@@ -494,12 +566,12 @@ class AsyncWebsocketManager:
     async def close_connection(self):
         """Fully tear down the connection, keepalive, and read loop.
 
-        Idempotent — calling twice (e.g. explicit close then __aexit__)
-        is a no-op after the first.
+        Idempotent — a subsequent call after a terminal frame was already
+        emitted (max_reconnect / auth_failed / prior user_close) still runs
+        the remaining teardown but does NOT enqueue a second terminal frame,
+        preserving the "exactly one terminal sentinel" contract.
         """
-        if self.ws_state == WSState.EXITING and self._keepalive is None \
-                and self._handle_read_loop is None:
-            return
+        already_terminal = self._terminal_emitted
         self.ws_state = WSState.EXITING
 
         if self._keepalive is not None:
@@ -523,13 +595,13 @@ class AsyncWebsocketManager:
             self._handle_read_loop = None
 
         await self._close_conn()
-        # Signal any pending recv() so consumer sees clean shutdown.
-        await self._enqueue({
-            "type": "terminal",
-            "reason": "user_close",
-            "success": True,
-            "ret_msg": "connection closed by user",
-        })
+        # ``_emit_terminal`` is guarded by ``_terminal_emitted`` — safe to
+        # call unconditionally; the second caller becomes a no-op enqueue.
+        if not already_terminal:
+            await self._emit_terminal(
+                reason="user_close", success=True,
+                ret_msg="connection closed by user",
+            )
 
     async def recv(self, timeout: int = 5):
         try:
