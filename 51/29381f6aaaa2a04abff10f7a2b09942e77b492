@@ -1,0 +1,49 @@
+pybit/asyncio/ws/client.py
+  a7744f8c941c31d7 16-18,40,49,89,98-111,113,121-131,135,140-146,155-161
+README.md
+  a7744f8c941c31d7 120
+pybit/asyncio/client.py
+  a7744f8c941c31d7 8-9,23-26,78-81,93-98,123-126,138,150-157,166,170-179,194-195,197,201-204,218-223,226-227,261,268-276,278-279,281,288,303,305
+examples/async_http_quickstart.py
+  a7744f8c941c31d7 23,27,30
+tests/test_async_pybit.py
+  a7744f8c941c31d7 15-23,113-129,192-193,206-207,222-223,246,271,290,318,334,410,437-606,635,668,698
+pybit/_http_manager.py
+  a7744f8c941c31d7 42,44-45
+CHANGELOG.md
+  a7744f8c941c31d7 37-45
+pybit/asyncio/builder.py
+  a7744f8c941c31d7 27-31,33
+pybit/asyncio/ws/manager.py
+  a7744f8c941c31d7 21-22,77,94,101-107,117-123,137-141,302-303,444,446-447,454,456-457
+pybit/asyncio/utils.py
+  a7744f8c941c31d7 5-8,11-14
+pybit/asyncio/http/_v5_account.py
+  a7744f8c941c31d7 8,357
+examples/async_websocket_example_quickstart.py
+  a7744f8c941c31d7 25
+pybit/asyncio/http/_v5_user.py
+  a7744f8c941c31d7 321-336
+pybit/account.py
+  a7744f8c941c31d7 23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2-bit.10+672fbf0",
+  "base_commit_sha": "5129381f6aaaa2a04abff10f7a2b09942e77b492",
+  "prompts": {
+    "a7744f8c941c31d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7c974a86-134f-40a7-aa13-738fad774651",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "doris-xiao-bybit",
+      "messages": [],
+      "total_additions": 410,
+      "total_deletions": 76,
+      "accepted_lines": 410,
+      "overriden_lines": 0
+    }
+  }
+}
