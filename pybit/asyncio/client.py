@@ -307,12 +307,15 @@ class AsyncClient:
             return s_json
 
     def _log_request(self, method, path, params, headers):
-        """Log request; API key is redacted so log aggregators don't collect it."""
+        """Log request; API key and signature are redacted so log aggregators
+        (Datadog / ELK / CloudWatch) don't collect credentials from any
+        debug-level line."""
         if not self.log_requests:
             return
         redacted = dict(headers)
-        if "X-BAPI-API-KEY" in redacted:
-            redacted["X-BAPI-API-KEY"] = "***REDACTED***"
+        for sensitive in ("X-BAPI-API-KEY", "X-BAPI-SIGN"):
+            if sensitive in redacted:
+                redacted[sensitive] = "***REDACTED***"
         if params:
             self.logger.debug(f"Request -> {method} {path}. Body: {params}. Headers: {redacted}")
         else:
@@ -331,13 +334,27 @@ class AsyncClient:
             )
             raw_reset = response.headers.get("X-Bapi-Limit-Reset-Timestamp")
             if raw_reset is not None:
-                limit_reset_time = int(raw_reset)
-                limit_reset_str = dt.fromtimestamp(
-                    limit_reset_time / 10 ** 3
-                ).strftime("%H:%M:%S.%f")[:-3]
-                delay_time = (limit_reset_time - _helpers.generate_timestamp()) / 10 ** 3
+                try:
+                    limit_reset_time = int(raw_reset)
+                except (TypeError, ValueError):
+                    # Malformed header — treat like a missing header rather
+                    # than propagating an uncaught ValueError from the retry
+                    # path.
+                    self.logger.warning(
+                        f"Malformed X-Bapi-Limit-Reset-Timestamp: {raw_reset!r}"
+                    )
+                    delay_time = self.retry_delay
+                    limit_reset_str = "X-Bapi-Limit-Reset-Timestamp - malformed."
+                else:
+                    limit_reset_str = dt.fromtimestamp(
+                        limit_reset_time / 10 ** 3
+                    ).strftime("%H:%M:%S.%f")[:-3]
+                    delay_time = (limit_reset_time - _helpers.generate_timestamp()) / 10 ** 3
             else:
-                delay_time = 5
+                # Fall back to the user-configured retry_delay instead of a
+                # hardcoded 5s so the CI test doesn't block for 5 real seconds
+                # even when retry_delay=0, and so users can tune the fallback.
+                delay_time = self.retry_delay
                 limit_reset_str = "X-Bapi-Limit-Reset-Timestamp - not found in headers."
             error_msg = (
                 f"API rate limit will reset at {limit_reset_str}. "

@@ -571,12 +571,17 @@ def test_async_account_no_mro_clash_with_market():
 
 
 def test_set_no_convert_repay_enum_reachable():
-    """API-02: Account.SET_NO_CONVERT_REPAY must resolve at import time
-    (previously an AttributeError at first call)."""
+    """API-02: Account.NO_CONVERT_REPAY must resolve at import time.
+
+    Both ``manual_no_convert_repay`` (current) and ``set_no_convert_repay``
+    (deprecated alias) are exposed to keep the previously-released API
+    reachable for one release cycle.
+    """
     from pybit.account import Account
     from pybit.asyncio.unified_trading import AsyncHTTP
 
-    assert str(Account.SET_NO_CONVERT_REPAY) == "/v5/account/no-convert-repay"
+    assert str(Account.NO_CONVERT_REPAY) == "/v5/account/no-convert-repay"
+    assert hasattr(AsyncHTTP, "manual_no_convert_repay")
     assert hasattr(AsyncHTTP, "set_no_convert_repay")
 
 

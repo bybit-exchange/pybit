@@ -78,10 +78,12 @@ endpoints and methods. Usage examples on the `HTTP` methods can
 be found in the [examples folder](https://github.com/bybit-exchange/pybit/tree/master/examples).
 
 ## Async Usage (experimental)
-`pybit.asyncio` provides an async client that mirrors the sync surface. The
-shape may change in the next minor release — pin the version if you need
-stability. Signature bytes are identical to the sync path, so error modes
-are equivalent.
+`pybit.asyncio` provides an async HTTP client covering the full v5 REST
+surface, and an async WebSocket client covering **a subset** of sync
+streams (public kline and private user streams — see the WebSocket section
+below for gaps). The shape may change in the next minor release — pin the
+version if you need stability. Signature bytes are identical to the sync
+path, so error modes are equivalent.
 
 HTTP — recommended lifecycle uses `async with`:
 ```python
@@ -89,15 +91,18 @@ import asyncio
 from pybit.asyncio.unified_trading import AsyncHTTP
 
 async def main():
-    async with AsyncHTTP(testnet=True, api_key="...", api_secret="...") as client:
+    # ``record_request_time`` returns (payload, latency) from every call;
+    # ``return_response_headers`` returns (payload, latency, headers).
+    async with AsyncHTTP(
+        testnet=True,
+        api_key="...",
+        api_secret="...",
+        record_request_time=True,
+    ) as client:
         # Read-only public endpoint.
-        book = await client.get_orderbook(category="linear", symbol="BTCUSDT")
-
-        # Observability hooks are also supported:
-        (result, latency) = await AsyncHTTP(
-            testnet=True, record_request_time=True,
-        ).get_orderbook(category="linear", symbol="BTCUSDT")
-        # (result, latency, headers) with return_response_headers=True
+        result, latency = await client.get_orderbook(
+            category="linear", symbol="BTCUSDT"
+        )
 
 asyncio.run(main())
 ```

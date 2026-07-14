@@ -335,6 +335,22 @@ class AccountHTTP(_V5HTTPManager):
             auth=True,
         )
 
+    def set_no_convert_repay(self, **kwargs):
+        """Deprecated alias for :meth:`manual_no_convert_repay`.
+
+        The upstream endpoint no longer accepts ``noConvertRepay=on|off``;
+        pass ``coin`` and ``amount`` instead. This alias will be removed in a
+        future release.
+        """
+        import warnings
+        warnings.warn(
+            "set_no_convert_repay is deprecated; use manual_no_convert_repay "
+            "with coin/amount instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.manual_no_convert_repay(**kwargs)
+
     def borrow(self, **kwargs):
         """Borrow a certain amount of a coin.
 

@@ -9,10 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Experimental** `pybit.asyncio` subpackage: async HTTP client (`AsyncHTTP`)
-  covering all v5 REST endpoints via aiohttp, and an async WebSocket client
-  (`AsyncWebsocketClient`) covering public kline and private user streams via
-  the `websockets` library. Signing logic is reused from the sync path via
-  `RequestBuilder`, so signatures are byte-identical.
+  covering the full v5 REST surface via aiohttp, and an async WebSocket
+  client (`AsyncWebsocketClient`) covering a subset of the sync streams
+  (public kline and private user streams) via the `websockets` library.
+  Signing logic is reused from the sync path via `RequestBuilder`, so
+  signatures are byte-identical.
 
   Basic usage:
 
@@ -37,14 +38,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Notable async-vs-sync differences to be aware of:
   - Pull model instead of callback model: `await ws.recv()` returns each frame.
   - `record_request_time=True` returns `(payload, timedelta)`; matches sync.
-  - `AsyncClient` must be constructed inside a running event loop (there is no
-    `loop` kwarg; construct inside an `async` function or use `async with`).
+  - `AsyncHTTP.init_client()` must run inside a running event loop (it creates
+    the aiohttp `ClientSession`). Construction is loop-free; the recommended
+    lifecycle is `async with AsyncHTTP(...) as client:`.
   - The async logger uses `NullHandler` — configure logging in your app.
   - No binary/multipart upload path yet (`AsyncP2PHTTP.upload_chat_file` raises
     `NotImplementedError` with a clear message).
+  - No order-placement-over-WS: `WebSocketTrading` and `WebsocketSpreadTrading`
+    are sync-only in this release.
+  - WebSocket stream helpers are limited to `spot_kline_stream`,
+    `futures_kline_stream`, `user_futures_stream`, and `user_spot_stream`.
+    Arbitrary topics can still be subscribed via the futures helper (accepts
+    raw topic strings); for typed helpers over orderbook/ticker/trade/wallet/
+    position/execution/system_status use the sync client for now.
 
   Endpoints not yet implemented on the async client:
   - `AsyncP2PHTTP.upload_chat_file` (multipart uploads; use the sync client)
+  - `WebSocketTrading` (place / amend / cancel over WS; use the sync client)
+  - `WebsocketSpreadTrading` (spread trading over WS; use the sync client)
 
 ## [5.17.0] - 2026-07-08
 

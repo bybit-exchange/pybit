@@ -42,6 +42,15 @@ class WSState(enum.Enum):
     RECONNECTING = 4
 
 
+class AuthFailedError(ConnectionError):
+    """Raised when the server rejects the WebSocket auth frame.
+
+    Distinct from generic connection errors so ``connect()`` can bail out
+    immediately instead of retrying up to ``MAX_RECONNECTS`` times with
+    known-bad credentials (which risks IP-level rate limiting).
+    """
+
+
 def _redact_proxy(proxy: Optional[str]) -> str:
     """Return a proxy string safe for logs.
 
@@ -157,8 +166,15 @@ class AsyncWebsocketManager:
                     })
                     self.ws_state = WSState.EXITING
                     return
+                # Non-auth subscribe failure (e.g. invalid topic): surface to
+                # the consumer and keep the socket alive. Triggering a
+                # reconnect here would resend the same failing subscription
+                # message on every attempt — connect() itself succeeds each
+                # cycle, so its MAX_RECONNECTS counter never advances and the
+                # loop turns into a tight tear-down/rebuild storm, potentially
+                # getting the IP rate-limited or banned.
                 logger.error(f"Subscribe error: {frame}")
-                self.ws_state = WSState.RECONNECTING
+                await self._enqueue(frame)
             return
         await self._enqueue(frame)
 
@@ -272,7 +288,7 @@ class AsyncWebsocketManager:
         if frame.get("op") != "auth":
             raise ConnectionError(f"Expected auth ACK, got: {frame}")
         if frame.get("success") is False:
-            raise ConnectionError(
+            raise AuthFailedError(
                 f"WS auth failed: {frame.get('ret_msg') or 'unknown'}"
             )
 
@@ -280,6 +296,10 @@ class AsyncWebsocketManager:
         try:
             while True:
                 await asyncio.sleep(PING_INTERVAL)
+                if self.ws_state == WSState.EXITING:
+                    # Terminal state (user close, auth fail, max reconnects) —
+                    # exit instead of sleeping forever at PING_INTERVAL.
+                    return
                 if self.ws is None or self.ws_state != WSState.STREAMING:
                     continue
                 await self.ws.send(self.custom_ping_message)
@@ -400,6 +420,21 @@ class AsyncWebsocketManager:
                 return
             except asyncio.CancelledError:
                 raise
+            except AuthFailedError as e:
+                # Bad credentials will never succeed on retry — surface the
+                # error to the consumer and bail out. Retrying up to
+                # MAX_RECONNECTS times risks Bybit rate-limiting the IP.
+                logger.error(f"Auth failed, aborting: {e}")
+                await self._enqueue({
+                    "success": False,
+                    "ret_msg": str(e),
+                    "op": "auth",
+                })
+                self.ws_state = WSState.EXITING
+                if self._keepalive is not None:
+                    self._keepalive.cancel()
+                    self._keepalive = None
+                return
             except Exception:
                 logger.exception(f"Connect attempt {attempt + 1} failed")
                 if self.ws_state == WSState.EXITING:
@@ -413,11 +448,18 @@ class AsyncWebsocketManager:
 
         # Exhausted attempts — inform consumer with a distinct sentinel.
         logger.error("Max reconnections reached")
+        self.ws_state = WSState.EXITING
+        # Cancel keepalive here — otherwise the task keeps sleeping at
+        # PING_INTERVAL forever until close_connection() runs. Consumers who
+        # treat the "Max reconnect reached" sentinel as authoritative and drop
+        # the manager would otherwise leak the task.
+        if self._keepalive is not None:
+            self._keepalive.cancel()
+            self._keepalive = None
         await self._enqueue({
             "success": False,
             "ret_msg": "Max reconnect reached",
         })
-        self.ws_state = WSState.EXITING
 
     async def _reconnect(self):
         """Trigger a reconnect from within the read loop or keepalive."""

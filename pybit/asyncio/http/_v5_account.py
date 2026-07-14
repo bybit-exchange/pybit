@@ -315,11 +315,12 @@ class AsyncAccountHTTP(AsyncClient):
             auth=True,
         )
 
-    async def set_no_convert_repay(self, **kwargs) -> dict:
-        """Turn off auto repayment using liability. Available only for UTA 2.0.
+    async def manual_no_convert_repay(self, **kwargs) -> dict:
+        """Manual Repay Without Asset Conversion
 
         Required args:
-            noConvertRepay (string): "on" or "off"
+            coin (string): coin name, uppercase only
+            amount (string): Repay amount.
 
         Returns:
             Request results as dictionary.
@@ -329,10 +330,26 @@ class AsyncAccountHTTP(AsyncClient):
         """
         return await self._submit_request(
             method="POST",
-            path=f"{self.endpoint}{Account.SET_NO_CONVERT_REPAY}",
+            path=f"{self.endpoint}{Account.NO_CONVERT_REPAY}",
             query=kwargs,
             auth=True,
         )
+
+    async def set_no_convert_repay(self, **kwargs) -> dict:
+        """Deprecated alias for :meth:`manual_no_convert_repay`.
+
+        The upstream endpoint no longer accepts ``noConvertRepay=on|off``;
+        pass ``coin`` and ``amount`` instead. This alias will be removed in a
+        future release.
+        """
+        import warnings
+        warnings.warn(
+            "set_no_convert_repay is deprecated; use manual_no_convert_repay "
+            "with coin/amount instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return await self.manual_no_convert_repay(**kwargs)
 
     async def borrow(self, **kwargs) -> dict:
         """Borrow a certain amount of a coin.
