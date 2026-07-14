@@ -57,6 +57,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `WebSocketTrading` (place / amend / cancel over WS; use the sync client)
   - `WebsocketSpreadTrading` (spread trading over WS; use the sync client)
 
+  Extra HTTP hooks (undocumented in `README`, listed here for completeness):
+  - `proxy=` — proxy URL forwarded to `aiohttp` per-request and to
+    `websockets_proxy` for the WS client (extras: `pip install pybit[proxy]`).
+  - `trace_configs=` — list of `aiohttp.TraceConfig` for latency/telemetry
+    observers; passed straight into `ClientSession`.
+
+### Changed
+- `SpreadHTTP` public methods gained a `spread_` prefix to avoid namespace
+  collisions with sibling HTTP mixins under `unified_trading.HTTP`
+  (e.g. `get_trade_history` → `spread_get_trade_history`). This is a
+  breaking rename for callers of the affected methods; update call sites
+  when upgrading.
+
+### Fixed
+- Sync client: `recv_window` bump on `retCode == 10002` now propagates to
+  subsequent retries via `_RetryableRequestError` (was silently discarded
+  by a local variable, so the retry hit the same skew and failed again).
+- Sync client: `X-Bapi-Limit-Reset-Timestamp` is now optional in the
+  10006 rate-limit path; when absent, falls back to a ~2s delay
+  (previously raised `KeyError` on responses that omit the header).
+- Sync client: response error code is now read from `retCode` with a
+  fallback to legacy `ret_code`, and `retMsg` / `ret_msg` are treated
+  symmetrically — legacy P2P/OTC shapes are no longer silently returned
+  as "success" when they carry a non-zero legacy code.
+- Sync client: `_log_request` now redacts `X-BAPI-API-KEY` and
+  `X-BAPI-SIGN` before writing to the debug log (parity with async).
+- `AssetHTTP.get_fiat_balance` / `get_fiat_reference_price` removed:
+  these were duplicates of `FiatHTTP` methods hitting the same URLs and
+  were only reachable via MRO ordering — behavior is unchanged for
+  callers who continue to use the aggregated `unified_trading.HTTP`.
+
 ## [5.17.0] - 2026-07-08
 
 ### Changed

@@ -707,21 +707,6 @@ class AsyncAssetHTTP(AsyncClient):
             auth=True,
         )
 
-    async def get_fiat_balance(self, **kwargs) -> dict:
-        """
-        Returns:
-            Request results as dictionary.
-
-        Additional information:
-            https://bybit-exchange.github.io/docs/v5/asset/fiat-convert/balance-query
-        """
-        return await self._submit_request(
-            method="GET",
-            path=f"{self.endpoint}{Asset.GET_FIAT_BALANCE}",
-            query=kwargs,
-            auth=True,
-        )
-
     async def get_fiat_trading_pair_list(self, **kwargs) -> dict:
         """
         Returns:
@@ -770,24 +755,6 @@ class AsyncAssetHTTP(AsyncClient):
         return await self._submit_request(
             method="POST",
             path=f"{self.endpoint}{Asset.REQUEST_A_QUOTE_FIAT_CONVERT}",
-            query=kwargs,
-            auth=True,
-        )
-
-    async def get_fiat_reference_price(self, **kwargs) -> dict:
-        """
-        Required args:
-            symbol (string): Coin pair, such as EUR-USDT
-
-        Returns:
-            Request results as dictionary.
-
-        Additional information:
-            https://bybit-exchange.github.io/docs/v5/asset/fiat-convert/reference-price
-        """
-        return await self._submit_request(
-            method="GET",
-            path=f"{self.endpoint}{Asset.GET_FIAT_REFERENCE_PRICE}",
             query=kwargs,
             auth=True,
         )

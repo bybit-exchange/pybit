@@ -22,8 +22,12 @@ setup(
         "Intended Audience :: Developers",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Framework :: AsyncIO",
     ],
     keywords="bybit api connector",
     packages=find_packages(exclude=("tests", "tests.*", "examples", "examples.*")),
@@ -32,7 +36,9 @@ setup(
         "requests>=2.22.0",
         "websocket-client>=1.5.0",
         "pycryptodome>=3.20.0",
-        "aiohttp>=3.9,<4",
+        # 3.10.11 is the first release without CVE-2024-23334 /
+        # CVE-2024-27306 / CVE-2024-52304.
+        "aiohttp>=3.10.11,<4",
         "websockets>=12,<16",
     ],
     extras_require={

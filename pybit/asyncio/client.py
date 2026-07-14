@@ -213,7 +213,9 @@ class AsyncClient:
                 await self._handle_network_error(e, retries_attempted)
             except (JSONDecodeError, aiohttp.ContentTypeError) as e:
                 last_exc = e
-                await self._handle_json_error(e, retries_attempted)
+                await self._handle_json_error(
+                    e, retries_attempted, method, path, req_params or query,
+                )
 
         message = (
             f"Retries exceeded maximum ({self.max_retries}). "
@@ -362,9 +364,11 @@ class AsyncClient:
             )
 
         self.logger.error(f"{error_msg}. Retrying...")
-        # Guard against pathological negative durations (clock skew, expired
-        # reset timestamp) — asyncio.sleep accepts them but we log & clamp.
-        await asyncio.sleep(max(0, delay_time))
+        # Clamp both ways: negative durations (clock skew / expired reset)
+        # would silently sleep 0; a malformed far-future timestamp would
+        # otherwise wedge the retry for minutes-to-hours before Cancel is
+        # observed. 30s covers Bybit's real rate-limit windows with margin.
+        await asyncio.sleep(max(0, min(30, delay_time)))
         return recv_window
 
     async def _handle_network_error(self, error, retries_attempted):
@@ -375,14 +379,21 @@ class AsyncClient:
         else:
             raise error
 
-    async def _handle_json_error(self, error, retries_attempted):
+    async def _handle_json_error(
+            self,
+            error,
+            retries_attempted,
+            method: str = "",
+            path: str = "",
+            params=None,
+    ):
         """Handle JSON decoding errors."""
         if self.force_retry and retries_attempted > 0:
             self.logger.error(f"{error}. Retrying JSON decode...")
             await asyncio.sleep(self.retry_delay)
         else:
             raise FailedRequestError(
-                request="JSON decoding",
+                request=f"{method} {path}: {params}" if method else "JSON decoding",
                 message="Conflict. Could not decode JSON.",
                 status_code=409,
                 time=dt.now(timezone.utc).strftime("%H:%M:%S"),

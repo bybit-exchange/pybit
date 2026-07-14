@@ -397,6 +397,14 @@ class AsyncWebsocketManager:
                 self.ws_state = WSState.STREAMING
                 self._last_pong = time.monotonic()
 
+                if not self.subscription_message:
+                    # Silently accepting this used to leave authenticated
+                    # streams reading forever with nothing subscribed; log at
+                    # INFO so a misconfigured caller notices.
+                    logger.info(
+                        "No subscription messages provided; stream will only "
+                        "surface control frames"
+                    )
                 for msg in self.subscription_message:
                     await self.ws.send(msg)
 

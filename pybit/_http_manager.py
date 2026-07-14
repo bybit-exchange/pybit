@@ -430,12 +430,18 @@ class _V5HTTPManager:
         return self.client.prepare_request(requests.Request(method, path, data=params, headers=headers))
 
     def _log_request(self, method, path, params, headers):
-        """Log request."""
-        if self.log_requests:
-            if params:
-                self.logger.debug(f"Request -> {method} {path}. Body: {params}. Headers: {headers}")
-            else:
-                self.logger.debug(f"Request -> {method} {path}. Headers: {headers}")
+        """Log request; API key and signature are redacted so log
+        aggregators don't collect credentials from any debug-level line."""
+        if not self.log_requests:
+            return
+        redacted = dict(headers) if headers else {}
+        for sensitive in ("X-BAPI-API-KEY", "X-BAPI-SIGN"):
+            if sensitive in redacted:
+                redacted[sensitive] = "***REDACTED***"
+        if params:
+            self.logger.debug(f"Request -> {method} {path}. Body: {params}. Headers: {redacted}")
+        else:
+            self.logger.debug(f"Request -> {method} {path}. Headers: {redacted}")
 
     def _check_status_code(self, response, method, path, params):
         """Check HTTP status code."""
