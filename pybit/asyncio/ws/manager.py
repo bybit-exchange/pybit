@@ -72,6 +72,17 @@ class AsyncWebsocketManager:
 
     Consumers pull frames off ``.recv()``. Connect/reconnect, keepalive, and
     auth are handled internally.
+
+    Terminal frame contract: when the stream shuts down (max-reconnect,
+    auth failure, or explicit user close), exactly one sentinel is enqueued
+    carrying ``"type": "terminal"``, a ``"reason"`` code, plus
+    ``success`` and ``ret_msg``. Consumers should treat any frame with
+    ``type == "terminal"`` as "the stream is done — stop calling recv()".
+
+    ``reason`` values:
+      - ``"max_reconnect"``  — connect() exhausted MAX_RECONNECTS.
+      - ``"auth_failed"``    — server rejected the auth frame.
+      - ``"user_close"``     — application called ``close_connection()``.
     """
 
     MAX_RECONNECTS = 60
@@ -434,6 +445,8 @@ class AsyncWebsocketManager:
                 # MAX_RECONNECTS times risks Bybit rate-limiting the IP.
                 logger.error(f"Auth failed, aborting: {e}")
                 await self._enqueue({
+                    "type": "terminal",
+                    "reason": "auth_failed",
                     "success": False,
                     "ret_msg": str(e),
                     "op": "auth",
@@ -465,6 +478,8 @@ class AsyncWebsocketManager:
             self._keepalive.cancel()
             self._keepalive = None
         await self._enqueue({
+            "type": "terminal",
+            "reason": "max_reconnect",
             "success": False,
             "ret_msg": "Max reconnect reached",
         })
@@ -510,6 +525,8 @@ class AsyncWebsocketManager:
         await self._close_conn()
         # Signal any pending recv() so consumer sees clean shutdown.
         await self._enqueue({
+            "type": "terminal",
+            "reason": "user_close",
             "success": True,
             "ret_msg": "connection closed by user",
         })

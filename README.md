@@ -79,11 +79,17 @@ be found in the [examples folder](https://github.com/bybit-exchange/pybit/tree/m
 
 ## Async Usage (experimental)
 `pybit.asyncio` provides an async HTTP client covering the full v5 REST
-surface, and an async WebSocket client covering **a subset** of sync
-streams (public kline and private user streams — see the WebSocket section
-below for gaps). The shape may change in the next minor release — pin the
-version if you need stability. Signature bytes are identical to the sync
-path, so error modes are equivalent.
+surface, and an async WebSocket client covering the full public / private /
+system-status stream surface. Order placement over WebSocket
+(`WebSocketTrading` / `WebsocketSpreadTrading`) is not yet available on the
+async client — use the sync client for those. The shape may change in the
+next minor release — pin the version if you need stability. Signature bytes
+are identical to the sync path, so error modes are equivalent.
+
+Install the extras before importing `pybit.asyncio`:
+```
+pip install "pybit[async]"
+```
 
 HTTP — recommended lifecycle uses `async with`:
 ```python

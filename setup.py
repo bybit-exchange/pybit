@@ -36,13 +36,15 @@ setup(
         "requests>=2.22.0",
         "websocket-client>=1.5.0",
         "pycryptodome>=3.20.0",
-        # 3.10.11 is the first release without CVE-2024-23334 /
-        # CVE-2024-27306 / CVE-2024-52304.
-        "aiohttp>=3.10.11,<4",
-        "websockets>=12,<16",
     ],
     extras_require={
-        # Only needed if you use AsyncWebsocketManager with a proxy URL.
+        # Async HTTP + WebSocket surface. Import guards under
+        # ``pybit.asyncio.__init__`` raise an informative ImportError with the
+        # ``pip install pybit[async]`` hint if either dependency is missing.
+        # 3.10.11 is the first aiohttp release without CVE-2024-23334 /
+        # CVE-2024-27306 / CVE-2024-52304.
+        "async": ["aiohttp>=3.10.11,<4", "websockets>=12,<16"],
+        # Proxy support for AsyncWebsocketManager (uses websockets_proxy).
         "proxy": ["websockets_proxy>=0.1.3,<1"],
     },
 )

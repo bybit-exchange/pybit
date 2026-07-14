@@ -701,3 +701,623 @@ def test_ws_auth_raises_on_timeout(monkeypatch):
 
     with pytest.raises(ConnectionError, match="timed out"):
         _run(m._auth())
+
+
+# ---------------------------------------------------------------------------
+# HTTP retry-branch coverage: network errors, JSON errors, non-200 status.
+# ---------------------------------------------------------------------------
+
+def _install_side_effects(client, side_effects):
+    """Wire a session whose ``get``/``post`` raise/return per-call side effects.
+
+    ``side_effects`` items are either exception classes/instances (raised on
+    the corresponding call) or MagicMock responses (returned as the async
+    context-manager result).
+    """
+    it = iter(side_effects)
+
+    def _method_stub(**kwargs):
+        v = next(it)
+        if isinstance(v, BaseException) or (
+            isinstance(v, type) and issubclass(v, BaseException)
+        ):
+            raise v
+        return v
+
+    session = MagicMock()
+    session.get = MagicMock(side_effect=_method_stub)
+    session.post = MagicMock(side_effect=_method_stub)
+    session.close = AsyncMock()
+    client._session = session
+    return session
+
+
+def test_force_retry_network_error_recovers():
+    """L11a: with ``force_retry=True``, a transient ClientConnectionError
+    triggers a retry and the next successful response is returned."""
+    import aiohttp
+    from pybit.asyncio.client import AsyncClient
+
+    c = AsyncClient(
+        api_key=_API_KEY, api_secret=_API_SECRET,
+        retry_delay=0, force_retry=True, max_retries=3,
+    )
+
+    ok = _make_response_mock(200, {"retCode": 0, "retMsg": "OK", "result": {}})
+    _install_side_effects(c, [aiohttp.ClientConnectionError("boom"), ok])
+
+    result = _run(
+        c._submit_request(
+            method="GET",
+            path="https://api-testnet.bybit.com/v5/market/tickers",
+            query={"category": "linear"},
+        )
+    )
+    assert result["retCode"] == 0
+
+
+def test_network_error_without_force_retry_propagates():
+    """L11a: without force_retry, a ClientConnectionError is surfaced to the
+    caller (wrapped as FailedRequestError) instead of retried silently."""
+    import aiohttp
+    from pybit.asyncio.client import AsyncClient
+
+    c = AsyncClient(
+        api_key=_API_KEY, api_secret=_API_SECRET,
+        retry_delay=0, force_retry=False, max_retries=3,
+    )
+    _install_side_effects(c, [aiohttp.ClientConnectionError("boom")])
+
+    # _handle_network_error re-raises when force_retry is False. That escapes
+    # the retry loop before the loop-exit FailedRequestError can fire, so
+    # callers see the underlying aiohttp error.
+    with pytest.raises(aiohttp.ClientConnectionError):
+        _run(
+            c._submit_request(
+                method="GET",
+                path="https://api-testnet.bybit.com/v5/market/tickers",
+                query={"category": "linear"},
+            )
+        )
+
+
+def test_force_retry_json_error_recovers():
+    """L11b: JSON decode errors on a bad body → retry when force_retry.
+
+    ``json.JSONDecodeError`` is the branch we care about here — aiohttp's
+    ``ContentTypeError`` extends ``ClientResponseError`` and is dispatched
+    through ``_handle_network_error``, so the JSON-specific handler is only
+    exercised by real decode errors on a valid content-type response.
+    """
+    from json import JSONDecodeError
+    from pybit.asyncio.client import AsyncClient
+
+    c = AsyncClient(
+        api_key=_API_KEY, api_secret=_API_SECRET,
+        retry_delay=0, force_retry=True, max_retries=3,
+    )
+
+    bad = _make_response_mock(200, {})
+    bad.json = AsyncMock(side_effect=JSONDecodeError("bad", "junk", 0))
+    ok = _make_response_mock(200, {"retCode": 0, "retMsg": "OK"})
+    _install_side_effects(c, [bad, ok])
+
+    result = _run(
+        c._submit_request(
+            method="GET",
+            path="https://api-testnet.bybit.com/v5/market/tickers",
+            query={"category": "linear"},
+        )
+    )
+    assert result["retCode"] == 0
+
+
+def test_json_error_without_force_retry_reports_method_path():
+    """L11b + L3: terminal FailedRequestError from _handle_json_error carries
+    method / path / params context, not the generic ``"JSON decoding"``."""
+    from json import JSONDecodeError
+    from pybit.asyncio.client import AsyncClient
+
+    c = AsyncClient(
+        api_key=_API_KEY, api_secret=_API_SECRET,
+        retry_delay=0, force_retry=False, max_retries=1,
+    )
+
+    bad = _make_response_mock(200, {})
+    bad.json = AsyncMock(side_effect=JSONDecodeError("bad", "junk", 0))
+    _install_side_effects(c, [bad])
+
+    with pytest.raises(FailedRequestError) as exc_info:
+        _run(
+            c._submit_request(
+                method="POST",
+                path="/v5/order/create",
+                query={"category": "linear"},
+                auth=True,
+            )
+        )
+    assert "POST" in str(exc_info.value)
+    assert "/v5/order/create" in str(exc_info.value)
+
+
+def test_check_status_code_403_message():
+    """L12: 403 must produce the IP-rate-limit / US-IP message,
+    not the generic non-200 one. FailedRequestError lowercases messages."""
+    from pybit.asyncio.client import AsyncClient
+
+    c = AsyncClient(retry_delay=0)
+    resp = _make_response_mock(403, {})
+
+    with pytest.raises(FailedRequestError) as exc_info:
+        _run(c._check_status_code(resp, "GET", "/x", ""))
+    assert exc_info.value.status_code == 403
+    assert "ip rate limit" in str(exc_info.value).lower()
+
+
+def test_check_status_code_500_generic_message():
+    """L12: 500 falls back to the generic non-200 message."""
+    from pybit.asyncio.client import AsyncClient
+
+    c = AsyncClient(retry_delay=0)
+    resp = _make_response_mock(500, {})
+
+    with pytest.raises(FailedRequestError) as exc_info:
+        _run(c._check_status_code(resp, "GET", "/x", ""))
+    assert exc_info.value.status_code == 500
+    assert "not 200" in str(exc_info.value).lower()
+
+
+def test_handle_retryable_error_clamps_upper_bound(monkeypatch):
+    """L23: a far-future X-Bapi-Limit-Reset-Timestamp must not cause a
+    minutes-long uninterruptible-except-cancel sleep."""
+    from pybit.asyncio.client import AsyncClient
+
+    # Pin ``now`` so we can compute a reset one hour in the future
+    # deterministically.
+    now_ms = 1_700_000_000_000
+    monkeypatch.setattr(
+        "pybit.asyncio.client._helpers.generate_timestamp", lambda: now_ms
+    )
+
+    c = AsyncClient(retry_delay=0)
+    reset_ms = now_ms + 3_600_000  # +1 hour → raw delay 3600s
+    resp = _make_response_mock(
+        200,
+        {"retCode": 10006, "retMsg": "rate limit"},
+        headers={"X-Bapi-Limit-Reset-Timestamp": str(reset_ms)},
+    )
+
+    slept = []
+
+    async def _fake_sleep(t):
+        slept.append(t)
+
+    monkeypatch.setattr("pybit.asyncio.client.asyncio.sleep", _fake_sleep)
+    _run(
+        c._handle_retryable_error(resp, 10006, "rate limit", recv_window=5000)
+    )
+    # Raw would be 3600; clamp caps at 30.
+    assert slept == [30]
+
+
+# ---------------------------------------------------------------------------
+# WS state-machine regressions for the fixes in this PR.
+# ---------------------------------------------------------------------------
+
+def test_non_auth_subscribe_error_surfaces_without_reconnect():
+    """H1 regression: subscribe ``success=false`` without ``"not authorized"``
+    must enqueue the error frame and KEEP THE SOCKET ALIVE — not switch to
+    RECONNECTING (which would spin a tear-down / rebuild storm because the
+    same failing subscription is replayed on every reconnect).
+    """
+    from pybit.asyncio.ws.manager import AsyncWebsocketManager, WSState
+
+    m = AsyncWebsocketManager(
+        channel_type="linear",
+        url="wss://x/y",
+        subscription_message=["sub-1"],
+    )
+    m.ws_state = WSState.STREAMING
+
+    frame = {
+        "op": "subscribe",
+        "success": False,
+        "ret_msg": "Invalid symbol: FOO",
+    }
+    _run(m._process_frame(frame))
+
+    # State must be preserved.
+    assert m.ws_state == WSState.STREAMING
+    # Frame must reach the consumer.
+    got = m.queue.get_nowait()
+    assert got is frame
+
+
+def test_unauthorized_subscribe_error_transitions_to_exiting():
+    """Complement to the H1 regression: the ``"not authorized"`` branch
+    still terminates the stream (unchanged behavior)."""
+    from pybit.asyncio.ws.manager import AsyncWebsocketManager, WSState
+
+    m = AsyncWebsocketManager(
+        channel_type="private",
+        url="wss://x/y",
+        subscription_message=[],
+    )
+    m.ws_state = WSState.STREAMING
+
+    _run(m._process_frame({
+        "op": "subscribe",
+        "success": False,
+        "ret_msg": "Request not authorized",
+    }))
+    assert m.ws_state == WSState.EXITING
+    got = m.queue.get_nowait()
+    assert got["success"] is False
+
+
+def test_auth_raises_auth_failed_error_subtype():
+    """M5 regression: _auth raises the AuthFailedError subclass on server
+    reject, so connect() can distinguish credential rejection from generic
+    transport failures."""
+    from pybit.asyncio.ws.manager import AsyncWebsocketManager, AuthFailedError
+
+    m = AsyncWebsocketManager(
+        channel_type="private",
+        url="wss://x/y",
+        subscription_message=[],
+        api_key=_API_KEY,
+        api_secret=_API_SECRET,
+    )
+
+    async def _send(_):
+        pass
+
+    async def _recv():
+        import json as _json
+        return _json.dumps({"op": "auth", "success": False, "ret_msg": "invalid signature"})
+
+    ws_mock = MagicMock()
+    ws_mock.send = _send
+    ws_mock.recv = _recv
+    m.ws = ws_mock
+
+    with pytest.raises(AuthFailedError, match="invalid signature"):
+        _run(m._auth())
+    # AuthFailedError must remain a ConnectionError subclass for any caller
+    # already catching that type.
+    assert issubclass(AuthFailedError, ConnectionError)
+
+
+def test_connect_bails_immediately_on_auth_failed():
+    """M5 regression: AuthFailedError inside connect() short-circuits to
+    EXITING with a single ``op=auth`` sentinel — no MAX_RECONNECTS storm."""
+    from pybit.asyncio.ws import manager as manager_mod
+    from pybit.asyncio.ws.manager import (
+        AsyncWebsocketManager, AuthFailedError, WSState,
+    )
+
+    m = AsyncWebsocketManager(
+        channel_type="private",
+        url="wss://x/y",
+        subscription_message=[],
+        api_key=_API_KEY,
+        api_secret=_API_SECRET,
+    )
+
+    open_calls = []
+
+    async def _fake_open():
+        open_calls.append(1)
+        m.ws = MagicMock()
+
+    async def _fake_close():
+        m.ws = None
+
+    async def _fake_auth():
+        raise AuthFailedError("WS auth failed: bad key")
+
+    m._open_conn = _fake_open
+    m._close_conn = _fake_close
+    m._auth = _fake_auth
+
+    _run(m.connect())
+
+    assert m.ws_state == WSState.EXITING
+    # Exactly one attempt — no retry storm.
+    assert len(open_calls) == 1
+    # Consumer sees a single auth sentinel with the terminal contract.
+    sentinel = m.queue.get_nowait()
+    assert sentinel == {
+        "type": "terminal",
+        "reason": "auth_failed",
+        "success": False,
+        "ret_msg": "WS auth failed: bad key",
+        "op": "auth",
+    }
+    assert m.queue.empty()
+
+
+def test_keepalive_exits_on_state_exiting(monkeypatch):
+    """M2 regression: _keepalive_task must break out when ws_state becomes
+    EXITING instead of sleeping forever at PING_INTERVAL."""
+    from pybit.asyncio.ws import manager as manager_mod
+    from pybit.asyncio.ws.manager import AsyncWebsocketManager, WSState
+
+    monkeypatch.setattr(manager_mod, "PING_INTERVAL", 0.01)
+
+    m = AsyncWebsocketManager(
+        channel_type="linear",
+        url="wss://x/y",
+        subscription_message=[],
+    )
+    # Start in STREAMING; flip to EXITING shortly after keepalive begins.
+    m.ws_state = WSState.STREAMING
+    m.ws = MagicMock()
+    m.ws.send = AsyncMock()
+
+    async def _drive():
+        task = asyncio.ensure_future(m._keepalive_task())
+        await asyncio.sleep(0.02)
+        m.ws_state = WSState.EXITING
+        # Should return by itself within a couple of PING_INTERVALs, not hang.
+        await asyncio.wait_for(task, timeout=0.5)
+        return task
+
+    task = _run(_drive())
+    assert task.done()
+    assert task.exception() is None
+
+
+def test_connect_max_reconnects_cancels_keepalive(monkeypatch):
+    """M2 regression: when connect() exhausts MAX_RECONNECTS, an already-
+    running keepalive task must be cancelled — otherwise consumers who drop
+    the manager after seeing the "Max reconnect reached" sentinel leak it."""
+    from pybit.asyncio.ws import manager as manager_mod
+    from pybit.asyncio.ws.manager import AsyncWebsocketManager, WSState
+
+    # Force MAX_RECONNECTS to 1 so the test doesn't loop 60 times.
+    monkeypatch.setattr(AsyncWebsocketManager, "MAX_RECONNECTS", 1)
+    # Zero out the backoff so the test doesn't wait.
+    monkeypatch.setattr(manager_mod, "get_reconnect_wait", lambda attempt: 0)
+
+    m = AsyncWebsocketManager(
+        channel_type="linear",
+        url="wss://x/y",
+        subscription_message=[],
+    )
+
+    # A pre-existing keepalive task (as if a prior successful connect had
+    # started one and the connection later died).
+    async def _keep_alive_forever():
+        await asyncio.sleep(3600)
+
+    async def _drive():
+        # Capture the task reference *before* connect() clears the attribute
+        # so we can assert on its state afterwards.
+        m._keepalive = asyncio.ensure_future(_keep_alive_forever())
+        ka_ref = m._keepalive
+
+        async def _boom():
+            raise ConnectionError("simulated transport failure")
+
+        m._open_conn = _boom
+        m._close_conn = AsyncMock()
+
+        await m.connect()
+        # Give the event loop a tick so the cancellation propagates.
+        try:
+            await ka_ref
+        except asyncio.CancelledError:
+            pass
+        return ka_ref
+
+    ka = _run(_drive())
+
+    assert m.ws_state == WSState.EXITING
+    # The task attribute is cleared and the underlying task cancelled.
+    assert m._keepalive is None
+    assert ka.cancelled() or ka.done()
+
+
+def test_missing_async_deps_raises_actionable_error(monkeypatch):
+    """M7: if aiohttp or websockets isn't installed, importing
+    ``pybit.asyncio`` must raise ImportError with the ``pip install
+    pybit[async]`` hint — not a cryptic ModuleNotFoundError three imports
+    deep."""
+    import builtins
+    import sys
+    from pybit.asyncio import _check_async_deps
+
+    real_import = builtins.__import__
+
+    def _blocking_import(name, *args, **kwargs):
+        if name == "aiohttp" or name.startswith("aiohttp."):
+            raise ImportError(f"No module named '{name}'")
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", _blocking_import)
+
+    with pytest.raises(ImportError, match=r"pip install \"pybit\[async\]\""):
+        _check_async_deps()
+
+
+def _sub_args(mgr, frame_index=0):
+    """Extract the ``args`` list from ``subscription_message[frame_index]``."""
+    import json as _json
+    return _json.loads(mgr.subscription_message[frame_index])["args"]
+
+
+def test_public_typed_factories_emit_expected_topics():
+    """M3: sync-parity typed public factories produce the exact topic
+    strings Bybit expects. Symbol fan-out and multi-arg shapes covered."""
+    from pybit.asyncio.ws import AsyncWebsocketClient
+
+    c = AsyncWebsocketClient(channel_type="linear", testnet=True)
+
+    assert _sub_args(c.orderbook_stream(50, "BTCUSDT")) == ["orderbook.50.BTCUSDT"]
+    assert _sub_args(c.rpi_orderbook_stream("BTCUSDT")) == ["orderbook.rpi.BTCUSDT"]
+    assert _sub_args(c.trade_stream(["BTCUSDT", "ETHUSDT"])) == [
+        "publicTrade.BTCUSDT", "publicTrade.ETHUSDT",
+    ]
+    assert _sub_args(c.ticker_stream("BTCUSDT")) == ["tickers.BTCUSDT"]
+    assert _sub_args(c.kline_stream(60, "BTCUSDT")) == ["kline.60.BTCUSDT"]
+    assert _sub_args(c.all_liquidation_stream("BTCUSDT")) == ["allLiquidation.BTCUSDT"]
+    assert _sub_args(c.lt_kline_stream(60, "BTC3LUSDT")) == ["kline_lt.60.BTC3LUSDT"]
+    assert _sub_args(c.lt_ticker_stream("BTC3LUSDT")) == ["tickers_lt.BTC3LUSDT"]
+    assert _sub_args(c.lt_nav_stream("BTC3LUSDT")) == ["lt.BTC3LUSDT"]
+    assert _sub_args(c.insurance_pool_stream("USDT")) == ["insurance.USDT"]
+    assert _sub_args(c.price_limit_stream("BTCUSDT")) == ["priceLimit.BTCUSDT"]
+
+
+def test_private_typed_factories_emit_expected_topics():
+    """M3: sync-parity typed private factories produce Bybit's canonical
+    topic strings (position, order, execution, wallet, greeks, spread.*)."""
+    from pybit.asyncio.ws import AsyncWebsocketClient
+
+    c = AsyncWebsocketClient(
+        channel_type="private", testnet=True,
+        api_key=_API_KEY, api_secret=_API_SECRET,
+    )
+    assert _sub_args(c.position_stream()) == ["position"]
+    assert _sub_args(c.order_stream()) == ["order"]
+    assert _sub_args(c.execution_stream()) == ["execution"]
+    assert _sub_args(c.wallet_stream()) == ["wallet"]
+    assert _sub_args(c.greek_stream()) == ["greeks"]
+    assert _sub_args(c.spread_order_stream()) == ["spread.order"]
+    assert _sub_args(c.spread_execution_stream()) == ["spread.execution"]
+    assert _sub_args(c.fast_execution_stream()) == ["execution.fast"]
+    assert _sub_args(c.fast_execution_stream("linear")) == ["execution.fast.linear"]
+
+
+def test_system_status_stream_requires_misc_status_channel():
+    """M3: system_status_stream must reject non-``misc/status`` channels
+    and produce the canonical ``system.status`` topic on the right one."""
+    from pybit import exceptions
+    from pybit.asyncio.ws import AsyncWebsocketClient
+
+    linear = AsyncWebsocketClient(channel_type="linear", testnet=True)
+    with pytest.raises(exceptions.InvalidChannelTypeError):
+        linear.system_status_stream()
+
+    status = AsyncWebsocketClient(channel_type="misc/status", testnet=True)
+    assert _sub_args(status.system_status_stream()) == ["system.status"]
+
+
+def test_public_factories_reject_private_channel():
+    """M3: guard rail — public typed factories refuse a private channel."""
+    from pybit import exceptions
+    from pybit.asyncio.ws import AsyncWebsocketClient
+
+    c = AsyncWebsocketClient(
+        channel_type="private", testnet=True,
+        api_key=_API_KEY, api_secret=_API_SECRET,
+    )
+    with pytest.raises(exceptions.InvalidChannelTypeError):
+        c.orderbook_stream(1, "BTCUSDT")
+    with pytest.raises(exceptions.InvalidChannelTypeError):
+        c.trade_stream("BTCUSDT")
+
+
+def test_private_factories_reject_public_channel():
+    """M3: guard rail — private typed factories refuse a public channel."""
+    from pybit import exceptions
+    from pybit.asyncio.ws import AsyncWebsocketClient
+
+    c = AsyncWebsocketClient(channel_type="linear", testnet=True)
+    with pytest.raises(exceptions.InvalidChannelTypeError):
+        c.position_stream()
+    with pytest.raises(exceptions.InvalidChannelTypeError):
+        c.wallet_stream()
+
+
+def test_spot_typed_factory_chunks_subscribe_frames():
+    """M3: spot channel splits subscribe frames at
+    ``SPOT_MAX_CONNECTION_ARGS`` — 15 symbols → 10 + 5."""
+    from pybit.asyncio.ws import AsyncWebsocketClient
+
+    c = AsyncWebsocketClient(channel_type="spot", testnet=True)
+    syms = [f"SYM{i}USDT" for i in range(15)]
+    mgr = c.orderbook_stream(1, syms)
+    assert len(mgr.subscription_message) == 2
+    assert len(_sub_args(mgr, 0)) == 10
+    assert len(_sub_args(mgr, 1)) == 5
+
+
+def test_close_connection_emits_terminal_sentinel():
+    """L7: user_close terminal sentinel carries ``type=terminal`` +
+    ``reason=user_close`` so consumers can identify stream shutdown
+    without inspecting per-path ``success`` flags."""
+    from pybit.asyncio.ws.manager import AsyncWebsocketManager
+
+    m = AsyncWebsocketManager(
+        channel_type="linear",
+        url="wss://x/y",
+        subscription_message=[],
+    )
+    # No keepalive / read loop running, no ws — close_connection should
+    # still terminate cleanly and enqueue the sentinel.
+    _run(m.close_connection())
+    sentinel = m.queue.get_nowait()
+    assert sentinel["type"] == "terminal"
+    assert sentinel["reason"] == "user_close"
+    assert sentinel["success"] is True
+
+
+def test_max_reconnect_emits_terminal_sentinel(monkeypatch):
+    """L7: max-reconnect terminal sentinel carries the terminal contract."""
+    from pybit.asyncio.ws import manager as manager_mod
+    from pybit.asyncio.ws.manager import AsyncWebsocketManager
+
+    monkeypatch.setattr(AsyncWebsocketManager, "MAX_RECONNECTS", 1)
+    monkeypatch.setattr(manager_mod, "get_reconnect_wait", lambda attempt: 0)
+
+    m = AsyncWebsocketManager(
+        channel_type="linear",
+        url="wss://x/y",
+        subscription_message=[],
+    )
+
+    async def _boom():
+        raise ConnectionError("transport dead")
+
+    m._open_conn = _boom
+    m._close_conn = AsyncMock()
+
+    _run(m.connect())
+    sentinel = m.queue.get_nowait()
+    assert sentinel["type"] == "terminal"
+    assert sentinel["reason"] == "max_reconnect"
+    assert sentinel["success"] is False
+
+
+def test_connect_logs_empty_subscription(caplog):
+    """L8 regression: empty subscription_message logs an INFO warning so a
+    misconfigured caller notices they'll never receive stream frames."""
+    import logging as _logging
+    from pybit.asyncio.ws import manager as manager_mod
+    from pybit.asyncio.ws.manager import AsyncWebsocketManager
+
+    m = AsyncWebsocketManager(
+        channel_type="linear",
+        url="wss://x/y",
+        subscription_message=[],
+    )
+
+    ws_mock = MagicMock()
+    ws_mock.send = AsyncMock()
+
+    async def _open():
+        m.ws = ws_mock
+
+    m._open_conn = _open
+    m._close_conn = AsyncMock()
+
+    # Stop the read loop from actually running.
+    m._read_loop = AsyncMock()
+    m._keepalive_task = AsyncMock()
+
+    with caplog.at_level(_logging.INFO, logger="pybit.asyncio.ws.manager"):
+        _run(m.connect())
+
+    combined = " ".join(r.getMessage() for r in caplog.records)
+    assert "No subscription messages provided" in combined

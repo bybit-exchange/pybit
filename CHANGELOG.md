@@ -10,8 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Experimental** `pybit.asyncio` subpackage: async HTTP client (`AsyncHTTP`)
   covering the full v5 REST surface via aiohttp, and an async WebSocket
-  client (`AsyncWebsocketClient`) covering a subset of the sync streams
-  (public kline and private user streams) via the `websockets` library.
+  client (`AsyncWebsocketClient`) covering the full public / private /
+  system-status stream surface (`orderbook_stream`, `ticker_stream`,
+  `kline_stream`, `wallet_stream`, `position_stream`, `system_status_stream`,
+  …) via the `websockets` library.
   Signing logic is reused from the sync path via `RequestBuilder`, so
   signatures are byte-identical.
 
@@ -28,15 +30,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   module layout may change in the next minor release. Pin the version if you
   need stability.
 
-  New dependencies (declared in `install_requires`):
-  - `aiohttp>=3.9,<4`
+  Optional async dependencies (install with `pip install "pybit[async]"`;
+  sync-only users are **not** affected):
+  - `aiohttp>=3.10.11,<4`
   - `websockets>=12,<16`
 
-  Optional (proxy support only, install with `pip install pybit[proxy]`):
+  Importing `pybit.asyncio` without the extras installed raises a single
+  `ImportError` with the `pip install "pybit[async]"` hint, rather than a
+  cryptic `ModuleNotFoundError` deep inside the package.
+
+  Optional (proxy support only, install with `pip install "pybit[proxy]"`):
   - `websockets_proxy>=0.1.3,<1`
 
   Notable async-vs-sync differences to be aware of:
   - Pull model instead of callback model: `await ws.recv()` returns each frame.
+  - Terminal frame contract: shutdown emits a single sentinel with
+    `type="terminal"` and a `reason` code (`"max_reconnect"`,
+    `"auth_failed"`, or `"user_close"`). Consumers should treat any
+    frame with `type=="terminal"` as "stream is done — stop calling
+    `recv()`".
   - `record_request_time=True` returns `(payload, timedelta)`; matches sync.
   - `AsyncHTTP.init_client()` must run inside a running event loop (it creates
     the aiohttp `ClientSession`). Construction is loop-free; the recommended
@@ -46,11 +58,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `NotImplementedError` with a clear message).
   - No order-placement-over-WS: `WebSocketTrading` and `WebsocketSpreadTrading`
     are sync-only in this release.
-  - WebSocket stream helpers are limited to `spot_kline_stream`,
-    `futures_kline_stream`, `user_futures_stream`, and `user_spot_stream`.
-    Arbitrary topics can still be subscribed via the futures helper (accepts
-    raw topic strings); for typed helpers over orderbook/ticker/trade/wallet/
-    position/execution/system_status use the sync client for now.
+
+  WebSocket typed stream factories on `AsyncWebsocketClient`:
+  - Private (require `channel_type="private"`): `position_stream`,
+    `order_stream`, `execution_stream`, `fast_execution_stream`,
+    `wallet_stream`, `greek_stream`, `spread_order_stream`,
+    `spread_execution_stream`.
+  - Public (require `channel_type` in `linear` / `inverse` / `spot` /
+    `option`): `orderbook_stream`, `rpi_orderbook_stream`, `trade_stream`,
+    `ticker_stream`, `kline_stream`, `all_liquidation_stream`,
+    `lt_kline_stream`, `lt_ticker_stream`, `lt_nav_stream`,
+    `insurance_pool_stream`, `price_limit_stream`.
+  - System (`channel_type="misc/status"`): `system_status_stream`.
+  - Raw shortcuts (accept full topic strings, chunk spot to
+    `SPOT_MAX_CONNECTION_ARGS`): `spot_kline_stream`, `futures_kline_stream`.
+  - `user_futures_stream` / `user_spot_stream` are kept as compatibility
+    aliases from the initial release; `order_stream` supersedes both.
 
   Endpoints not yet implemented on the async client:
   - `AsyncP2PHTTP.upload_chat_file` (multipart uploads; use the sync client)
