@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Experimental** `pybit.asyncio` subpackage: async HTTP client (`AsyncHTTP`)
+  covering all v5 REST endpoints via aiohttp, and an async WebSocket client
+  (`AsyncWebsocketClient`) covering public kline and private user streams via
+  the `websockets` library. Signing logic is reused from the sync path via
+  `RequestBuilder`, so signatures are byte-identical.
+
+  Basic usage:
+
+  ```python
+  from pybit.asyncio.unified_trading import AsyncHTTP
+
+  async with AsyncHTTP(testnet=True, api_key="...", api_secret="...") as client:
+      resp = await client.get_orderbook(category="linear", symbol="BTCUSDT")
+  ```
+
+  The async surface is experimental; class names, method signatures, and
+  module layout may change in the next minor release. Pin the version if you
+  need stability.
+
+  New dependencies (declared in `install_requires`):
+  - `aiohttp>=3.9,<4`
+  - `websockets>=12,<16`
+
+  Optional (proxy support only, install with `pip install pybit[proxy]`):
+  - `websockets_proxy>=0.1.3,<1`
+
+  Endpoints not yet implemented on the async client:
+  - `AsyncP2PHTTP.upload_chat_file` (multipart uploads; use the sync client)
+
 ## [5.17.0] - 2026-07-08
 
 ### Changed
