@@ -1,0 +1,93 @@
+pybit/asyncio/http/_v5_asset.py
+  a7744f8c941c31d7 1-827
+pybit/asyncio/http/_v5_spot_leverage_token.py
+  a7744f8c941c31d7 1-95
+pybit/asyncio/http/_v5_user.py
+  a7744f8c941c31d7 1-320
+pybit/asyncio/__init__.py
+  a7744f8c941c31d7 1-12
+pybit/asyncio/http/_v5_earn.py
+  a7744f8c941c31d7 1-115
+pybit/asyncio/http/_v5_trade.py
+  a7744f8c941c31d7 1-270
+pybit/asyncio/http/_v5_fiat.py
+  a7744f8c941c31d7 1-132
+setup.py
+  a7744f8c941c31d7 1,13,29,32-36,38-41
+pybit/asyncio/http/__init__.py
+  a7744f8c941c31d7 1-41
+pybit/asyncio/http/_v5_misc.py
+  a7744f8c941c31d7 1-53
+requirements.txt
+  a7744f8c941c31d7 3-6
+pybit/asyncio/http/_v5_market.py
+  a7744f8c941c31d7 1-404
+pybit/asyncio/unified_trading.py
+  a7744f8c941c31d7 1-57
+pybit/asyncio/ws/client.py
+  a7744f8c941c31d7 1-125
+pybit/asyncio/http/_v5_rfq.py
+  a7744f8c941c31d7 1-264
+pybit/asyncio/http/_v5_crypto_loan.py
+  a7744f8c941c31d7 1-701
+examples/async_websocket_example_quickstart.py
+  a7744f8c941c31d7 1-62
+pybit/asyncio/utils.py
+  a7744f8c941c31d7 1-17
+pybit/asyncio/builder.py
+  a7744f8c941c31d7 1-49
+pybit/asyncio/ws/utils.py
+  a7744f8c941c31d7 1-14
+pybit/asyncio/http/_v5_position.py
+  a7744f8c941c31d7 1-349
+pybit/asyncio/http/_v5_pre_upgrade.py
+  a7744f8c941c31d7 1-130
+examples/async_http_quickstart.py
+  a7744f8c941c31d7 1-44
+pybit/asyncio/http/_v5_rate_limit.py
+  a7744f8c941c31d7 1-78
+tests/test_async_pybit.py
+  a7744f8c941c31d7 1-503
+pybit/asyncio/http/_v5_p2p.py
+  a7744f8c941c31d7 1-408
+pybit/asyncio/http/_v5_institutional_loan.py
+  a7744f8c941c31d7 1-117
+pybit/asyncio/ws/manager.py
+  a7744f8c941c31d7 1-445
+pybit/asyncio/http/_v5_spot_margin_trade.py
+  a7744f8c941c31d7 1-394
+README.md
+  a7744f8c941c31d7 80-131
+pybit/asyncio/http/_v5_broker.py
+  a7744f8c941c31d7 1-191
+CHANGELOG.md
+  a7744f8c941c31d7 8-39
+pybit/asyncio/http/_v5_account.py
+  a7744f8c941c31d7 1-500
+pybit/asyncio/http/_v5_spread.py
+  a7744f8c941c31d7 1-174
+pybit/asyncio/client.py
+  a7744f8c941c31d7 1-331
+pybit/asyncio/ws/__init__.py
+  a7744f8c941c31d7 1-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2-bit.10+672fbf0",
+  "base_commit_sha": "51522ea9b2c1e3993714c2df38fea4e87a6edd54",
+  "prompts": {
+    "a7744f8c941c31d7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7c974a86-134f-40a7-aa13-738fad774651",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "doris-xiao-bybit",
+      "messages": [],
+      "total_additions": 12290,
+      "total_deletions": 427,
+      "accepted_lines": 7326,
+      "overriden_lines": 0
+    }
+  }
+}
