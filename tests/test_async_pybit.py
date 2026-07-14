@@ -4,13 +4,21 @@ The retry tests mock aiohttp's ClientSession so nothing hits the network.
 """
 import asyncio
 import importlib
-from json import JSONDecodeError
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from pybit._http_manager import _V5HTTPManager, _RetryableRequestError
 from pybit.exceptions import FailedRequestError, InvalidRequestError
+
+
+def _run(coro):
+    """Test helper: run ``coro`` in a fresh event loop.
+
+    Uses ``asyncio.run`` semantics (new loop per call) to avoid the
+    ``get_event_loop()`` deprecation path on 3.12+.
+    """
+    return asyncio.run(coro)
 
 
 _API_KEY = "CFEJUGQEQPPHGOHGHM"
@@ -102,6 +110,23 @@ def test_signature_parity_sync_vs_async(monkeypatch):
     assert sync_headers["X-BAPI-RECV-WINDOW"] == async_headers["X-BAPI-RECV-WINDOW"]
 
 
+def test_prepare_payload_post_empty_body_matches_sync():
+    """CORR-01 regression: POST with empty params must serialise to "{}",
+    matching sync's ``prepare_payload("POST", {})``. Anything else diverges
+    the signature bytes for endpoints like request_demo_trading_funds."""
+    from pybit.asyncio.builder import RequestBuilder
+
+    builder = RequestBuilder(
+        api_key=_API_KEY,
+        api_secret=_API_SECRET,
+        rsa_authentication=False,
+    )
+    assert builder.prepare_payload("POST", {}) == "{}"
+    assert builder.prepare_payload("POST", None) == "{}"
+    # GET short-circuit still preserved.
+    assert builder.prepare_payload("GET", {}) == ""
+
+
 # ---------------------------------------------------------------------------
 # AsyncClient default retry_codes / ignore_codes semantics.
 # ---------------------------------------------------------------------------
@@ -164,8 +189,8 @@ def test_handle_response_raises_retryable_sentinel():
     resp = _make_response_mock(200, {"retCode": 10006, "retMsg": "rate limited"})
 
     with pytest.raises(_RetryableRequestError) as exc_info:
-        asyncio.get_event_loop().run_until_complete(
-            c._handle_response(resp, "GET", "/x", "", recv_window=5000, response_time=0.0)
+        _run(
+            c._handle_response(resp, "GET", "/x", "", recv_window=5000, start_time=0.0)
         )
     # 10006 does not touch recv_window — should pass through unchanged.
     assert exc_info.value.recv_window == 5000
@@ -178,8 +203,8 @@ def test_handle_response_10002_expands_recv_window():
     resp = _make_response_mock(200, {"retCode": 10002, "retMsg": "recv_window"})
 
     with pytest.raises(_RetryableRequestError) as exc_info:
-        asyncio.get_event_loop().run_until_complete(
-            c._handle_response(resp, "GET", "/x", "", recv_window=5000, response_time=0.0)
+        _run(
+            c._handle_response(resp, "GET", "/x", "", recv_window=5000, start_time=0.0)
         )
     assert exc_info.value.recv_window == 7500
 
@@ -194,8 +219,8 @@ def test_handle_response_10006_missing_reset_header_does_not_raise():
 
     # Should raise the sentinel, not TypeError.
     with pytest.raises(_RetryableRequestError):
-        asyncio.get_event_loop().run_until_complete(
-            c._handle_response(resp, "GET", "/x", "", recv_window=5000, response_time=0.0)
+        _run(
+            c._handle_response(resp, "GET", "/x", "", recv_window=5000, start_time=0.0)
         )
 
 
@@ -218,7 +243,7 @@ def test_submit_request_retries_and_expands_recv_window():
 
     c._request_builder.prepare_headers = _spy_prepare
 
-    result = asyncio.get_event_loop().run_until_complete(
+    result = _run(
         c._submit_request(
             method="GET",
             path="https://api-testnet.bybit.com/v5/order/realtime",
@@ -243,7 +268,7 @@ def test_submit_request_ignores_ignored_codes():
     resp = _make_response_mock(200, {"retCode": 110043, "retMsg": "leverage not changed"})
     _install_session(c, [resp])
 
-    result = asyncio.get_event_loop().run_until_complete(
+    result = _run(
         c._submit_request(
             method="POST",
             path="https://api-testnet.bybit.com/v5/position/set-leverage",
@@ -262,7 +287,7 @@ def test_submit_request_raises_on_non_ignored_error():
     _install_session(c, [resp])
 
     with pytest.raises(InvalidRequestError):
-        asyncio.get_event_loop().run_until_complete(
+        _run(
             c._submit_request(
                 method="POST",
                 path="https://api-testnet.bybit.com/v5/order/create",
@@ -290,7 +315,7 @@ def test_submit_request_max_retries_exhausted():
     _install_session(c, responses)
 
     with pytest.raises(FailedRequestError):
-        asyncio.get_event_loop().run_until_complete(
+        _run(
             c._submit_request(
                 method="GET",
                 path="https://api-testnet.bybit.com/v5/order/realtime",
@@ -306,7 +331,7 @@ def test_close_connection_is_null_safe():
 
     c = AsyncClient()
     # No init_client() → _session is None. Must not raise.
-    asyncio.get_event_loop().run_until_complete(c.close_connection())
+    _run(c.close_connection())
 
 
 def test_log_request_masks_api_key(caplog):
@@ -382,7 +407,7 @@ def test_public_stream_does_not_leak_keys_but_forwards_proxy():
         api_secret="should-be-dropped",
         proxy="http://proxy.example:8080",
     )
-    mgr = c.futures_kline_stream(symbols=["kline.60.BTCUSDT"])
+    mgr = c.futures_kline_stream(topics=["kline.60.BTCUSDT"])
     assert mgr.api_key is None
     assert mgr.api_secret is None
     assert mgr.proxy == "http://proxy.example:8080"
@@ -407,6 +432,176 @@ def test_ws_manager_private_auth_expire_is_per_instance():
         private_auth_expire=7,
     )
     assert m.private_auth_expire == 7
+
+
+def test_pong_recognized_via_ret_msg_field():
+    """ASYNC-09: Bybit sends ``{"op":"ping","ret_msg":"pong",...}`` — the
+    old code only checked ``op == "pong"`` and would leave _last_pong stale."""
+    from pybit.asyncio.ws.manager import AsyncWebsocketManager, WSState
+
+    m = AsyncWebsocketManager(
+        channel_type="linear",
+        url="wss://x/y",
+        subscription_message=[],
+    )
+    m.ws_state = WSState.STREAMING
+    m._last_pong = 0.0
+
+    # Bybit's real pong shape:
+    _run(m._process_frame({
+        "op": "ping",
+        "ret_msg": "pong",
+        "success": True,
+    }))
+    assert m._last_pong > 0.0
+
+
+def test_pong_recognized_via_op_field():
+    """Belt-and-braces: the plain ``op == "pong"`` form still works."""
+    from pybit.asyncio.ws.manager import AsyncWebsocketManager, WSState
+
+    m = AsyncWebsocketManager(
+        channel_type="linear",
+        url="wss://x/y",
+        subscription_message=[],
+    )
+    m.ws_state = WSState.STREAMING
+    m._last_pong = 0.0
+
+    _run(m._process_frame({"op": "pong"}))
+    assert m._last_pong > 0.0
+
+
+def test_demo_flag_flows_to_manager():
+    """ASYNC-06: passing demo=True on the client must land on the manager
+    so it can pick DEMO_SUBDOMAIN_* when connecting."""
+    from pybit.asyncio.ws import AsyncWebsocketClient
+
+    c = AsyncWebsocketClient(channel_type="linear", testnet=True, demo=True)
+    mgr = c.futures_kline_stream(topics=["kline.60.BTCUSDT"])
+    assert mgr.demo is True
+
+
+def test_public_wss_honors_tld():
+    """ASYNC-07: the public URL must contain a {TLD} placeholder that the
+    tld kwarg can replace."""
+    from pybit.asyncio.ws.client import PUBLIC_WSS
+
+    assert "{TLD}" in PUBLIC_WSS
+    # And the {DOMAIN} placeholder is present too.
+    assert "{DOMAIN}" in PUBLIC_WSS
+
+
+def test_legacy_ret_code_error_not_silently_dropped():
+    """CORR-09: ret_code (legacy P2P/OTC form) must be recognised, not
+    treated as success."""
+    from pybit.asyncio.client import AsyncClient
+
+    c = AsyncClient(api_key=_API_KEY, api_secret=_API_SECRET, retry_delay=0)
+    resp = _make_response_mock(200, {"ret_code": 10001, "ret_msg": "bad param"})
+    _install_session(c, [resp])
+
+    with pytest.raises(InvalidRequestError) as exc_info:
+        _run(
+            c._submit_request(
+                method="POST",
+                path="https://api-testnet.bybit.com/v5/p2p/item/info",
+                query={"itemId": "1"},
+                auth=True,
+            )
+        )
+    assert "bad param" in str(exc_info.value)
+
+
+def test_record_request_time_returns_timedelta():
+    """CORR-03: parity with sync — response_time is a timedelta."""
+    from datetime import timedelta
+    from pybit.asyncio.client import AsyncClient
+
+    c = AsyncClient(record_request_time=True, retry_delay=0)
+    resp = _make_response_mock(200, {"retCode": 0, "retMsg": "OK", "result": {}})
+    _install_session(c, [resp])
+
+    result = _run(
+        c._submit_request(
+            method="GET",
+            path="https://api-testnet.bybit.com/v5/market/time",
+            query={},
+        )
+    )
+    payload, elapsed = result
+    assert payload["retCode"] == 0
+    assert isinstance(elapsed, timedelta)
+
+
+def test_submit_request_rejects_after_close():
+    """ASYNC-04: post-close submission raises a clean FailedRequestError
+    rather than AttributeError on ``getattr(None, method)``."""
+    from pybit.asyncio.client import AsyncClient
+
+    c = AsyncClient(retry_delay=0)
+    _run(c.close_connection())
+    assert c._closed is True
+
+    with pytest.raises(FailedRequestError):
+        _run(
+            c._submit_request(
+                method="GET",
+                path="https://api-testnet.bybit.com/v5/market/time",
+                query={},
+            )
+        )
+
+
+def test_async_client_no_longer_accepts_loop_kwarg():
+    """ASYNC-14: the deprecated ``loop`` kwarg has been removed."""
+    from pybit.asyncio.client import AsyncClient
+
+    with pytest.raises(TypeError):
+        AsyncClient(loop="unused")
+
+
+def test_async_account_no_mro_clash_with_market():
+    """API-03 regression: account/instruments-info must be reachable."""
+    from pybit.asyncio.unified_trading import AsyncHTTP
+
+    assert hasattr(AsyncHTTP, "get_account_instruments_info")
+    # Market's get_instruments_info still there:
+    assert hasattr(AsyncHTTP, "get_instruments_info")
+
+
+def test_set_no_convert_repay_enum_reachable():
+    """API-02: Account.SET_NO_CONVERT_REPAY must resolve at import time
+    (previously an AttributeError at first call)."""
+    from pybit.account import Account
+    from pybit.asyncio.unified_trading import AsyncHTTP
+
+    assert str(Account.SET_NO_CONVERT_REPAY) == "/v5/account/no-convert-repay"
+    assert hasattr(AsyncHTTP, "set_no_convert_repay")
+
+
+def test_affiliate_sub_list_available():
+    """API-01: AsyncUserHTTP.get_affiliate_sub_list is not missing."""
+    from pybit.asyncio.unified_trading import AsyncHTTP
+
+    assert hasattr(AsyncHTTP, "get_affiliate_sub_list")
+
+
+def test_module_logger_uses_null_handler_only():
+    """QUAL-04 / CORR-14: instantiating AsyncClient must not attach a
+    StreamHandler to the module logger — that duplicates output when the
+    host app configures logging."""
+    import logging as _logging
+    from pybit.asyncio.client import AsyncClient
+
+    logger = _logging.getLogger("pybit.asyncio.client")
+    for h in list(logger.handlers):
+        # A NullHandler is fine; no StreamHandler should be present.
+        assert not isinstance(h, _logging.StreamHandler) or isinstance(h, _logging.NullHandler)
+
+    AsyncClient()
+    for h in logger.handlers:
+        assert not isinstance(h, _logging.StreamHandler) or isinstance(h, _logging.NullHandler)
 
 
 def test_ws_auth_reads_ack_inline_and_succeeds():
@@ -437,7 +632,7 @@ def test_ws_auth_reads_ack_inline_and_succeeds():
     ws_mock.recv = _recv
     m.ws = ws_mock
 
-    asyncio.get_event_loop().run_until_complete(m._auth())
+    _run(m._auth())
     # sent one auth frame, no exception raised.
     assert len(sent) == 1
     import json as _json
@@ -470,7 +665,7 @@ def test_ws_auth_raises_on_server_reject():
     m.ws = ws_mock
 
     with pytest.raises(ConnectionError, match="bad key"):
-        asyncio.get_event_loop().run_until_complete(m._auth())
+        _run(m._auth())
 
 
 def test_ws_auth_raises_on_timeout(monkeypatch):
@@ -500,4 +695,4 @@ def test_ws_auth_raises_on_timeout(monkeypatch):
     m.ws = ws_mock
 
     with pytest.raises(ConnectionError, match="timed out"):
-        asyncio.get_event_loop().run_until_complete(m._auth())
+        _run(m._auth())

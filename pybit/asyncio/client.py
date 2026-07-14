@@ -5,7 +5,8 @@ from json import JSONDecodeError
 from typing import Optional, Set
 from datetime import (
     datetime as dt,
-    timezone
+    timedelta,
+    timezone,
 )
 
 import aiohttp
@@ -18,6 +19,10 @@ from pybit.exceptions import (
     InvalidRequestError,
 )
 from pybit.asyncio.builder import RequestBuilder
+
+# Library-level NullHandler — the application is responsible for configuring
+# logging output; we only need to prevent the "no handlers" warning.
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 class AsyncClient:
@@ -42,7 +47,6 @@ class AsyncClient:
             referral_id: Optional[str] = None,
             record_request_time: bool = False,
             return_response_headers: bool = False,
-            loop: Optional[asyncio.AbstractEventLoop] = None,
             proxy: Optional[str] = None,
             trace_configs: Optional[list] = None,
     ):
@@ -69,9 +73,12 @@ class AsyncClient:
         self.referral_id = referral_id
         self.record_request_time = record_request_time
         self.return_response_headers = return_response_headers
-        self._loop = loop
         self._proxy = proxy
         self._trace_configs = trace_configs
+        # In-flight guard: set when close_connection starts so a concurrent
+        # ``_submit_request`` (esp. one that force-retries) doesn't race into
+        # ``getattr(None, method)`` after ``self._session`` has been cleared.
+        self._closed = False
 
         subdomain = _http_manager.SUBDOMAIN_TESTNET if self.testnet else _http_manager.SUBDOMAIN_MAINNET
         domain = _http_manager.DOMAIN_MAIN if not self.domain else self.domain
@@ -83,18 +90,12 @@ class AsyncClient:
         url = _http_manager.HTTP_URL.format(SUBDOMAIN=subdomain, DOMAIN=domain, TLD=self.tld)
         self.endpoint = url
         self.logger = logging.getLogger(__name__)
-        # Idempotent per-logger; safe across multiple AsyncClient instantiations.
-        if not self.logger.handlers:
-            handler = logging.StreamHandler()
-            handler.setFormatter(
-                logging.Formatter(
-                    fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-                    datefmt="%Y-%m-%d %H:%M:%S",
-                )
-            )
-            handler.setLevel(self.logging_level)
-            self.logger.addHandler(handler)
-
+        # PEP 282: libraries should not attach stream handlers — that
+        # duplicates output for any app that uses ``logging.basicConfig()``.
+        # We add a NullHandler once (module-level below) so the "No handlers
+        # could be found" warning never fires; the application decides where
+        # logs go. ``logging_level`` still works via ``self.logger.setLevel``.
+        self.logger.setLevel(self.logging_level)
         self.logger.debug("Initializing HTTP session.")
         self._session = None
         self._headers = {
@@ -119,19 +120,22 @@ class AsyncClient:
         await self.close_connection()
 
     async def init_client(self):
+        """Create the aiohttp session. Must be called from within a running
+        event loop (``async with`` handles this automatically)."""
+        if self._closed:
+            raise RuntimeError("AsyncClient has been closed; create a new instance")
         if self._session is not None:
             return
         session_kwargs = {
             "headers": self._headers,
             "timeout": self.timeout,
         }
-        if self._loop is not None:
-            session_kwargs["loop"] = self._loop
         if self._trace_configs:
             session_kwargs["trace_configs"] = self._trace_configs
         self._session = aiohttp.ClientSession(**session_kwargs)
 
     async def close_connection(self):
+        self._closed = True
         if self._session is not None:
             await self._session.close()
             self._session = None
@@ -143,6 +147,14 @@ class AsyncClient:
             auth: bool = False,
             query: Optional[dict] = None,
     ):
+        if self._closed:
+            raise FailedRequestError(
+                request=f"{method} {path}",
+                message="AsyncClient is closed",
+                status_code=0,
+                time=dt.now(timezone.utc).strftime("%H:%M:%S"),
+                resp_headers=None,
+            )
         if self._session is None:
             await self.init_client()
 
@@ -151,9 +163,20 @@ class AsyncClient:
         retries_attempted = self.max_retries
         req_params = None
         last_exc: Optional[BaseException] = None
+        last_retry_reason: Optional[str] = None
 
         while retries_attempted > 0:
             retries_attempted -= 1
+            # Re-check on each iteration so an in-flight retry loop bails out
+            # promptly when close_connection() runs mid-request.
+            if self._closed:
+                raise FailedRequestError(
+                    request=f"{method} {path}",
+                    message="AsyncClient is closed",
+                    status_code=0,
+                    time=dt.now(timezone.utc).strftime("%H:%M:%S"),
+                    resp_headers=None,
+                )
             try:
                 req_params = self._request_builder.prepare_payload(method, query)
                 headers = (
@@ -167,14 +190,18 @@ class AsyncClient:
 
                 start_time = time.perf_counter()
                 async with getattr(self._session, method.lower())(**_request) as response:
-                    end_time = time.perf_counter()
                     await self._check_status_code(response, method, path, req_params)
-                    return await self._handle_response(
-                        response, method, path, req_params, recv_window, end_time - start_time
+                    result = await self._handle_response(
+                        response, method, path, req_params, recv_window, start_time
                     )
+                    return result
 
             except _RetryableRequestError as e:
                 recv_window = e.recv_window
+                # Preserve retCode/retMsg from the last retryable response so
+                # that a retries-exhausted FailedRequestError carries a useful
+                # message instead of the generic "Bad Request".
+                last_retry_reason = e.reason
                 continue
             except (
                 aiohttp.ClientSSLError,
@@ -188,10 +215,16 @@ class AsyncClient:
                 last_exc = e
                 await self._handle_json_error(e, retries_attempted)
 
+        message = (
+            f"Retries exceeded maximum ({self.max_retries}). "
+            f"Last retryable error: {last_retry_reason}"
+            if last_retry_reason
+            else "Bad Request. Retries exceeded maximum."
+        )
         raise FailedRequestError(
             request=f"{method} {path}: {req_params or query}",
-            message="Bad Request. Retries exceeded maximum.",
-            status_code=0,
+            message=message,
+            status_code=400,
             time=dt.now(timezone.utc).strftime("%H:%M:%S"),
             resp_headers=None,
         ) from last_exc
@@ -225,25 +258,34 @@ class AsyncClient:
             path: str,
             params: str,
             recv_window: int,
-            response_time: float,
+            start_time: float,
     ):
         try:
             s_json = await response.json()
         except (JSONDecodeError, aiohttp.ContentTypeError) as e:
             raise e  # Will be caught by main loop to retry.
 
-        # v5 API only. If a legacy endpoint slips in, `.get()` returns None
-        # and we treat it as success.
+        # Measure elapsed after the body is read (sync's ``response.elapsed``
+        # includes body-read time; matching that keeps latency observability
+        # meaningful for large payloads).
+        elapsed = timedelta(seconds=time.perf_counter() - start_time)
+
+        # Prefer v5 ``retCode`` / ``retMsg`` but fall back to the legacy
+        # ``ret_code`` / ``ret_msg`` shape used by some P2P/OTC endpoints —
+        # otherwise a non-zero legacy error would be silently dropped and
+        # returned to the caller as "success".
         error_code = s_json.get("retCode")
+        if error_code is None:
+            error_code = s_json.get("ret_code")
         if error_code:
-            ret_msg = s_json.get("retMsg", "")
+            ret_msg = s_json.get("retMsg", s_json.get("ret_msg", ""))
             error_msg = f"{ret_msg} (ErrCode: {error_code})"
 
             if error_code in self.retry_codes:
                 new_recv_window = await self._handle_retryable_error(
                     response, error_code, error_msg, recv_window
                 )
-                raise _RetryableRequestError(new_recv_window)
+                raise _RetryableRequestError(new_recv_window, reason=error_msg)
 
             if error_code not in self.ignore_codes:
                 raise InvalidRequestError(
@@ -258,9 +300,9 @@ class AsyncClient:
             self.logger.debug(f"Response headers: {response.headers}")
 
         if self.return_response_headers:
-            return s_json, response_time, response.headers
+            return s_json, elapsed, response.headers
         elif self.record_request_time:
-            return s_json, response_time
+            return s_json, elapsed
         else:
             return s_json
 

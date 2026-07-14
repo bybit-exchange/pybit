@@ -34,6 +34,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Optional (proxy support only, install with `pip install pybit[proxy]`):
   - `websockets_proxy>=0.1.3,<1`
 
+  Notable async-vs-sync differences to be aware of:
+  - Pull model instead of callback model: `await ws.recv()` returns each frame.
+  - `record_request_time=True` returns `(payload, timedelta)`; matches sync.
+  - `AsyncClient` must be constructed inside a running event loop (there is no
+    `loop` kwarg; construct inside an `async` function or use `async with`).
+  - The async logger uses `NullHandler` — configure logging in your app.
+  - No binary/multipart upload path yet (`AsyncP2PHTTP.upload_chat_file` raises
+    `NotImplementedError` with a clear message).
+
   Endpoints not yet implemented on the async client:
   - `AsyncP2PHTTP.upload_chat_file` (multipart uploads; use the sync client)
 

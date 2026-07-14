@@ -318,3 +318,19 @@ class AsyncUserHTTP(AsyncClient):
             query=kwargs,
             auth=True,
         )
+
+    async def get_affiliate_sub_list(self, **kwargs) -> dict:
+        """Get affiliate sub-affiliate list.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/affiliate/affiliate-sub-list
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{User.GET_AFFILIATE_SUB_LIST}",
+            query=kwargs,
+            auth=True,
+        )

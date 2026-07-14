@@ -5,7 +5,7 @@ from pybit.account import Account
 class AsyncAccountHTTP(AsyncClient):
     async def get_wallet_balance(self, **kwargs) -> dict:
         """Obtain wallet balance, query asset information of each currency, and account risk rate information under unified margin mode.
-        By async default, currency information with assets or liabilities of 0 is not returned.
+        By default, currency information with assets or liabilities of 0 is not returned.
 
         Required args:
             accountType (string): Account type
@@ -354,7 +354,7 @@ class AsyncAccountHTTP(AsyncClient):
             auth=True,
         )
 
-    async def get_instruments_info(self, **kwargs) -> dict:
+    async def get_account_instruments_info(self, **kwargs) -> dict:
         """Get available instruments info for unified account.
 
         Returns:

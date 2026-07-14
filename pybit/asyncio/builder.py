@@ -24,9 +24,13 @@ class RequestBuilder:
         return self._http_manager._clean_query(query)
 
     def prepare_payload(self, method: str, parameters: dict) -> str:
-        if not parameters:
+        # Only short-circuit on GET — for POST an empty body must serialise
+        # to "{}" so the signature bytes match the sync side (which calls
+        # json.dumps({})). CDN/WAFs also expect a proper JSON body when
+        # Content-Type is application/json.
+        if method == "GET" and not parameters:
             return ""
-        return self._http_manager.prepare_payload(method, parameters)
+        return self._http_manager.prepare_payload(method, parameters or {})
 
     def _auth(self, payload, recv_window, timestamp):
         return self._http_manager._auth(payload, recv_window, timestamp)

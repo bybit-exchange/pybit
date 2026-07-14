@@ -20,13 +20,14 @@ async def main():
         record_request_time=True,
     ) as client:
         # Read-only endpoint — no auth needed for public market data.
+        # record_request_time=True → 2-tuple (payload, timedelta).
         orderbook, latency = await client.get_orderbook(
             category="linear", symbol="BTCUSDT",
         )
-        print(f"orderbook (fetched in {latency*1000:.1f}ms):", orderbook)
+        print(f"orderbook (fetched in {latency.total_seconds()*1000:.1f}ms):", orderbook)
 
         # Private read-only — requires valid keys.
-        balance = await client.get_wallet_balance(accountType="UNIFIED")
+        balance, _ = await client.get_wallet_balance(accountType="UNIFIED")
         print("balance:", balance)
 
         # Uncomment to place a live testnet order:

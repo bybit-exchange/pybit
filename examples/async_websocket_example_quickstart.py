@@ -22,7 +22,7 @@ API_SECRET = "..."
 async def main_public():
     client = AsyncWebsocketClient(testnet=True, channel_type="linear")
     stream = client.futures_kline_stream(
-        symbols=["kline.60.BTCUSDT", "kline.60.ETHUSDT", "kline.60.SOLUSDT"],
+        topics=["kline.60.BTCUSDT", "kline.60.ETHUSDT", "kline.60.SOLUSDT"],
     )
     async with stream as ws:
         try:

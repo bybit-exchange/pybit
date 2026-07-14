@@ -117,7 +117,7 @@ from pybit.asyncio.ws import AsyncWebsocketClient
 
 async def stream():
     client = AsyncWebsocketClient(channel_type="linear", testnet=True)
-    async with client.futures_kline_stream(symbols=["kline.60.BTCUSDT"]) as ws:
+    async with client.futures_kline_stream(topics=["kline.60.BTCUSDT"]) as ws:
         while True:
             msg = await ws.recv()
             if msg is None:

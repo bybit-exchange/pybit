@@ -39,9 +39,10 @@ TLD_EU = "eu"           # European Economic Area. ONLY AVAILABLE TO INSTITUTIONS
 
 
 class _RetryableRequestError(Exception):
-    def __init__(self, recv_window):
+    def __init__(self, recv_window, reason=None):
         self.recv_window = recv_window
-        super().__init__("Retryable error occurred, retrying...")
+        self.reason = reason
+        super().__init__(reason or "Retryable error occurred, retrying...")
 
 
 def generate_signature(use_rsa_authentication, secret, param_str):

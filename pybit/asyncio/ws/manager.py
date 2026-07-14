@@ -18,6 +18,8 @@ from pybit._http_manager import generate_signature
 from pybit._websocket_stream import (
     SUBDOMAIN_MAINNET,
     SUBDOMAIN_TESTNET,
+    DEMO_SUBDOMAIN_MAINNET,
+    DEMO_SUBDOMAIN_TESTNET,
     DOMAIN_MAIN,
     TLD_MAIN,
 )
@@ -72,6 +74,7 @@ class AsyncWebsocketManager:
             url: str,
             subscription_message: List[str],
             testnet: Optional[bool] = False,
+            demo: Optional[bool] = False,
             rsa_authentication: Optional[bool] = False,
             api_key: Optional[str] = None,
             api_secret: Optional[str] = None,
@@ -88,14 +91,20 @@ class AsyncWebsocketManager:
         self.api_key = api_key
         self.api_secret = api_secret
         self.testnet = testnet
+        self.demo = demo
         self.proxy = proxy
         self.rsa_authentication = rsa_authentication
         self.tld = tld
         self.private_auth_expire = private_auth_expire
         self.downtime_callback = downtime_callback
 
-        maxsize = queue_maxsize if queue_maxsize is not None else self.MAX_QUEUE_SIZE
-        self.queue = queue or asyncio.Queue(maxsize=maxsize)
+        self._queue_maxsize = (
+            queue_maxsize if queue_maxsize is not None else self.MAX_QUEUE_SIZE
+        )
+        # ``asyncio.Queue`` binds to the current event loop at construction on
+        # Python 3.9 (raises ``RuntimeError`` if none exists yet); build lazily
+        # so ``AsyncWebsocketManager`` can be instantiated outside a loop.
+        self._queue: Optional[asyncio.Queue] = queue
 
         self.ws_state = WSState.INITIALISING
         self.custom_ping_message = json.dumps({"op": "ping"})
@@ -104,6 +113,13 @@ class AsyncWebsocketManager:
         self._keepalive: Optional[asyncio.Task] = None
         self._handle_read_loop: Optional[asyncio.Task] = None
         self._last_pong = 0.0
+
+    @property
+    def queue(self) -> asyncio.Queue:
+        """Frame queue. Lazily created on first access from within a running loop."""
+        if self._queue is None:
+            self._queue = asyncio.Queue(maxsize=self._queue_maxsize)
+        return self._queue
 
     async def __aenter__(self) -> "AsyncWebsocketManager":
         await self.connect()
@@ -118,7 +134,11 @@ class AsyncWebsocketManager:
     async def _process_frame(self, frame: dict) -> None:
         """Handle control frames; put stream data on the queue."""
         op = frame.get("op")
-        if op == "pong":
+        # Bybit v5 sends pong ACKs as ``{"op": "ping", "ret_msg": "pong", ...}``
+        # rather than ``op == "pong"``. Recognise both forms — otherwise
+        # ``_last_pong`` never advances and the half-open detector fires
+        # after 30s, triggering an endless reconnect loop.
+        if op == "pong" or frame.get("ret_msg") == "pong":
             self._last_pong = time.monotonic()
             return
         if op == "ping":
@@ -279,6 +299,8 @@ class AsyncWebsocketManager:
     async def _open_conn(self):
         """Open a single websocket connection (with or without proxy)."""
         subdomain = SUBDOMAIN_TESTNET if self.testnet else SUBDOMAIN_MAINNET
+        if self.demo:
+            subdomain = DEMO_SUBDOMAIN_TESTNET if self.testnet else DEMO_SUBDOMAIN_MAINNET
         endpoint = (
             self.url
             .replace("{SUBDOMAIN}", subdomain)
@@ -419,16 +441,20 @@ class AsyncWebsocketManager:
             self._keepalive.cancel()
             try:
                 await self._keepalive
-            except (asyncio.CancelledError, Exception):
+            except asyncio.CancelledError:
                 pass
+            except Exception:
+                logger.exception("Error while shutting down keepalive")
             self._keepalive = None
 
         if self._handle_read_loop is not None:
             self._handle_read_loop.cancel()
             try:
                 await self._handle_read_loop
-            except (asyncio.CancelledError, Exception):
+            except asyncio.CancelledError:
                 pass
+            except Exception:
+                logger.exception("Error while shutting down read loop")
             self._handle_read_loop = None
 
         await self._close_conn()

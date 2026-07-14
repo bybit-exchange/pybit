@@ -13,7 +13,9 @@ from pybit.asyncio.ws.utils import chunks
 # Locally-owned constants — avoid pulling pybit.unified_trading, which
 # transitively imports the sync websocket + HTTP stack.
 PRIVATE_WSS = "wss://{SUBDOMAIN}.{DOMAIN}.{TLD}/v5/private"
-PUBLIC_WSS = "wss://{SUBDOMAIN}.{DOMAIN}.com/v5/public/{CHANNEL_TYPE}"
+# Use {TLD} so non-.com tlds (nl / kz / com.hk / …) route correctly. The
+# original hardcoded ".com" silently ignored the tld kwarg.
+PUBLIC_WSS = "wss://{SUBDOMAIN}.{DOMAIN}.{TLD}/v5/public/{CHANNEL_TYPE}"
 AVAILABLE_CHANNEL_TYPES = [
     "inverse",
     "linear",
@@ -35,6 +37,7 @@ class AsyncWebsocketClient:
             self,
             channel_type: str,
             testnet: bool,
+            demo: bool = False,
             api_key: Optional[str] = None,
             api_secret: Optional[str] = None,
             rsa_authentication: bool = False,
@@ -43,6 +46,7 @@ class AsyncWebsocketClient:
             private_auth_expire: int = 1,
     ):
         self.testnet = testnet
+        self.demo = demo
         self.channel_type = channel_type
         self.rsa_authentication = rsa_authentication
         self.proxy = proxy
@@ -82,6 +86,7 @@ class AsyncWebsocketClient:
             url=url,
             subscription_message=subscription_message,
             testnet=self.testnet,
+            demo=self.demo,
             rsa_authentication=self.rsa_authentication,
             api_key=self.api_key if private else None,
             api_secret=self.api_secret if private else None,
@@ -90,9 +95,22 @@ class AsyncWebsocketClient:
             private_auth_expire=self.private_auth_expire,
         )
 
-    def spot_kline_stream(self, symbols: List[str]) -> AsyncWebsocketManager:
+    def spot_kline_stream(self, topics: List[str]) -> AsyncWebsocketManager:
+        """Public spot stream.
+
+        Bybit Spot limits each subscribe frame to
+        :attr:`SPOT_MAX_CONNECTION_ARGS` args, so this splits ``topics`` into
+        chunks and sends one subscribe frame per chunk.
+
+        Args:
+            topics: Full Bybit topic strings, e.g.
+                ``["kline.60.BTCUSDT", "orderbook.1.ETHUSDT"]``.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/websocket/public/kline
+        """
         subscription_message = []
-        for chunk in chunks(symbols, self.SPOT_MAX_CONNECTION_ARGS):
+        for chunk in chunks(topics, self.SPOT_MAX_CONNECTION_ARGS):
             subscription_message.append(json.dumps({
                 "op": "subscribe",
                 "req_id": str(uuid4()),
@@ -100,15 +118,32 @@ class AsyncWebsocketClient:
             }))
         return self._manager(self._public_url(), subscription_message, private=False)
 
-    def futures_kline_stream(self, symbols: List[str]) -> AsyncWebsocketManager:
+    def futures_kline_stream(self, topics: List[str]) -> AsyncWebsocketManager:
+        """Public linear / inverse / option stream.
+
+        Args:
+            topics: Full Bybit topic strings, e.g.
+                ``["kline.60.BTCUSDT", "publicTrade.ETHUSDT"]``. Use
+                ``channel_type`` to select the product surface.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/websocket/public/kline
+        """
         subscription_message = json.dumps({
             "op": "subscribe",
             "req_id": str(uuid4()),
-            "args": symbols,
+            "args": topics,
         })
         return self._manager(self._public_url(), [subscription_message], private=False)
 
     def user_futures_stream(self) -> AsyncWebsocketManager:
+        """Private stream — order updates for linear contracts.
+
+        Requires ``channel_type='private'`` and valid keys.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/websocket/private/order
+        """
         self._require_private("user_futures_stream")
         subscription_message = json.dumps({
             "op": "subscribe",
@@ -117,6 +152,13 @@ class AsyncWebsocketClient:
         return self._manager(PRIVATE_WSS, [subscription_message], private=True)
 
     def user_spot_stream(self) -> AsyncWebsocketManager:
+        """Private stream — order updates for spot.
+
+        Requires ``channel_type='private'`` and valid keys.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/websocket/private/order
+        """
         self._require_private("user_spot_stream")
         subscription_message = json.dumps({
             "op": "subscribe",
