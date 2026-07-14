@@ -1,0 +1,35 @@
+tests/test_async_pybit.py
+  3933e39c80b00b30 704-1323
+CHANGELOG.md
+  3933e39c80b00b30 13-16,33-35,38-42,47-51,61-76
+pybit/asyncio/ws/client.py
+  3933e39c80b00b30 4-5,30-42,44-57,107-121,140-187,189,194-209,211-212,214,216-217,219-220,222-225,227-230,232-233,235-250,252-253,255,257-289,291-292,295,301,305,309-463
+pybit/asyncio/ws/manager.py
+  3933e39c80b00b30 75-85,448-449,481-482,528-529
+README.md
+  3933e39c80b00b30 82-92
+pybit/asyncio/__init__.py
+  3933e39c80b00b30 12-20,22-53
+setup.py
+  3933e39c80b00b30 41-47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2-bit.10+672fbf0",
+  "base_commit_sha": "966a7ea02de582602e8dc5f51783b1d0a8c8e2b6",
+  "prompts": {
+    "3933e39c80b00b30": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f027f070-488d-4299-b043-3c8a9aeca38d",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "doris-xiao-bybit",
+      "messages": [],
+      "total_additions": 1085,
+      "total_deletions": 80,
+      "accepted_lines": 1069,
+      "overriden_lines": 0
+    }
+  }
+}
