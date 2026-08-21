@@ -441,7 +441,8 @@ class _V5HTTPManager:
         if response.status_code != 200:
             error_msg = "You have breached the IP rate limit or your IP is from the USA."\
                 if response.status_code == 403 else "HTTP status code is not 200."
-            self.logger.debug(f"Response text: {response.text}")
+            if self.log_requests:
+                self.logger.debug(f"Response text: {response.text}")
             raise FailedRequestError(
                 request=f"{method} {path}: {params}",
                 message=error_msg,

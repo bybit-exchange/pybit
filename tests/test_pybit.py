@@ -14,7 +14,7 @@ from pybit._http_manager import _V5HTTPManager
 from pybit._websocket_stream import _WebSocketManager
 from pybit._websocket_trading import _V5TradeWebSocketManager
 from pybit.unified_trading import HTTP
-from pybit.exceptions import InvalidRequestError
+from pybit.exceptions import FailedRequestError, InvalidRequestError
 from pybit import _http_manager
 
 _api_key = "CFEJUGQEQPPHGOHGHM"
@@ -146,6 +146,34 @@ def test_logger_handler_attached():
     finally:
         # restore original handlers
         root.handlers = old_handlers
+
+
+def test_check_status_code_omits_response_body_by_default(caplog):
+    manager = _V5HTTPManager()
+    response = Mock()
+    response.status_code = 500
+    response.text = "internal server error"
+    response.headers = {}
+
+    with caplog.at_level(logging.DEBUG, logger="pybit._http_manager"):
+        with pytest.raises(FailedRequestError):
+            manager._check_status_code(response, "GET", "https://api.bybit.com/v5/x", {})
+
+    assert not any("Response text" in r.getMessage() for r in caplog.records)
+
+
+def test_check_status_code_logs_response_body_when_log_requests_true(caplog):
+    manager = _V5HTTPManager(log_requests=True)
+    response = Mock()
+    response.status_code = 500
+    response.text = "internal server error"
+    response.headers = {}
+
+    with caplog.at_level(logging.DEBUG, logger="pybit._http_manager"):
+        with pytest.raises(FailedRequestError):
+            manager._check_status_code(response, "GET", "https://api.bybit.com/v5/x", {})
+
+    assert any("Response text" in r.getMessage() for r in caplog.records)
 
 
 class _FakeSock:
