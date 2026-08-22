@@ -11,7 +11,7 @@ import requests
 import websocket
 
 from pybit._http_manager import _V5HTTPManager
-from pybit._websocket_stream import _WebSocketManager
+from pybit._websocket_stream import _WebSocketManager, _V5WebSocketManager
 from pybit._websocket_trading import _V5TradeWebSocketManager
 from pybit.unified_trading import HTTP
 from pybit.exceptions import InvalidRequestError
@@ -759,3 +759,52 @@ def test_upload_chat_file_sends_multipart_request(monkeypatch):
     )
     assert b'name="upload_file"; filename="proof.png"' in request.body
     assert b"abc" in request.body
+
+
+def _orderbook_manager():
+    # Build a _WebSocketManager without opening a connection.
+    manager = _V5WebSocketManager.__new__(_V5WebSocketManager)
+    manager.data = {}
+    return manager
+
+
+def test_process_delta_orderbook_keeps_sides_sorted():
+    # Deltas that insert levels inside the range must not break the
+    # invariant that [0] is the best bid/ask.
+    manager = _orderbook_manager()
+    topic = "orderbook.50.OPUSDT"
+    manager._process_delta_orderbook(
+        {"type": "snapshot",
+         "data": {"b": [["0.100", "5"], ["0.099", "3"]],
+                  "a": [["0.101", "4"], ["0.102", "2"]]}},
+        topic,
+    )
+    manager._process_delta_orderbook(
+        {"type": "delta", "u": 1, "seq": 1,
+         "data": {"u": 1, "seq": 1,
+                  "b": [["0.1005", "1"]], "a": [["0.1015", "1"]]}},
+        topic,
+    )
+    bids = [float(level[0]) for level in manager.data[topic]["b"]]
+    asks = [float(level[0]) for level in manager.data[topic]["a"]]
+    assert bids == sorted(bids, reverse=True)
+    assert asks == sorted(asks)
+    assert manager.data[topic]["b"][0][0] == "0.1005"  # best bid
+    assert manager.data[topic]["a"][0][0] == "0.101"   # best ask
+
+
+def test_process_delta_orderbook_ignores_delete_of_absent_level():
+    # A qty=0 delta for a level we do not hold must be a no-op, not a crash.
+    manager = _orderbook_manager()
+    topic = "orderbook.50.OPUSDT"
+    manager._process_delta_orderbook(
+        {"type": "snapshot",
+         "data": {"b": [["0.100", "5"]], "a": [["0.101", "4"]]}},
+        topic,
+    )
+    manager._process_delta_orderbook(
+        {"type": "delta", "u": 1, "seq": 1,
+         "data": {"u": 1, "seq": 1, "b": [["0.055", "0"]], "a": []}},
+        topic,
+    )
+    assert [level[0] for level in manager.data[topic]["b"]] == ["0.100"]
