@@ -464,6 +464,63 @@ def test_p2p_method_is_available_on_unified_http(http, monkeypatch):
     }
 
 
+@pytest.mark.parametrize(
+    "method_name,kwargs,expected_path",
+    [
+        (
+            "query_chat_session_list",
+            {"lastId": 0, "size": 10, "readStatus": 2},
+            "https://api-testnet.bybit.com/v5/p2p/chat/session/list_v1",
+        ),
+        (
+            "get_session_id",
+            {"userMaskId": "masked-user"},
+            "https://api-testnet.bybit.com/v5/p2p/chat/session/getSessionId",
+        ),
+        (
+            "send_message",
+            {
+                "message": "Hello",
+                "contentType": "str",
+                "sessionId": "session",
+                "orderId": "123",
+            },
+            "https://api-testnet.bybit.com/v5/p2p/chat/message/send_v1",
+        ),
+        (
+            "get_message_list",
+            {"lastId": 0, "limit": 10, "sessionId": "session"},
+            "https://api-testnet.bybit.com/v5/p2p/chat/message/listpage_v1",
+        ),
+        (
+            "buyer_examine_seller_cancel_order_apply",
+            {"orderId": "123", "examineResult": "PASS"},
+            "https://api-testnet.bybit.com/v5/p2p/order/buyer/examine/sellerCancelOrderApply",
+        ),
+    ],
+)
+def test_p2p_methods_route_to_expected_endpoints(
+    http, monkeypatch, method_name, kwargs, expected_path
+):
+    captured = {}
+
+    def fake_submit_request(**request_kwargs):
+        captured.update(request_kwargs)
+        return {"retCode": 0}
+
+    monkeypatch.setattr(http, "_submit_request", fake_submit_request)
+
+    result = getattr(http, method_name)(**kwargs)
+
+    assert result == {"retCode": 0}
+    assert captured == {
+        "method": "POST",
+        "path": expected_path,
+        "query": kwargs,
+        "auth": True,
+    }
+
+
 def test_upload_chat_file_is_available_on_unified_http(http, monkeypatch):
     captured = {}
 
