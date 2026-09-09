@@ -17,8 +17,8 @@ from pybit.unified_trading import HTTP
 from pybit.exceptions import InvalidRequestError
 from pybit import _http_manager
 
-_api_key = "CFEJUGQEQPPHGOHGHM"
-_api_secret = "VDFZSSPUTKRJMXAVMJXBHEXIPZNZJIZUBVRQ"
+_api_key = "xxxxxxxxxxxxxxxxxxxxx"
+_api_secret = "xxxxxxxxxxxxxxxxxxxxx"
 
 
 @pytest.fixture
