@@ -1,0 +1,174 @@
+from pybit.asyncio.client import AsyncClient
+from pybit.spread import Spread
+
+
+class AsyncSpreadHTTP(AsyncClient):
+    async def spread_get_instruments_info(self, **kwargs) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spread/market/instrument
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Spread.GET_INSTRUMENTS_INFO}",
+            query=kwargs,
+        )
+
+    async def spread_get_orderbook(self, **kwargs) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spread/market/orderbook
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Spread.GET_ORDERBOOK}",
+            query=kwargs,
+        )
+
+    async def spread_get_tickers(self, **kwargs) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spread/market/tickers
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Spread.GET_TICKERS}",
+            query=kwargs,
+        )
+
+    async def spread_get_public_trade_history(self, **kwargs) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spread/market/recent-trade
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Spread.GET_PUBLIC_TRADING_HISTORY}",
+            query=kwargs,
+        )
+
+    async def spread_place_order(self, **kwargs) -> dict:
+        """
+        Required args:
+            category (string): Product type Unified account: spot, linear, optionNormal account: linear, inverse. Please note that category is not involved with business logic
+            symbol (string): Symbol name
+            side (string): Buy, Sell
+            orderType (string): Market, Limit
+            qty (string): Order quantity
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spread/trade/create-order
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Spread.PLACE_ORDER}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def spread_amend_order(self, **kwargs) -> dict:
+        """
+        Required args:
+            symbol (string): Spread combination symbol name
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spread/trade/amend-order
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Spread.AMEND_ORDER}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def spread_cancel_order(self, **kwargs) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spread/trade/cancel-order
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Spread.CANCEL_ORDER}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def spread_cancel_all_orders(self, **kwargs) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spread/trade/cancel-all
+        """
+        return await self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Spread.CANCEL_ALL_ORDERS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def spread_get_open_orders(self, **kwargs) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spread/trade/open-order
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Spread.GET_OPEN_ORDERS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def spread_get_order_history(self, **kwargs) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spread/trade/order-history
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Spread.GET_ORDER_HISTORY}",
+            query=kwargs,
+            auth=True,
+        )
+
+    async def spread_get_trade_history(self, **kwargs) -> dict:
+        """
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spread/trade/trade-history
+        """
+        return await self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Spread.GET_TRADE_HISTORY}",
+            query=kwargs,
+            auth=True,
+        )

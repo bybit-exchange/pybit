@@ -77,6 +77,69 @@ Check out the example python files or the list of endpoints below for more infor
 endpoints and methods. Usage examples on the `HTTP` methods can
 be found in the [examples folder](https://github.com/bybit-exchange/pybit/tree/master/examples).
 
+## Async Usage (experimental)
+`pybit.asyncio` provides an async HTTP client covering the full v5 REST
+surface, and an async WebSocket client covering the full public / private /
+system-status stream surface. Order placement over WebSocket
+(`WebSocketTrading` / `WebsocketSpreadTrading`) is not yet available on the
+async client — use the sync client for those. The shape may change in the
+next minor release — pin the version if you need stability. Signature bytes
+are identical to the sync path, so error modes are equivalent.
+
+Install the extras before importing `pybit.asyncio`:
+```
+pip install "pybit[async]"
+```
+
+HTTP — recommended lifecycle uses `async with`:
+```python
+import asyncio
+from pybit.asyncio.unified_trading import AsyncHTTP
+
+async def main():
+    # ``record_request_time`` returns (payload, latency) from every call;
+    # ``return_response_headers`` returns (payload, latency, headers).
+    async with AsyncHTTP(
+        testnet=True,
+        api_key="...",
+        api_secret="...",
+        record_request_time=True,
+    ) as client:
+        # Read-only public endpoint.
+        result, latency = await client.get_orderbook(
+            category="linear", symbol="BTCUSDT"
+        )
+
+asyncio.run(main())
+```
+Manual lifecycle (must be paired with `close_connection()`):
+```python
+client = AsyncHTTP(testnet=True, api_key="...", api_secret="...")
+await client.init_client()
+try:
+    await client.get_orderbook(category="linear", symbol="BTCUSDT")
+finally:
+    await client.close_connection()
+```
+WebSocket — pull model (unlike the sync client's callback model). Call
+`await ws.recv()` in a loop; `recv()` returns `None` on timeout:
+```python
+from pybit.asyncio.ws import AsyncWebsocketClient
+
+async def stream():
+    client = AsyncWebsocketClient(channel_type="linear", testnet=True)
+    async with client.futures_kline_stream(topics=["kline.60.BTCUSDT"]) as ws:
+        while True:
+            msg = await ws.recv()
+            if msg is None:
+                continue
+            print(msg)
+```
+Proxy support requires the optional extra:
+```
+pip install pybit[proxy]
+```
+
 
 ## Contact
 Reach out for support on your chosen platform:
