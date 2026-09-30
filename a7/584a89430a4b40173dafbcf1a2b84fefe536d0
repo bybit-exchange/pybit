@@ -1,0 +1,27 @@
+tests/test_generated_openapi_endpoints.py
+  s_8ee944eda73af0::t_72c49ee9048e0f 127-128
+  s_8ee944eda73af0::t_811b2dd37b661d 145
+  s_8ee944eda73af0::t_ada3ce7e6edaf1 115-126,129,137-144
+  s_8ee944eda73af0::t_17c741b8dc1616 146-147
+pybit/_v5_grid.py
+  s_8ee944eda73af0::t_7fb74643fc2708 36-37,39,41,91-92,94,96
+  s_8ee944eda73af0::t_fd079f57f87334 35,38,40,42-48,89-90,93,95,97-102
+pybit/_v5_strategy.py
+  s_8ee944eda73af0::t_fd079f57f87334 6-15,48,56,64,72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "a7584a89430a4b40173dafbcf1a2b84fefe536d0",
+  "prompts": {},
+  "sessions": {
+    "s_8ee944eda73af0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f1b0-7c2c-7351-a31c-c6ec2bb902e9",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
