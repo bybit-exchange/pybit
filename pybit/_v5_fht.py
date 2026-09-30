@@ -4,12 +4,12 @@ from .fht import FHT
 
 class FHTHTTP(_V5HTTPManager):
     def batch_create_tax_reports(self, **kwargs):
-        """Batch request export reports.
+        """Batch create tax report files.
 
         Required args:
-            startTime (integer): Report start time. UNIX timestamp in seconds, within the last 18 months.
-            endTime (integer): Report end time. UNIX timestamp in seconds. Must be later than startTime, with a time range of at most 12 months.
-            items (array): List of report objects to export. At least one item is required.
+            startTime (integer): Tax report start time (Unix timestamp, seconds)
+            endTime (integer): Tax report end time (Unix timestamp, seconds); interval must not exceed 12 months
+            items (array): Non-empty list of tax report export items
 
         Returns:
             Request results as dictionary.
@@ -25,10 +25,10 @@ class FHTHTTP(_V5HTTPManager):
         )
 
     def batch_query_tax_reports(self, **kwargs):
-        """Get batch export report status.
+        """Query batch tax report status.
 
         Required args:
-            batchId (string): Batch ID in UUID format, returned by Batch Request Export Reports.
+            batchId (string): Batch ID returned by `batch_create`
 
         Returns:
             Request results as dictionary.
