@@ -1,0 +1,21 @@
+pybit/_v5_market.py
+  s_9fa02711d37512::t_c9a9dd92161fa3 405-419
+pybit/market.py
+  s_9fa02711d37512::t_9bc895c9e2a227 27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "e7b57a901bc5936f98351decdeb329a332a5bf3f",
+  "prompts": {},
+  "sessions": {
+    "s_9fa02711d37512": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f084-09e2-7251-b0e4-fe6c3825b44a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
