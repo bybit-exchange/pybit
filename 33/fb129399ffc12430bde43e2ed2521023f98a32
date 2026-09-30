@@ -1,0 +1,45 @@
+pybit/_v5_grid.py
+  s_b807098d5004bd::t_fb7e054d75e574 17,40,59,82
+pybit/_v5_rwa.py
+  s_b807098d5004bd::t_8439c9628b12d5 7,23,39,42-49,65,68-69,85,101,104-110,126,129,145,161
+CHANGELOG.md
+  s_b807098d5004bd::t_1d58fca5b94125 8,10,12-91
+pybit/crypto_loan.py
+  s_b807098d5004bd::t_dabcc29048e1d4 28,37
+tests/test_generated_openapi_endpoints.py
+  s_b807098d5004bd::t_0e555650648f17 101-102,104-112,120-121
+  s_b807098d5004bd::t_a73a58e06ca2b0 55-62,82-83,103
+  s_b807098d5004bd::t_9611ce1eea8ba8 6-7,43-51,63-70,77,84-100,122-150
+  s_b807098d5004bd::t_8a5690eb642d12 8,113-119
+pybit/_v5_crypto_loan.py
+  s_b807098d5004bd::t_dabcc29048e1d4 345-363,472-492,740
+pybit/_v5_fmartingalebot.py
+  s_b807098d5004bd::t_fb7e054d75e574 16,42,61,82
+pybit/_v5_fgridbot.py
+  s_b807098d5004bd::t_fb7e054d75e574 16,42,61,86
+pybit/strategy.py
+  s_b807098d5004bd::t_9a2bfe5905ce06 6
+pybit/_v5_strategy.py
+  s_b807098d5004bd::t_dabcc29048e1d4 6-7,13-17,23,27,32-37,39-46,48-55,57-64,66-67,75,94,113
+  s_b807098d5004bd::t_a73a58e06ca2b0 38,47,56,65
+pybit/_v5_dca.py
+  s_b807098d5004bd::t_fb7e054d75e574 17,36
+pybit/_v5_fcombobot.py
+  s_b807098d5004bd::t_fb7e054d75e574 16,38,57,79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "33fb129399ffc12430bde43e2ed2521023f98a32",
+  "prompts": {},
+  "sessions": {
+    "s_b807098d5004bd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f180-0678-7a12-9fec-b5720d4c3e8a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
