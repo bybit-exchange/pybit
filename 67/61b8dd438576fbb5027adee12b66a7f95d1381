@@ -1,0 +1,19 @@
+docs/superpowers/plans/2026-09-30-openapi-full-intersection.md
+  s_9fa02711d37512::t_43ad4430cce75f 1-689
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "6761b8dd438576fbb5027adee12b66a7f95d1381",
+  "prompts": {},
+  "sessions": {
+    "s_9fa02711d37512": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f084-09e2-7251-b0e4-fe6c3825b44a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
