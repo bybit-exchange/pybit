@@ -505,7 +505,9 @@ class _V5HTTPManager:
                 )
             )
             limit_reset_str = dt.fromtimestamp(limit_reset_time / 10 ** 3).strftime("%H:%M:%S.%f")[:-3]
-            delay_time = (limit_reset_time - _helpers.generate_timestamp()) / 10 ** 3
+            # The reset timestamp is often already in the past by the time the
+            # response is handled; time.sleep() raises ValueError on negatives.
+            delay_time = max((limit_reset_time - _helpers.generate_timestamp()) / 10 ** 3, 0)
             error_msg = f"API rate limit will reset at {limit_reset_str}. Sleeping for {int(delay_time * 10 ** 3)} ms"
 
         self.logger.error(f"{error_msg}. Retrying...")
