@@ -30,8 +30,21 @@ class GridHTTP(_V5HTTPManager):
             symbol (string): Trading pair symbol in uppercase, e.g. "BTCUSDT".
             max_price (string): Upper bound of the grid price range (decimal string).
             min_price (string): Lower bound of the grid price range (decimal string).
-            total_investment (string): Total investment amount in quote token as decimal string (e.g. '1000' for 1000 USDT).
             cell_number (integer): Number of grid intervals. Must be >= 2.
+
+        Optional args:
+            invest_mode (integer): 0 for quote only (default), 1 for base only,
+                or 2 for base and quote.
+            base_investment (string): Amount of the base asset to invest.
+                Required when invest_mode is 1 or 2.
+            quote_investment (string): Amount of the quote asset to invest.
+                Required when invest_mode is 0 or 2.
+            entry_price (string): Entry price for the bot.
+            stop_loss_price (string): Stop-loss trigger price.
+            take_profit_price (string): Take-profit trigger price.
+            ts_percent (string): Trailing-stop percentage.
+            enable_trailing (boolean): Whether trailing is enabled.
+            limit_up_price (string): Upper price limit for trailing.
 
         Returns:
             Request results as dictionary.
@@ -73,7 +86,20 @@ class GridHTTP(_V5HTTPManager):
             cell_number (integer): Number of grid intervals. Must be >= 2.
             min_price (string): Lower bound of the grid price range (decimal string).
             max_price (string): Upper bound of the grid price range (decimal string). Must be greater than min_price.
-            total_investment (string): Total investment amount in quote token as decimal string (e.g. '1000' for 1000 USDT).
+
+        Optional args:
+            invest_mode (integer): 0 for quote only (default), 1 for base only,
+                or 2 for base and quote.
+            base_investment (string): Amount of the base asset to invest.
+                Required when invest_mode is 1 or 2.
+            quote_investment (string): Amount of the quote asset to invest.
+                Required when invest_mode is 0 or 2.
+            stop_loss (string): Stop-loss setting to validate.
+            take_profit (string): Take-profit setting to validate.
+            entry_price (string): Entry price for validation.
+            ts_percent (string): Trailing-stop percentage.
+            enable_trailing (boolean): Whether trailing is enabled.
+            limit_up_price (string): Upper price limit for trailing.
 
         Returns:
             Request results as dictionary.

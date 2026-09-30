@@ -112,11 +112,37 @@ def test_strategy_alias_supplies_strategy_type(name, strategy_type):
     assert result["query"]["strategyType"] == strategy_type
 
 
+@pytest.mark.parametrize(
+    "name,strategy_type",
+    STRATEGY_TYPES.items(),
+)
+def test_strategy_alias_rejects_conflicting_strategy_type(name, strategy_type):
+    client = HTTP.__new__(HTTP)
+    client.endpoint = "https://api.bybit.com"
+    client._submit_request = Mock(side_effect=lambda **kwargs: kwargs)
+
+    with pytest.raises(ValueError, match=f"requires strategyType={strategy_type}"):
+        getattr(client, name)(strategyType="conflicting-type")
+
+    client._submit_request.assert_not_called()
+
+
 def test_chase_strategy_enum_key_remains_canonical_for_compatibility():
     assert Strategy.CREATE_CHASE_ORDER_STRATEGY.name == (
         "CREATE_CHASE_ORDER_STRATEGY"
     )
     assert Strategy.CREATE_STRATEGY is Strategy.CREATE_CHASE_ORDER_STRATEGY
+
+
+@pytest.mark.parametrize("name", ["create_grid_bot", "validate_grid_input"])
+def test_spot_grid_docs_use_current_investment_parameters(name):
+    doc = getattr(HTTP, name).__doc__
+
+    assert "total_investment" not in doc
+    assert "invest_mode" in doc
+    assert "base_investment" in doc
+    assert "quote_investment" in doc
+    assert doc.count("Required when invest_mode") == 2
 
 
 DOC_URLS = {

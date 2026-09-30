@@ -3,6 +3,16 @@ from .strategy import Strategy
 
 
 class StrategyHTTP(_V5HTTPManager):
+    def _create_typed_strategy(self, strategy_type, **kwargs):
+        supplied_type = kwargs.get("strategyType", strategy_type)
+        if supplied_type != strategy_type:
+            raise ValueError(
+                f"Strategy helper requires strategyType={strategy_type}; "
+                f"received {supplied_type}"
+            )
+        kwargs["strategyType"] = strategy_type
+        return self.create_strategy(**kwargs)
+
     def create_strategy(self, **kwargs):
         """Create a Chase Order, TWAP, Iceberg, or POV strategy.
 
@@ -35,8 +45,7 @@ class StrategyHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/strategy/create-strategy
         """
-        kwargs.setdefault("strategyType", "chaseOrder")
-        return self.create_strategy(**kwargs)
+        return self._create_typed_strategy("chaseOrder", **kwargs)
 
     def create_twap_strategy(self, **kwargs):
         """Create a TWAP strategy.
@@ -44,8 +53,7 @@ class StrategyHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/strategy/create-strategy
         """
-        kwargs.setdefault("strategyType", "twap")
-        return self.create_strategy(**kwargs)
+        return self._create_typed_strategy("twap", **kwargs)
 
     def create_iceberg_strategy(self, **kwargs):
         """Create an Iceberg strategy.
@@ -53,8 +61,7 @@ class StrategyHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/strategy/create-strategy
         """
-        kwargs.setdefault("strategyType", "iceberg")
-        return self.create_strategy(**kwargs)
+        return self._create_typed_strategy("iceberg", **kwargs)
 
     def create_pov_strategy(self, **kwargs):
         """Create a POV strategy.
@@ -62,8 +69,7 @@ class StrategyHTTP(_V5HTTPManager):
         Additional information:
             https://bybit-exchange.github.io/docs/v5/strategy/create-strategy
         """
-        kwargs.setdefault("strategyType", "pov")
-        return self.create_strategy(**kwargs)
+        return self._create_typed_strategy("pov", **kwargs)
 
     def query_strategy_list(self, **kwargs):
         """Query trading strategy list with filters.
