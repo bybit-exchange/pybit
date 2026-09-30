@@ -14,7 +14,7 @@ class DCAHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/dca/close
         """
         return self._submit_request(
             method="POST",
@@ -33,7 +33,7 @@ class DCAHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/dca/create
         """
         return self._submit_request(
             method="POST",

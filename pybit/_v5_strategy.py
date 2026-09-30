@@ -3,28 +3,67 @@ from .strategy import Strategy
 
 
 class StrategyHTTP(_V5HTTPManager):
-    def create_chase_order_strategy(self, **kwargs):
-        """Create Chase Order strategy for dynamic price tracking.
+    def create_strategy(self, **kwargs):
+        """Create a Chase Order, TWAP, Iceberg, or POV strategy.
 
         Required args:
             category (string): Product type for the trading pair.
             symbol (string): Trading pair symbol.
             side (string): Order direction.
-            size (string): Total quantity to execute.
-            strategyType (string): Strategy type identifier.
+            strategyType (string): chaseOrder, twap, iceberg, or pov.
+
+        Type-specific args:
+            Refer to the API documentation for the required sizing and execution
+            parameters of the selected strategy type.
 
         Returns:
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/strategy/create-strategy
         """
         return self._submit_request(
             method="POST",
-            path=f"{self.endpoint}{Strategy.CREATE_CHASE_ORDER_STRATEGY}",
+            path=f"{self.endpoint}{Strategy.CREATE_STRATEGY}",
             query=kwargs,
             auth=True,
         )
+
+    def create_chase_order_strategy(self, **kwargs):
+        """Create a Chase Order strategy.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/strategy/create-strategy
+        """
+        kwargs.setdefault("strategyType", "chaseOrder")
+        return self.create_strategy(**kwargs)
+
+    def create_twap_strategy(self, **kwargs):
+        """Create a TWAP strategy.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/strategy/create-strategy
+        """
+        kwargs.setdefault("strategyType", "twap")
+        return self.create_strategy(**kwargs)
+
+    def create_iceberg_strategy(self, **kwargs):
+        """Create an Iceberg strategy.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/strategy/create-strategy
+        """
+        kwargs.setdefault("strategyType", "iceberg")
+        return self.create_strategy(**kwargs)
+
+    def create_pov_strategy(self, **kwargs):
+        """Create a POV strategy.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/strategy/create-strategy
+        """
+        kwargs.setdefault("strategyType", "pov")
+        return self.create_strategy(**kwargs)
 
     def query_strategy_list(self, **kwargs):
         """Query trading strategy list with filters.
@@ -33,7 +72,7 @@ class StrategyHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/strategy/strategy-list
         """
         return self._submit_request(
             method="GET",
@@ -52,7 +91,7 @@ class StrategyHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/strategy/order-list
         """
         return self._submit_request(
             method="GET",
@@ -71,7 +110,7 @@ class StrategyHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/strategy/stop-strategy
         """
         return self._submit_request(
             method="POST",

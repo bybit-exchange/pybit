@@ -13,7 +13,7 @@ class FGridBotHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/futures-grid/close
         """
         return self._submit_request(
             method="POST",
@@ -39,7 +39,7 @@ class FGridBotHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/futures-grid/create
         """
         return self._submit_request(
             method="POST",
@@ -58,7 +58,7 @@ class FGridBotHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/futures-grid/get-detail
         """
         return self._submit_request(
             method="POST",
@@ -83,7 +83,7 @@ class FGridBotHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/futures-grid/validate-input
         """
         return self._submit_request(
             method="POST",

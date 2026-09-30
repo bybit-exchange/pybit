@@ -25,6 +25,7 @@ class CryptoLoan(str, Enum):
     GET_MAX_LOAN_AMOUNT_NEW_CRYPTO_LOAN = "/v5/crypto-loan-common/max-loan"
 
     # Flexible loans
+    GET_CRYPTO_LOAN_FLEXIBLE_AVAILABLE_INVENTORY = "/v5/crypto-loan-flexible/available-inventory"
     BORROW_FLEXIBLE_CRYPTO_LOAN = "/v5/crypto-loan-flexible/borrow"
     REPAY_FLEXIBLE_CRYPTO_LOAN = "/v5/crypto-loan-flexible/repay"
     COLLATERAL_REPAYMENT_FLEXIBLE_CRYPTO_LOAN = "/v5/crypto-loan-flexible/repay-collateral"
@@ -33,6 +34,7 @@ class CryptoLoan(str, Enum):
     GET_REPAYMENT_HISTORY_FLEXIBLE_CRYPTO_LOAN = "/v5/crypto-loan-flexible/repayment-history"
 
     # Fixed loans
+    GET_CRYPTO_LOAN_FIXED_AVAILABLE_INVENTORY = "/v5/crypto-loan-fixed/available-inventory"
     GET_LENDING_MARKET_FIXED_CRYPTO_LOAN = "/v5/crypto-loan-fixed/supply-order-quote"
     GET_BORROWING_MARKET_FIXED_CRYPTO_LOAN = "/v5/crypto-loan-fixed/borrow-order-quote"
     BORROW_FIXED_CRYPTO_LOAN = "/v5/crypto-loan-fixed/borrow"

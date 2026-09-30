@@ -13,7 +13,7 @@ class FComboBotHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/futures-combo/close
         """
         return self._submit_request(
             method="POST",
@@ -35,7 +35,7 @@ class FComboBotHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/futures-combo/create
         """
         return self._submit_request(
             method="POST",
@@ -54,7 +54,7 @@ class FComboBotHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/futures-combo/get-detail
         """
         return self._submit_request(
             method="POST",
@@ -76,7 +76,7 @@ class FComboBotHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/futures-combo/get-limit
         """
         return self._submit_request(
             method="POST",

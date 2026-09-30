@@ -13,7 +13,7 @@ class FMartingaleBotHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/futures-martingale/close
         """
         return self._submit_request(
             method="POST",
@@ -39,7 +39,7 @@ class FMartingaleBotHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/futures-martingale/create
         """
         return self._submit_request(
             method="POST",
@@ -58,7 +58,7 @@ class FMartingaleBotHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/futures-martingale/get-detail
         """
         return self._submit_request(
             method="POST",
@@ -79,7 +79,7 @@ class FMartingaleBotHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/futures-martingale/get-limit
         """
         return self._submit_request(
             method="POST",

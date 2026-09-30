@@ -14,7 +14,7 @@ class GridHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/spot-grid/close
         """
         return self._submit_request(
             method="POST",
@@ -37,7 +37,7 @@ class GridHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/spot-grid/create
         """
         return self._submit_request(
             method="POST",
@@ -56,7 +56,7 @@ class GridHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/spot-grid/get-detail
         """
         return self._submit_request(
             method="POST",
@@ -79,7 +79,7 @@ class GridHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/rate-limit/rate-limit
+            https://bybit-exchange.github.io/docs/v5/bot/spot-grid/validate-input
         """
         return self._submit_request(
             method="POST",

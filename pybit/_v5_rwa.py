@@ -4,7 +4,7 @@ from .rwa import RWA
 
 class RWAHTTP(_V5HTTPManager):
     def get_convert_detail(self, **kwargs):
-        """查询 Convert 订单详情
+        """Get Convert order details.
 
         Returns:
             Request results as dictionary.
@@ -20,7 +20,7 @@ class RWAHTTP(_V5HTTPManager):
         )
 
     def get_convert_list(self, **kwargs):
-        """获取 Convert 交易对列表
+        """Get the list of available Convert pairs.
 
         Returns:
             Request results as dictionary.
@@ -36,15 +36,17 @@ class RWAHTTP(_V5HTTPManager):
         )
 
     def submit_convert(self, **kwargs):
-        """提交 Convert 订单（Mint / Redeem）
+        """Submit a Convert order to mint or redeem stock tokens.
 
         Required args:
-            convertType (string): 方向：MINT（正股→Token）/ REDEEM（Token→正股）
-            symbol (string): 底层股票代码，如 `AAPL-US`
-            inputAmount (string): 输入数量（MINT 时为正股数量，REDEEM 时为 Token 数量）
-            frontMultiplier (string): 前端快照的转换比例，服务端会与当前值校验
-            requestId (string): 幂等键，字母数字与 `-_`，同一 MM 账号下 24 小时内唯一
-            flow (string): 链路类型
+            convertType (string): MINT converts stock to token; REDEEM converts
+                token to stock.
+            symbol (string): Underlying stock symbol, e.g. `AAPL-US`.
+            inputAmount (string): Stock amount for MINT or token amount for REDEEM.
+            frontMultiplier (string): Client-side multiplier snapshot validated by
+                the server.
+            requestId (string): Idempotency key, unique for 24 hours per MM account.
+            flow (string): Request flow type.
 
         Returns:
             Request results as dictionary.
@@ -60,11 +62,11 @@ class RWAHTTP(_V5HTTPManager):
         )
 
     def get_multiplier_list(self, **kwargs):
-        """获取 Multiplier 列表
+        """Get the stock-token multiplier list.
 
         Required args:
-            current (integer): 当前页码（从 1 开始）
-            pageSize (integer): 每页条数，默认 10
+            current (integer): Page number, starting from 1.
+            pageSize (integer): Number of records per page. Default: 10.
 
         Returns:
             Request results as dictionary.
@@ -80,7 +82,7 @@ class RWAHTTP(_V5HTTPManager):
         )
 
     def get_market_session(self, **kwargs):
-        """获取交易日历与市场状态
+        """Get the trading calendar and current market status.
 
         Returns:
             Request results as dictionary.
@@ -96,16 +98,16 @@ class RWAHTTP(_V5HTTPManager):
         )
 
     def place_stocks_order(self, **kwargs):
-        """下单（买入 / 卖出股票）
+        """Place an order to buy or sell stocks.
 
         Required args:
-            symbol (string): 股票代码，如 `TSLA-US`、`AAPL-US`
-            quoteToken (string): 计价资产，当前仅支持 `USDC`
-            side (string): 方向
-            type (string): 订单类型
-            timeInForce (string): 订单有效期
-            orderTime (integer): 客户端下单毫秒时间戳
-            requestId (string): 幂等键，字母数字与 `-_`，同一 MM 账号下 24 小时内唯一
+            symbol (string): Stock symbol, e.g. `TSLA-US` or `AAPL-US`.
+            quoteToken (string): Quote asset. Currently only `USDC` is supported.
+            side (string): Order side.
+            type (string): Order type.
+            timeInForce (string): Time-in-force policy.
+            orderTime (integer): Client order timestamp in milliseconds.
+            requestId (string): Idempotency key, unique for 24 hours per MM account.
 
         Returns:
             Request results as dictionary.
@@ -121,10 +123,10 @@ class RWAHTTP(_V5HTTPManager):
         )
 
     def cancel_stocks_order(self, **kwargs):
-        """撤单
+        """Cancel a stock order.
 
         Required args:
-            orderNo (string): 系统订单号
+            orderNo (string): System order number.
 
         Returns:
             Request results as dictionary.
@@ -140,7 +142,7 @@ class RWAHTTP(_V5HTTPManager):
         )
 
     def get_stocks_order_detail(self, **kwargs):
-        """查询股票订单详情
+        """Get stock order details.
 
         Returns:
             Request results as dictionary.
@@ -156,7 +158,7 @@ class RWAHTTP(_V5HTTPManager):
         )
 
     def get_stocks_positions(self, **kwargs):
-        """获取所有正股仓位
+        """Get all stock positions.
 
         Returns:
             Request results as dictionary.

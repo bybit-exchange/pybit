@@ -18,8 +18,6 @@ from ._v5_user import UserHTTP
 from ._v5_broker import BrokerHTTP
 from ._v5_institutional_loan import InstitutionalLoanHTTP
 from ._v5_crypto_loan import CryptoLoanHTTP
-from ._v5_crypto_loan_fixed import CryptoLoanFixedHTTP
-from ._v5_crypto_loan_flexible import CryptoLoanFlexibleHTTP
 from ._v5_dca import DCAHTTP
 from ._v5_earn import EarnHTTP
 from ._v5_fiat import FiatHTTP
@@ -77,8 +75,6 @@ class HTTP(
     RateLimitHTTP,
     P2PHTTP,
     SpreadHTTP,
-    CryptoLoanFixedHTTP,
-    CryptoLoanFlexibleHTTP,
     DCAHTTP,
     FComboBotHTTP,
     FGridBotHTTP,
