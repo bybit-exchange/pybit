@@ -1,0 +1,21 @@
+CHANGELOG.md
+  s_9fa02711d37512::t_5f0f2c28234fa0 8-86
+pybit/__init__.py
+  s_9fa02711d37512::t_2401efee308f5e 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "ba274f83a24d05aee9fd13c2fabcb8c5c2c74dd1",
+  "prompts": {},
+  "sessions": {
+    "s_9fa02711d37512": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f084-09e2-7251-b0e4-fe6c3825b44a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
