@@ -1,0 +1,21 @@
+pybit/_v5_rwa.py
+  s_9fa02711d37512::t_ceb9b73b6892b0 1-172
+pybit/rwa.py
+  s_9fa02711d37512::t_e1f6893043318a 1-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "468cc60e74c02d0ec00d7e76e5e330b813b1d079",
+  "prompts": {},
+  "sessions": {
+    "s_9fa02711d37512": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f084-09e2-7251-b0e4-fe6c3825b44a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
