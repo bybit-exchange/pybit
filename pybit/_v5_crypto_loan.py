@@ -342,6 +342,25 @@ class CryptoLoanHTTP(_V5HTTPManager):
             auth=True,
         )
 
+    def get_crypto_loan_flexible_available_inventory(self, **kwargs):
+        """Get flexible crypto-loan available inventory.
+
+        Required args:
+            currency (string): Coin name, uppercase only
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/new-crypto-loan/flexible/available-inventory
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{CryptoLoan.GET_CRYPTO_LOAN_FLEXIBLE_AVAILABLE_INVENTORY}",
+            query=kwargs,
+            auth=True,
+        )
+
     def borrow_flexible_crypto_loan(self, **kwargs):
         """
         Required args:
@@ -446,6 +465,27 @@ class CryptoLoanHTTP(_V5HTTPManager):
         return self._submit_request(
             method="GET",
             path=f"{self.endpoint}{CryptoLoan.GET_REPAYMENT_HISTORY_FLEXIBLE_CRYPTO_LOAN}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def get_crypto_loan_fixed_available_inventory(self, **kwargs):
+        """Get fixed-term crypto-loan available inventory.
+
+        Required args:
+            currency (string): Coin name, uppercase only
+            term (string): Fixed term in days
+            annualRate (string): Annual interest rate, e.g. 0.02 means 2%
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/new-crypto-loan/fixed/available-inventory
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{CryptoLoan.GET_CRYPTO_LOAN_FIXED_AVAILABLE_INVENTORY}",
             query=kwargs,
             auth=True,
         )

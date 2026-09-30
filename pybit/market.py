@@ -24,6 +24,7 @@ class Market(str, Enum):
     GET_INDEX_PRICE_COMPONENTS = "/v5/market/index-price-components"
     GET_ADL_ALERT = "/v5/market/adlAlert"
     GET_FEE_GROUP_INFO = "/v5/market/fee-group-info"
+    GET_OPTION_BASE_COINS = "/v5/market/option-base-coins"
 
     def __str__(self) -> str:
         return self.value
