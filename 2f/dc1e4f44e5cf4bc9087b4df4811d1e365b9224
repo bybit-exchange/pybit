@@ -1,0 +1,21 @@
+pybit/_v5_fht.py
+  s_9fa02711d37512::t_84c5edc9bdb592 1-44
+pybit/fht.py
+  s_9fa02711d37512::t_84c5edc9bdb592 1-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "2fdc1e4f44e5cf4bc9087b4df4811d1e365b9224",
+  "prompts": {},
+  "sessions": {
+    "s_9fa02711d37512": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f084-09e2-7251-b0e4-fe6c3825b44a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
