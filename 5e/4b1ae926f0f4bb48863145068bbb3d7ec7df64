@@ -1,0 +1,20 @@
+pybit/_v5_crypto_loan_fixed.py
+  h_2077f5731cd72e 1-27
+pybit/_v5_crypto_loan_flexible.py
+  h_2077f5731cd72e 1-23
+pybit/crypto_loan_fixed.py
+  h_2077f5731cd72e 1-8
+pybit/crypto_loan_flexible.py
+  h_2077f5731cd72e 1-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "5e4b1ae926f0f4bb48863145068bbb3d7ec7df64",
+  "prompts": {},
+  "humans": {
+    "h_2077f5731cd72e": {
+      "author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
