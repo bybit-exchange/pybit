@@ -1,0 +1,19 @@
+pybit/unified_trading.py
+  s_9fa02711d37512::t_47b524d2df3bf8 21-23,26-30,32,34,79-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "80c4354f3bbc8bb79ded53b1916609290409c034",
+  "prompts": {},
+  "sessions": {
+    "s_9fa02711d37512": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f084-09e2-7251-b0e4-fe6c3825b44a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
