@@ -1,0 +1,37 @@
+pybit/grid.py
+  s_9fa02711d37512::t_17cd1a484c0080 1-11
+pybit/_v5_dca.py
+  s_9fa02711d37512::t_17cd1a484c0080 1-43
+pybit/_v5_fcombobot.py
+  s_9fa02711d37512::t_17cd1a484c0080 1-86
+pybit/dca.py
+  s_9fa02711d37512::t_17cd1a484c0080 1-9
+pybit/fcombobot.py
+  s_9fa02711d37512::t_17cd1a484c0080 1-11
+pybit/fgridbot.py
+  s_9fa02711d37512::t_17cd1a484c0080 1-11
+pybit/_v5_fgridbot.py
+  s_9fa02711d37512::t_17cd1a484c0080 1-93
+pybit/fmartingalebot.py
+  s_9fa02711d37512::t_17cd1a484c0080 1-11
+pybit/_v5_fmartingalebot.py
+  s_9fa02711d37512::t_17cd1a484c0080 1-89
+pybit/_v5_grid.py
+  s_9fa02711d37512::t_17cd1a484c0080 1-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "397ec22280fd6146089d682325e28184bd29033d",
+  "prompts": {},
+  "sessions": {
+    "s_9fa02711d37512": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f084-09e2-7251-b0e4-fe6c3825b44a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
