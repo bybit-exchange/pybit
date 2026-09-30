@@ -402,3 +402,18 @@ class MarketHTTP(_V5HTTPManager):
             path=f"{self.endpoint}{Market.GET_FEE_GROUP_INFO}",
             query=kwargs,
         )
+
+    def get_option_base_coins(self, **kwargs):
+        """Get option base coins and their market metadata.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/market/option-base-coins
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Market.GET_OPTION_BASE_COINS}",
+            query=kwargs,
+        )
