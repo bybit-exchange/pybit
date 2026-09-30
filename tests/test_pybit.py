@@ -1,3 +1,4 @@
+import json
 import logging
 import io
 
@@ -11,7 +12,7 @@ import requests
 import websocket
 
 from pybit._http_manager import _V5HTTPManager
-from pybit._websocket_stream import _WebSocketManager
+from pybit._websocket_stream import _WebSocketManager, _V5WebSocketManager
 from pybit._websocket_trading import _V5TradeWebSocketManager
 from pybit.unified_trading import HTTP
 from pybit.exceptions import InvalidRequestError
@@ -266,6 +267,82 @@ def test_websocket_exit_waits_with_sleep_until_socket_closes(monkeypatch):
 
     assert manager.ws.close_called is True
     assert sleep_calls == [0.01]
+
+
+def _v5_manager_with_subscription(req_id, topics):
+    manager = _V5WebSocketManager(
+        "Test WS",
+        testnet=False,
+        callback_function=lambda _: None,
+    )
+    manager.subscriptions[req_id] = json.dumps(
+        {"op": "subscribe", "req_id": req_id, "args": topics}
+    )
+    for topic in topics:
+        manager._set_callback(topic, lambda _: None)
+    return manager
+
+
+def test_failed_subscription_removes_callback_and_subscription(caplog):
+    req_id = "req-1"
+    manager = _v5_manager_with_subscription(req_id, ["kline.1.BTCUSDT"])
+
+    with caplog.at_level(logging.ERROR):
+        manager._process_subscription_message(
+            {
+                "op": "subscribe",
+                "req_id": req_id,
+                "success": False,
+                "ret_msg": "error:handler not found",
+            }
+        )
+
+    assert "Couldn't subscribe to topic" in caplog.text
+    assert "kline.1.BTCUSDT" not in manager.callback_directory
+    assert req_id not in manager.subscriptions
+
+
+def test_failed_subscription_without_req_id_does_not_raise(caplog):
+    manager = _v5_manager_with_subscription("req-1", ["kline.1.BTCUSDT"])
+
+    with caplog.at_level(logging.ERROR):
+        manager._process_subscription_message(
+            {"op": "subscribe", "success": False, "ret_msg": "error"}
+        )
+
+    assert "Couldn't subscribe to topic" in caplog.text
+    assert "kline.1.BTCUSDT" not in manager.callback_directory
+
+
+def test_failed_multi_symbol_subscription_removes_all_callbacks():
+    req_id = "req-1"
+    topics = ["kline.1.BTCUSDT", "kline.1.ETHUSDT"]
+    manager = _v5_manager_with_subscription(req_id, topics)
+
+    manager._process_subscription_message(
+        {
+            "op": "subscribe",
+            "req_id": req_id,
+            "success": False,
+            "ret_msg": "error:handler not found",
+        }
+    )
+
+    for topic in topics:
+        assert topic not in manager.callback_directory
+    assert req_id not in manager.subscriptions
+
+
+def test_successful_subscription_keeps_callback_and_subscription():
+    req_id = "req-1"
+    manager = _v5_manager_with_subscription(req_id, ["kline.1.BTCUSDT"])
+
+    manager._process_subscription_message(
+        {"op": "subscribe", "req_id": req_id, "success": True}
+    )
+
+    assert "kline.1.BTCUSDT" in manager.callback_directory
+    assert req_id in manager.subscriptions
 
 
 def test_submit_request_retries_when_retcode_is_retryable():
