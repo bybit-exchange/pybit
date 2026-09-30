@@ -1,0 +1,19 @@
+docs/superpowers/specs/2026-09-30-openapi-full-intersection-design.md
+  s_9fa02711d37512::t_d405e1cd25b526 1-129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "e35535a00c07ab795827e0b93e8b9680e1630ca0",
+  "prompts": {},
+  "sessions": {
+    "s_9fa02711d37512": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0f084-09e2-7251-b0e4-fe6c3825b44a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
