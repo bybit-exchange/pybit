@@ -341,7 +341,7 @@ class UserHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/user/invitation/code
+            https://bybit-exchange.github.io/docs/v5/user/referral-code
         """
         return self._submit_request(
             method="GET",

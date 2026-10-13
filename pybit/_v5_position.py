@@ -360,7 +360,7 @@ class PositionHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/position/symbol-info
+            https://bybit-exchange.github.io/docs/v5/position/batch-lvg
         """
         return self._submit_request(
             method="GET",

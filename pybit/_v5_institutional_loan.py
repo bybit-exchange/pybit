@@ -116,36 +116,17 @@ class InstitutionalLoanHTTP(_V5HTTPManager):
             auth=True,
         )
 
-    def ins_loan_association_uid(self, **kwargs):
-        """Bind/Unbind UID
-
-        Required args:
-            uid (string): The UID to bind or unbind.
-            operate (string): Operation type. `0`: Bind, `1`: Unbind.
-        Returns:
-            Request results as dictionary.
-
-        Additional information:
-            https://bybit-exchange.github.io/docs/v5/ins-loan/association-uid
-        """
-        return self._submit_request(
-            method="POST",
-            path=f"{self.endpoint}{InstitutionalLoan.INS_LOAN_ASSOCIATION_UID}",
-            query=kwargs,
-            auth=True,
-        )
-
     def ins_loan_coin_delta_amount(self, **kwargs):
         """Get Coin Delta Amount
         Returns:
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/ins-loan/coin-delta-amount
+            https://bybit-exchange.github.io/docs/v5/otc/coin-delta-amount
         """
         return self._submit_request(
             method="GET",
-            path=f"{self.endpoint}{InstitutionalLoan.INS_LOAN_COIN_DELTA_AMOUNT}",
+            path=f"{self.endpoint}{InsLoan.INS_LOAN_COIN_DELTA_AMOUNT}",
             query=kwargs,
             auth=True,
         )
@@ -156,120 +137,11 @@ class InstitutionalLoanHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/ins-loan/delay-liq-status
+            https://bybit-exchange.github.io/docs/v5/otc/delay-liq-status
         """
         return self._submit_request(
             method="GET",
-            path=f"{self.endpoint}{InstitutionalLoan.INS_LOAN_DELAY_LIQ_STATUS}",
-            query=kwargs,
-            auth=True,
-        )
-
-    def ins_loan_ensure_tokens(self, **kwargs):
-        """Get Margin Tokens
-        Returns:
-            Request results as dictionary.
-
-        Additional information:
-            https://bybit-exchange.github.io/docs/v5/ins-loan/ensure-tokens
-        """
-        return self._submit_request(
-            method="GET",
-            path=f"{self.endpoint}{InstitutionalLoan.INS_LOAN_ENSURE_TOKENS}",
-            query=kwargs,
-            auth=True,
-        )
-
-    def ins_loan_ensure_tokens_convert(self, **kwargs):
-        """Get Margin Token Conversion Details
-        Returns:
-            Request results as dictionary.
-
-        Additional information:
-            https://bybit-exchange.github.io/docs/v5/ins-loan/ensure-tokens-convert
-        """
-        return self._submit_request(
-            method="GET",
-            path=f"{self.endpoint}{InstitutionalLoan.INS_LOAN_ENSURE_TOKENS_CONVERT}",
-            query=kwargs,
-            auth=True,
-        )
-
-    def ins_loan_get_loan_order(self, **kwargs):
-        """Get Loan Orders
-        Returns:
-            Request results as dictionary.
-
-        Additional information:
-            https://bybit-exchange.github.io/docs/v5/ins-loan/loan-order
-        """
-        return self._submit_request(
-            method="GET",
-            path=f"{self.endpoint}{InstitutionalLoan.INS_LOAN_GET_LOAN_ORDER}",
-            query=kwargs,
-            auth=True,
-        )
-
-    def ins_loan_ltv_convert(self, **kwargs):
-        """Get LTV with Conversion Details
-        Returns:
-            Request results as dictionary.
-
-        Additional information:
-            https://bybit-exchange.github.io/docs/v5/ins-loan/ltv-convert
-        """
-        return self._submit_request(
-            method="GET",
-            path=f"{self.endpoint}{InstitutionalLoan.INS_LOAN_LTV_CONVERT}",
-            query=kwargs,
-            auth=True,
-        )
-
-    def ins_loan_product_infos(self, **kwargs):
-        """Get Product Infos
-        Returns:
-            Request results as dictionary.
-
-        Additional information:
-            https://bybit-exchange.github.io/docs/v5/ins-loan/product-infos
-        """
-        return self._submit_request(
-            method="GET",
-            path=f"{self.endpoint}{InstitutionalLoan.INS_LOAN_PRODUCT_INFOS}",
-            query=kwargs,
-            auth=True,
-        )
-
-    def ins_loan_repaid_history(self, **kwargs):
-        """Get Repaid History
-        Returns:
-            Request results as dictionary.
-
-        Additional information:
-            https://bybit-exchange.github.io/docs/v5/ins-loan/repaid-history
-        """
-        return self._submit_request(
-            method="GET",
-            path=f"{self.endpoint}{InstitutionalLoan.INS_LOAN_REPAID_HISTORY}",
-            query=kwargs,
-            auth=True,
-        )
-
-    def ins_loan_repay_loan(self, **kwargs):
-        """Repay Loan
-
-        Required args:
-            token (string): Repayment coin name, uppercase only. e.g. `USDT`, `BTC`.
-            quantity (string): Repayment quantity.
-        Returns:
-            Request results as dictionary.
-
-        Additional information:
-            https://bybit-exchange.github.io/docs/v5/ins-loan/repay-loan
-        """
-        return self._submit_request(
-            method="POST",
-            path=f"{self.endpoint}{InstitutionalLoan.INS_LOAN_REPAY_LOAN}",
+            path=f"{self.endpoint}{InsLoan.INS_LOAN_DELAY_LIQ_STATUS}",
             query=kwargs,
             auth=True,
         )

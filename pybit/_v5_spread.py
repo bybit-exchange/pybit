@@ -180,7 +180,7 @@ class SpreadHTTP(_V5HTTPManager):
         )
 
     def get_spread_max_qty(self, **kwargs):
-        """Get Spread Wallet Balance
+        """Get Spread Max Qty
 
         Required args:
             symbol (string): Spread trading pair.
@@ -193,7 +193,7 @@ class SpreadHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/spread/max-qty
+            https://bybit-exchange.github.io/docs/v5/spread/trade/max-qty
         """
         return self._submit_request(
             method="GET",

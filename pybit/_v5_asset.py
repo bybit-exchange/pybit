@@ -825,24 +825,6 @@ class AssetHTTP(_V5HTTPManager):
             auth=True,
         )
 
-    def query_sub_member_deposit_records(self, **kwargs):
-        """Get Sub Deposit Records (on-chain)
-
-        Required args:
-            subMemberId (string): Sub-account UID.
-        Returns:
-            Request results as dictionary.
-
-        Additional information:
-            https://bybit-exchange.github.io/docs/v5/asset/deposit/query-sub-member-record
-        """
-        return self._submit_request(
-            method="GET",
-            path=f"{self.endpoint}{Asset.QUERY_SUB_MEMBER_DEPOSIT_RECORDS}",
-            query=kwargs,
-            auth=True,
-        )
-
     def get_portfolio_margin(self, **kwargs):
         """Get Portfolio Margin Info
         Returns:
@@ -869,36 +851,6 @@ class AssetHTTP(_V5HTTPManager):
         return self._submit_request(
             method="GET",
             path=f"{self.endpoint}{Asset.GET_TOTAL_MEMBERS_ASSETS}",
-            query=kwargs,
-            auth=True,
-        )
-
-    def inter_transfer_list_query(self, **kwargs):
-        """Get Internal Transfer Records
-        Returns:
-            Request results as dictionary.
-
-        Additional information:
-            https://bybit-exchange.github.io/docs/v5/asset/transfer/query-inter-transfer-list
-        """
-        return self._submit_request(
-            method="GET",
-            path=f"{self.endpoint}{Asset.INTER_TRANSFER_LIST_QUERY}",
-            query=kwargs,
-            auth=True,
-        )
-
-    def universal_transfer_list_query(self, **kwargs):
-        """Get Universal Transfer Records
-        Returns:
-            Request results as dictionary.
-
-        Additional information:
-            https://bybit-exchange.github.io/docs/v5/asset/transfer/query-universal-transfer-list
-        """
-        return self._submit_request(
-            method="GET",
-            path=f"{self.endpoint}{Asset.UNIVERSAL_TRANSFER_LIST_QUERY}",
             query=kwargs,
             auth=True,
         )

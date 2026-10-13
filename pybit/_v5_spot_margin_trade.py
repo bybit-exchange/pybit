@@ -404,7 +404,7 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/spot-margin-trade/fixed-available-inventory
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/fixed-available-inventory
         """
         return self._submit_request(
             method="GET",
@@ -425,7 +425,7 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/spot-margin-trade/fixedborrow
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/fixedborrow
         """
         return self._submit_request(
             method="POST",
@@ -440,7 +440,7 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/spot-margin-trade/fixedborrow-contract-info
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/fixedborrow-contract-info
         """
         return self._submit_request(
             method="GET",
@@ -455,7 +455,7 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/spot-margin-trade/fixedborrow-order-info
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/fixedborrow-order-info
         """
         return self._submit_request(
             method="GET",
@@ -469,16 +469,18 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
 
         Required args:
             orderCurrency (string): Borrow coin name, uppercase only. e.g. `USDT`, `BTC`. **Required.**
-            orderBy (string): Sort field. **Required.**
-- `apy`: Sort by annual interest rate
-- `term`: Sort by loan term
-- `quantity`: Sort by available quantity
+
+        Optional args:
+            term (string): Fixed term in days.
+            orderBy (string): Sort field: `apy`, `term`, or `quantity`.
+            sort (integer): Sort direction. `0`: ascending, `1`: descending.
+            limit (integer): Number of records per page, from 1 to 100.
 
         Returns:
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/spot-margin-trade/fixedborrow-order-quote
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/fixedborrow-order-quote
         """
         return self._submit_request(
             method="GET",
@@ -496,7 +498,7 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/spot-margin-trade/fixedborrow-renew
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/fixedborrow-renew
         """
         return self._submit_request(
             method="POST",
@@ -514,7 +516,7 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/spot-margin-trade/flexible-available-inventory
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/flexible-available-inventory
         """
         return self._submit_request(
             method="GET",
@@ -532,7 +534,7 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/spot-margin-trade/liability
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/liability
         """
         return self._submit_request(
             method="GET",

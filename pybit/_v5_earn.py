@@ -1319,7 +1319,7 @@ class EarnHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/earn/flexible-saving/auto-savings
+            https://bybit-exchange.github.io/docs/v5/finance/earn/flexible-saving/auto-savings
         """
         return self._submit_request(
             method="GET",
@@ -1337,7 +1337,7 @@ class EarnHTTP(_V5HTTPManager):
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/v5/earn/flexible-saving/auto-savings
+            https://bybit-exchange.github.io/docs/v5/finance/earn/flexible-saving/auto-savings
         """
         return self._submit_request(
             method="POST",
