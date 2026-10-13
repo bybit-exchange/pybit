@@ -1,0 +1,53 @@
+CHANGELOG.md
+  s_14731aa45014cc::t_79f9fcf57c9267 1-68
+pybit/__init__.py
+  s_14731aa45014cc::t_31beee33d51cdb 1
+pybit/_v5_account.py
+  s_14731aa45014cc::t_d2208bb295bc14 502-546
+pybit/_v5_asset.py
+  s_14731aa45014cc::t_4b9e6cd86cebd4 827-904
+pybit/_v5_earn.py
+  s_14731aa45014cc::t_97cbd800b60eff 1315-1347
+pybit/_v5_institutional_loan.py
+  s_14731aa45014cc::t_ebec54811fb37b 118-275
+pybit/_v5_position.py
+  s_14731aa45014cc::t_b060fde00217a2 350-370
+pybit/_v5_spot_margin_trade.py
+  s_14731aa45014cc::t_3562219ad96dd1 395-542
+pybit/_v5_spread.py
+  s_14731aa45014cc::t_933140a9652b4b 182-204
+pybit/_v5_user.py
+  s_14731aa45014cc::t_9634edf2223910 337-351
+pybit/account.py
+  s_14731aa45014cc::t_40a7967640f24f 33-35
+pybit/asset.py
+  s_14731aa45014cc::t_4ae82ca953b6fe 61-65
+pybit/earn.py
+  s_14731aa45014cc::t_d6bff45b55db43 75-76
+pybit/institutional_loan.py
+  s_14731aa45014cc::t_69a94ac96f8137 13-22
+pybit/position.py
+  s_14731aa45014cc::t_6efb5055ac3c9f 21
+pybit/spot_margin_trade.py
+  s_14731aa45014cc::t_57271d947bdee7 32-39
+pybit/spread.py
+  s_14731aa45014cc::t_3a506fb82de510 17
+pybit/user.py
+  s_14731aa45014cc::t_7a980cb65bdd70 25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "70f7ae3aae62301c8eb85a204047bebbb3b7b55d",
+  "prompts": {},
+  "sessions": {
+    "s_14731aa45014cc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a11a25-078f-7d13-b8c5-a1f8f61777b2",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
