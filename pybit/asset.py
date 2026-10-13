@@ -58,5 +58,10 @@ class Asset(str, Enum):
     GET_FIAT_CONVERT_STATUS = "/v5/fiat/trade-query"
 
 
+    QUERY_SUB_MEMBER_DEPOSIT_RECORDS = "/v5/asset/deposit/query-sub-member-record"
+    GET_PORTFOLIO_MARGIN = "/v5/asset/portfolio-margin"
+    GET_TOTAL_MEMBERS_ASSETS = "/v5/asset/total-members-assets"
+    INTER_TRANSFER_LIST_QUERY = "/v5/asset/transfer/query-inter-transfer-list"
+    UNIVERSAL_TRANSFER_LIST_QUERY = "/v5/asset/transfer/query-universal-transfer-list"
     def __str__(self) -> str:
         return self.value

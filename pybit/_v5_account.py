@@ -499,3 +499,48 @@ class AccountHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def get_option_asset_info(self, **kwargs):
+        """Get Option Asset Info
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/account/option-asset-info
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Account.GET_OPTION_ASSET_INFO}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def get_pay_info(self, **kwargs):
+        """Get Pay Info
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/account/pay-info
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Account.GET_PAY_INFO}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def get_trade_info_for_analysis(self, **kwargs):
+        """Get Trade Info For Analysis
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/account/trade-info-for-analysis
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Account.GET_TRADE_INFO_FOR_ANALYSIS}",
+            query=kwargs,
+            auth=True,
+        )

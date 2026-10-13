@@ -1,3 +1,71 @@
+## 5.17.2 — 2026-10-13
+
+### New Methods (31)
+- get_option_asset_info
+- get_pay_info
+- get_trade_info_for_analysis
+- query_sub_member_deposit_records
+- get_portfolio_margin
+- get_total_members_assets
+- inter_transfer_list_query
+- universal_transfer_list_query
+- list_earn_auto_savings
+- edit_earn_auto_savings
+- ins_loan_association_uid
+- ins_loan_coin_delta_amount
+- ins_loan_delay_liq_status
+- ins_loan_ensure_tokens
+- ins_loan_ensure_tokens_convert
+- ins_loan_get_loan_order
+- ins_loan_ltv_convert
+- ins_loan_product_infos
+- ins_loan_repaid_history
+- ins_loan_repay_loan
+- get_position_symbol_info
+- query_fixed_available_inventory
+- account_fixed_borrow
+- query_fixed_borrow_contracts
+- query_fixed_borrow_orders
+- query_fixed_borrow_market
+- renew_fixed_borrow
+- get_spot_margin_trade_flexible_available_inventory
+- query_borrow_liability
+- get_spread_max_qty
+- query_referral_code
+
+### New Endpoint Keys (31)
+- Account.GET_OPTION_ASSET_INFO
+- Account.GET_PAY_INFO
+- Account.GET_TRADE_INFO_FOR_ANALYSIS
+- Asset.QUERY_SUB_MEMBER_DEPOSIT_RECORDS
+- Asset.GET_PORTFOLIO_MARGIN
+- Asset.GET_TOTAL_MEMBERS_ASSETS
+- Asset.INTER_TRANSFER_LIST_QUERY
+- Asset.UNIVERSAL_TRANSFER_LIST_QUERY
+- Earn.LIST_EARN_AUTO_SAVINGS
+- Earn.EDIT_EARN_AUTO_SAVINGS
+- InstitutionalLoan.INS_LOAN_ASSOCIATION_UID
+- InstitutionalLoan.INS_LOAN_COIN_DELTA_AMOUNT
+- InstitutionalLoan.INS_LOAN_DELAY_LIQ_STATUS
+- InstitutionalLoan.INS_LOAN_ENSURE_TOKENS
+- InstitutionalLoan.INS_LOAN_ENSURE_TOKENS_CONVERT
+- InstitutionalLoan.INS_LOAN_GET_LOAN_ORDER
+- InstitutionalLoan.INS_LOAN_LTV_CONVERT
+- InstitutionalLoan.INS_LOAN_PRODUCT_INFOS
+- InstitutionalLoan.INS_LOAN_REPAID_HISTORY
+- InstitutionalLoan.INS_LOAN_REPAY_LOAN
+- Position.GET_POSITION_SYMBOL_INFO
+- SpotMarginTrade.QUERY_FIXED_AVAILABLE_INVENTORY
+- SpotMarginTrade.ACCOUNT_FIXED_BORROW
+- SpotMarginTrade.QUERY_FIXED_BORROW_CONTRACTS
+- SpotMarginTrade.QUERY_FIXED_BORROW_ORDERS
+- SpotMarginTrade.QUERY_FIXED_BORROW_MARKET
+- SpotMarginTrade.RENEW_FIXED_BORROW
+- SpotMarginTrade.GET_SPOT_MARGIN_TRADE_FLEXIBLE_AVAILABLE_INVENTORY
+- SpotMarginTrade.QUERY_BORROW_LIABILITY
+- Spread.GET_SPREAD_MAX_QTY
+- User.QUERY_REFERRAL_CODE
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

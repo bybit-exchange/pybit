@@ -30,5 +30,8 @@ class Account(str, Enum):
     SET_LIMIT_PRICE_ACTION = "/v5/account/set-limit-px-action"
     SET_DELTA_MODE = "/v5/account/set-delta-mode"
 
+    GET_OPTION_ASSET_INFO = "/v5/account/option-asset-info"
+    GET_PAY_INFO = "/v5/account/pay-info"
+    GET_TRADE_INFO_FOR_ANALYSIS = "/v5/account/trade-info-for-analysis"
     def __str__(self) -> str:
         return self.value

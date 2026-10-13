@@ -14,5 +14,6 @@ class Spread(str, Enum):
     GET_ORDER_HISTORY = "/v5/spread/order/history"
     GET_TRADE_HISTORY = "/v5/spread/execution/list"
 
+    GET_SPREAD_MAX_QTY = "/v5/spread/max-qty"
     def __str__(self) -> str:
         return self.value

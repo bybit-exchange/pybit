@@ -29,5 +29,13 @@ class SpotMarginTrade(str, Enum):
     GET_REPAYMENT_AVAILABLE_AMOUNT = "/v5/spot-margin-trade/repayment-available-amount"
     GET_CURRENCY_DATA = "/v5/spot-margin-trade/currency-data"
 
+    QUERY_FIXED_AVAILABLE_INVENTORY = "/v5/spot-margin-trade/fixed-available-inventory"
+    ACCOUNT_FIXED_BORROW = "/v5/spot-margin-trade/fixedborrow"
+    QUERY_FIXED_BORROW_CONTRACTS = "/v5/spot-margin-trade/fixedborrow-contract-info"
+    QUERY_FIXED_BORROW_ORDERS = "/v5/spot-margin-trade/fixedborrow-order-info"
+    QUERY_FIXED_BORROW_MARKET = "/v5/spot-margin-trade/fixedborrow-order-quote"
+    RENEW_FIXED_BORROW = "/v5/spot-margin-trade/fixedborrow-renew"
+    GET_SPOT_MARGIN_TRADE_FLEXIBLE_AVAILABLE_INVENTORY = "/v5/spot-margin-trade/flexible-available-inventory"
+    QUERY_BORROW_LIABILITY = "/v5/spot-margin-trade/liability"
     def __str__(self) -> str:
         return self.value
