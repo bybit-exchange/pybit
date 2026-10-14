@@ -201,6 +201,29 @@ class P2PHTTP(_V5HTTPManager):
             auth=True,
         )
 
+    def buyer_examine_seller_cancel_order_apply(self, **kwargs):
+        """Review a seller cancel order application.
+
+        Required args:
+            orderId (string): Order ID
+            examineResult (string): Review decision. PASS or REJECT
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/p2p/order/review-seller-cancel-order-apply
+        """
+        return self._submit_request(
+            method="POST",
+            path=(
+                f"{self.endpoint}"
+                f"{P2P.BUYER_EXAMINE_SELLER_CANCEL_ORDER_APPLY}"
+            ),
+            query=kwargs,
+            auth=True,
+        )
+
     def mark_as_paid(self, **kwargs):
         """Mark a P2P order as paid.
 
@@ -354,13 +377,15 @@ class P2PHTTP(_V5HTTPManager):
         """Query P2P chat session list.
 
         Required args:
-            size (string): Page size
+            lastId (integer): Cursor for pagination
+            size (integer): Page size
+            readStatus (integer): Read status filter
 
         Returns:
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/p2p/chat/session-list
+            https://bybit-exchange.github.io/docs/p2p/chat/get-chat-session-list
         """
         return self._submit_request(
             method="POST",
@@ -369,21 +394,39 @@ class P2PHTTP(_V5HTTPManager):
             auth=True,
         )
 
-    def send_message(self, **kwargs):
-        """Send a P2P chat message.
-
-        This endpoint is not recommended for general use yet.
+    def get_session_id(self, **kwargs):
+        """Get a P2P chat session ID.
 
         Required args:
-            message (string): Chat message
-            contentType (string): Chat message type
-            sessionId (string): Encrypted session ID
+            userMaskId (string): Counterparty user mask ID
 
         Returns:
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/p2p/chat/send-message
+            https://bybit-exchange.github.io/docs/p2p/chat/get-session-id
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{P2P.GET_SESSION_ID}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def send_message(self, **kwargs):
+        """Send a P2P chat message.
+
+        Required args:
+            message (string): Chat message
+            contentType (string): Chat message type
+            sessionId (string): Encrypted session ID
+            orderId (string): Order ID
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/p2p/chat/send-chat-msg
         """
         return self._submit_request(
             method="POST",
@@ -395,17 +438,16 @@ class P2PHTTP(_V5HTTPManager):
     def get_message_list(self, **kwargs):
         """Get P2P chat message list.
 
-        This endpoint is not recommended for general use yet.
-
         Required args:
-            limit (string): Page size
+            lastId (integer): Cursor for pagination
+            limit (integer): Page size
             sessionId (string): Encrypted session ID
 
         Returns:
             Request results as dictionary.
 
         Additional information:
-            https://bybit-exchange.github.io/docs/p2p/chat/message-list
+            https://bybit-exchange.github.io/docs/p2p/chat/get-message-list
         """
         return self._submit_request(
             method="POST",

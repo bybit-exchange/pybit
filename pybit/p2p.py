@@ -19,9 +19,13 @@ class P2P(str, Enum):
     POST_NEW_AD = "/v5/p2p/item/create"
     GET_ONLINE_ADS = "/v5/p2p/item/online"
     GET_USER_PAYMENT_TYPES = "/v5/p2p/user/payment/list"
-    QUERY_CHAT_SESSION_LIST = "/v5/p2p/chat/session/list"
-    SEND_MESSAGE = "/v5/p2p/chat/message/send"
-    GET_MESSAGE_LIST = "/v5/p2p/chat/message/listpage"
+    QUERY_CHAT_SESSION_LIST = "/v5/p2p/chat/session/list_v1"
+    GET_SESSION_ID = "/v5/p2p/chat/session/getSessionId"
+    SEND_MESSAGE = "/v5/p2p/chat/message/send_v1"
+    GET_MESSAGE_LIST = "/v5/p2p/chat/message/listpage_v1"
+    BUYER_EXAMINE_SELLER_CANCEL_ORDER_APPLY = (
+        "/v5/p2p/order/buyer/examine/sellerCancelOrderApply"
+    )
 
     def __str__(self) -> str:
         return self.value
