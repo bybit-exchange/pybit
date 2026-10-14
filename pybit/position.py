@@ -18,5 +18,6 @@ class Position(str, Enum):
     GET_CLOSED_OPTIONS_POSITIONS = "/v5/position/get-closed-positions"
     CONFIRM_PENDING_MMR = "/v5/position/confirm-pending-mmr"
 
+    GET_POSITION_SYMBOL_INFO = "/v5/position/symbol-info"
     def __str__(self) -> str:
         return self.value

@@ -115,3 +115,33 @@ class InstitutionalLoanHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def ins_loan_coin_delta_amount(self, **kwargs):
+        """Get Coin Delta Amount
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/otc/coin-delta-amount
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{InsLoan.INS_LOAN_COIN_DELTA_AMOUNT}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def ins_loan_delay_liq_status(self, **kwargs):
+        """Get Delay Liquidation Status
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/otc/delay-liq-status
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{InsLoan.INS_LOAN_DELAY_LIQ_STATUS}",
+            query=kwargs,
+            auth=True,
+        )

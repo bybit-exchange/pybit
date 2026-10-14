@@ -22,5 +22,6 @@ class User(str, Enum):
     GET_FRIEND_REFERRALS = "/v5/user/invitation/referrals"
     GET_AFFILIATE_SUB_LIST = "/v5/affiliate/affiliate-sub-list"
 
+    QUERY_REFERRAL_CODE = "/v5/user/invitation/code"
     def __str__(self) -> str:
         return self.value

@@ -347,3 +347,24 @@ class PositionHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def get_position_symbol_info(self, **kwargs):
+        """Get Futures Leverage
+
+        Required args:
+            category (string): Product type:
+- `linear`: USDT perpetual, USDC contract
+- `inverse`: Inverse perpetual, Inverse futures
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/position/batch-lvg
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Position.GET_POSITION_SYMBOL_INFO}",
+            query=kwargs,
+            auth=True,
+        )

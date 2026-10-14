@@ -824,3 +824,33 @@ class AssetHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def get_portfolio_margin(self, **kwargs):
+        """Get Portfolio Margin Info
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/portfolio-margin
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_PORTFOLIO_MARGIN}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def get_total_members_assets(self, **kwargs):
+        """Get Total Members Assets
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/asset/total-members-assets
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Asset.GET_TOTAL_MEMBERS_ASSETS}",
+            query=kwargs,
+            auth=True,
+        )

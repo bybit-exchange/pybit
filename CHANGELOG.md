@@ -1,9 +1,59 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [5.17.2] - 2026-10-13
+
+### New Methods (20)
+
+- `get_option_asset_info`
+- `get_pay_info`
+- `get_trade_info_for_analysis`
+- `get_portfolio_margin`
+- `get_total_members_assets`
+- `list_earn_auto_savings`
+- `edit_earn_auto_savings`
+- `ins_loan_coin_delta_amount`
+- `ins_loan_delay_liq_status`
+- `get_position_symbol_info`
+- `query_fixed_available_inventory`
+- `account_fixed_borrow`
+- `query_fixed_borrow_contracts`
+- `query_fixed_borrow_orders`
+- `query_fixed_borrow_market`
+- `renew_fixed_borrow`
+- `get_spot_margin_trade_flexible_available_inventory`
+- `query_borrow_liability`
+- `get_spread_max_qty`
+- `query_referral_code`
+
+### New Endpoint Keys (20)
+
+- `Account.GET_OPTION_ASSET_INFO`
+- `Account.GET_PAY_INFO`
+- `Account.GET_TRADE_INFO_FOR_ANALYSIS`
+- `Asset.GET_PORTFOLIO_MARGIN`
+- `Asset.GET_TOTAL_MEMBERS_ASSETS`
+- `Earn.LIST_EARN_AUTO_SAVINGS`
+- `Earn.EDIT_EARN_AUTO_SAVINGS`
+- `InstitutionalLoan.INS_LOAN_COIN_DELTA_AMOUNT`
+- `InstitutionalLoan.INS_LOAN_DELAY_LIQ_STATUS`
+- `Position.GET_POSITION_SYMBOL_INFO`
+- `SpotMarginTrade.QUERY_FIXED_AVAILABLE_INVENTORY`
+- `SpotMarginTrade.ACCOUNT_FIXED_BORROW`
+- `SpotMarginTrade.QUERY_FIXED_BORROW_CONTRACTS`
+- `SpotMarginTrade.QUERY_FIXED_BORROW_ORDERS`
+- `SpotMarginTrade.QUERY_FIXED_BORROW_MARKET`
+- `SpotMarginTrade.RENEW_FIXED_BORROW`
+- `SpotMarginTrade.GET_SPOT_MARGIN_TRADE_FLEXIBLE_AVAILABLE_INVENTORY`
+- `SpotMarginTrade.QUERY_BORROW_LIABILITY`
+- `Spread.GET_SPREAD_MAX_QTY`
+- `User.QUERY_REFERRAL_CODE`
+
+### Fixed
+
+- Serialize GET list parameters as repeated query keys so signatures match the
+  transmitted URL.
+- Correct new endpoint documentation links and parameter descriptions.
 
 ## [5.17.1] - 2026-09-30
 

@@ -392,3 +392,153 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
             path=f"{self.endpoint}{SpotMarginTrade.GET_CURRENCY_DATA}",
             query=kwargs,
         )
+
+    def query_fixed_available_inventory(self, **kwargs):
+        """Query Fixed-Rate Available Inventory
+
+        Required args:
+            currency (string): Borrow coin name, uppercase only. e.g. `USDT`, `BTC`. **Required.**
+            term (string): Loan term in days. e.g. `7`, `14`, `30`, `90`, `180`. **Required.**
+            annualRate (string): Annual interest rate. e.g. `0.02` means 2%. **Required.**
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/fixed-available-inventory
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.QUERY_FIXED_AVAILABLE_INVENTORY}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def account_fixed_borrow(self, **kwargs):
+        """Fixed-Rate Borrow
+
+        Required args:
+            orderCurrency (string): Borrow coin name, uppercase only. e.g. `USDT`, `BTC`.
+            orderAmount (string): Borrow amount.
+            annualRate (string): Annual interest rate. e.g. `0.02` means 2%.
+            term (string): Loan term in days. Supported values: `7`, `14`, `30`, `90`, `180`.
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/fixedborrow
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{SpotMarginTrade.ACCOUNT_FIXED_BORROW}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def query_fixed_borrow_contracts(self, **kwargs):
+        """Query Fixed-Rate Borrow Contracts
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/fixedborrow-contract-info
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.QUERY_FIXED_BORROW_CONTRACTS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def query_fixed_borrow_orders(self, **kwargs):
+        """Query Fixed-Rate Borrow Orders
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/fixedborrow-order-info
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.QUERY_FIXED_BORROW_ORDERS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def query_fixed_borrow_market(self, **kwargs):
+        """Query Fixed-Rate Borrow Market
+
+        Required args:
+            orderCurrency (string): Borrow coin name, uppercase only. e.g. `USDT`, `BTC`. **Required.**
+
+        Optional args:
+            term (string): Fixed term in days.
+            orderBy (string): Sort field: `apy`, `term`, or `quantity`.
+            sort (integer): Sort direction. `0`: ascending, `1`: descending.
+            limit (integer): Number of records per page, from 1 to 100.
+
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/fixedborrow-order-quote
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.QUERY_FIXED_BORROW_MARKET}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def renew_fixed_borrow(self, **kwargs):
+        """Renew Fixed-Rate Borrow
+
+        Required args:
+            loanId (string): The loan contract ID (corresponds to match order ID). Required.
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/fixedborrow-renew
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{SpotMarginTrade.RENEW_FIXED_BORROW}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def get_spot_margin_trade_flexible_available_inventory(self, **kwargs):
+        """Get Flexible Available Inventory
+
+        Required args:
+            currency (string): Coin name, uppercase only. e.g. `BTC`
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/flexible-available-inventory
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.GET_SPOT_MARGIN_TRADE_FLEXIBLE_AVAILABLE_INVENTORY}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def query_borrow_liability(self, **kwargs):
+        """Query Borrow Liability
+
+        Required args:
+            currency (string): Coin name, uppercase only. e.g. `USDT`, `BTC`. **Required.**
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/liability
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.QUERY_BORROW_LIABILITY}",
+            query=kwargs,
+            auth=True,
+        )

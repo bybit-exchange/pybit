@@ -334,3 +334,18 @@ class UserHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def query_referral_code(self, **kwargs):
+        """Query Referral Code
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/user/referral-code
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{User.QUERY_REFERRAL_CODE}",
+            query=kwargs,
+            auth=True,
+        )

@@ -1,10 +1,13 @@
+from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
 
 from pybit.unified_trading import HTTP
+from pybit.asset import Asset
 from pybit._v5_crypto_loan import CryptoLoanHTTP
 from pybit.crypto_loan import CryptoLoan
+from pybit.institutional_loan import InstitutionalLoan
 from pybit.strategy import Strategy
 
 
@@ -49,6 +52,26 @@ CASES = [
     ("query_strategy_order_list", "GET", "/v5/strategy/order-list", True),
     ("stop_strategy", "POST", "/v5/strategy/stop", True),
     ("get_option_base_coins", "GET", "/v5/market/option-base-coins", None),
+    ("get_option_asset_info", "GET", "/v5/account/option-asset-info"),
+    ("get_pay_info", "GET", "/v5/account/pay-info"),
+    ("get_trade_info_for_analysis", "GET", "/v5/account/trade-info-for-analysis"),
+    ("get_portfolio_margin", "GET", "/v5/asset/portfolio-margin"),
+    ("get_total_members_assets", "GET", "/v5/asset/total-members-assets"),
+    ("list_earn_auto_savings", "GET", "/v5/earn/flexible-saving/auto-savings"),
+    ("edit_earn_auto_savings", "POST", "/v5/earn/flexible-saving/auto-savings"),
+    ("ins_loan_coin_delta_amount", "GET", "/v5/ins-loan/coin-delta-amount"),
+    ("ins_loan_delay_liq_status", "GET", "/v5/ins-loan/delay-liq-status"),
+    ("get_position_symbol_info", "GET", "/v5/position/symbol-info"),
+    ("query_fixed_available_inventory", "GET", "/v5/spot-margin-trade/fixed-available-inventory"),
+    ("account_fixed_borrow", "POST", "/v5/spot-margin-trade/fixedborrow"),
+    ("query_fixed_borrow_contracts", "GET", "/v5/spot-margin-trade/fixedborrow-contract-info"),
+    ("query_fixed_borrow_orders", "GET", "/v5/spot-margin-trade/fixedborrow-order-info"),
+    ("query_fixed_borrow_market", "GET", "/v5/spot-margin-trade/fixedborrow-order-quote"),
+    ("renew_fixed_borrow", "POST", "/v5/spot-margin-trade/fixedborrow-renew"),
+    ("get_spot_margin_trade_flexible_available_inventory", "GET", "/v5/spot-margin-trade/flexible-available-inventory"),
+    ("query_borrow_liability", "GET", "/v5/spot-margin-trade/liability"),
+    ("get_spread_max_qty", "GET", "/v5/spread/max-qty"),
+    ("query_referral_code", "GET", "/v5/user/invitation/code"),
 ]
 
 
@@ -168,9 +191,100 @@ DOC_URLS = {
     "query_strategy_list": "/docs/v5/strategy/strategy-list",
     "query_strategy_order_list": "/docs/v5/strategy/order-list",
     "stop_strategy": "/docs/v5/strategy/stop-strategy",
+    "get_option_asset_info": "/docs/v5/account/option-asset-info",
+    "get_pay_info": "/docs/v5/account/pay-info",
+    "get_trade_info_for_analysis": "/docs/v5/account/trade-info-for-analysis",
+    "get_portfolio_margin": "/docs/v5/asset/portfolio-margin",
+    "get_total_members_assets": "/docs/v5/asset/total-members-assets",
+    "list_earn_auto_savings": "/docs/v5/finance/earn/flexible-saving/auto-savings",
+    "edit_earn_auto_savings": "/docs/v5/finance/earn/flexible-saving/auto-savings",
+    "ins_loan_coin_delta_amount": "/docs/v5/otc/coin-delta-amount",
+    "ins_loan_delay_liq_status": "/docs/v5/otc/delay-liq-status",
+    "get_position_symbol_info": "/docs/v5/position/batch-lvg",
+    "query_fixed_available_inventory": "/docs/v5/spot-margin-uta/fixed-available-inventory",
+    "account_fixed_borrow": "/docs/v5/spot-margin-uta/fixedborrow",
+    "query_fixed_borrow_contracts": "/docs/v5/spot-margin-uta/fixedborrow-contract-info",
+    "query_fixed_borrow_orders": "/docs/v5/spot-margin-uta/fixedborrow-order-info",
+    "query_fixed_borrow_market": "/docs/v5/spot-margin-uta/fixedborrow-order-quote",
+    "renew_fixed_borrow": "/docs/v5/spot-margin-uta/fixedborrow-renew",
+    "get_spot_margin_trade_flexible_available_inventory": "/docs/v5/spot-margin-uta/flexible-available-inventory",
+    "query_borrow_liability": "/docs/v5/spot-margin-uta/liability",
+    "get_spread_max_qty": "/docs/v5/spread/trade/max-qty",
+    "query_referral_code": "/docs/v5/user/referral-code",
 }
 
 
 @pytest.mark.parametrize("name,url", DOC_URLS.items(), ids=DOC_URLS)
 def test_generated_method_links_to_matching_documentation(name, url):
     assert url in getattr(HTTP, name).__doc__
+
+
+REMOVED_METHODS = [
+    "query_sub_member_deposit_records",
+    "inter_transfer_list_query",
+    "universal_transfer_list_query",
+    "ins_loan_association_uid",
+    "ins_loan_ensure_tokens",
+    "ins_loan_ensure_tokens_convert",
+    "ins_loan_get_loan_order",
+    "ins_loan_ltv_convert",
+    "ins_loan_product_infos",
+    "ins_loan_repaid_history",
+    "ins_loan_repay_loan",
+]
+
+
+@pytest.mark.parametrize("name", REMOVED_METHODS)
+def test_release_does_not_expose_duplicate_or_abandoned_methods(name):
+    assert not hasattr(HTTP, name)
+
+
+def test_release_does_not_expose_duplicate_or_abandoned_endpoint_keys():
+    asset_keys = {
+        "QUERY_SUB_MEMBER_DEPOSIT_RECORDS",
+        "INTER_TRANSFER_LIST_QUERY",
+        "UNIVERSAL_TRANSFER_LIST_QUERY",
+    }
+    institutional_loan_keys = {
+        "INS_LOAN_ASSOCIATION_UID",
+        "INS_LOAN_ENSURE_TOKENS",
+        "INS_LOAN_ENSURE_TOKENS_CONVERT",
+        "INS_LOAN_GET_LOAN_ORDER",
+        "INS_LOAN_LTV_CONVERT",
+        "INS_LOAN_PRODUCT_INFOS",
+        "INS_LOAN_REPAID_HISTORY",
+        "INS_LOAN_REPAY_LOAN",
+    }
+
+    assert asset_keys.isdisjoint(Asset.__members__)
+    assert institutional_loan_keys.isdisjoint(InstitutionalLoan.__members__)
+
+
+def test_fixed_borrow_market_docs_mark_order_by_optional():
+    doc = HTTP.query_fixed_borrow_market.__doc__
+
+    assert "Optional args:" in doc
+    required, optional = doc.split("Optional args:", 1)
+    assert "orderBy" not in required
+    assert "orderBy" in optional
+
+
+def test_spread_max_qty_docs_use_endpoint_title():
+    assert HTTP.get_spread_max_qty.__doc__.strip().splitlines()[0] == (
+        "Get Spread Max Qty"
+    )
+
+
+def test_changelog_lists_only_supported_5_17_2_methods():
+    changelog = Path("CHANGELOG.md").read_text()
+    section = changelog.split("## [5.17.2] - 2026-10-13", 1)[1]
+    methods = section.split("### New Methods (20)", 1)[1]
+    methods = methods.split("### New Endpoint Keys", 1)[0]
+    listed_methods = {
+        line.removeprefix("- `").removesuffix("`")
+        for line in methods.splitlines()
+        if line.startswith("- `")
+    }
+    expected_methods = {case[0] for case in CASES[-20:]}
+
+    assert listed_methods == expected_methods

@@ -179,6 +179,29 @@ class SpreadHTTP(_V5HTTPManager):
             auth=True,
         )
 
+    def get_spread_max_qty(self, **kwargs):
+        """Get Spread Max Qty
+
+        Required args:
+            symbol (string): Spread trading pair.
+            side (string): Order side:
+- `1`: Buy
+- `2`: Sell
+
+            orderPrice (string): Order price.
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spread/trade/max-qty
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Spread.GET_SPREAD_MAX_QTY}",
+            query=kwargs,
+            auth=True,
+        )
+
 
 class _V5WebSocketSpreadTrading(_V5WebSocketManager):
     def __init__(

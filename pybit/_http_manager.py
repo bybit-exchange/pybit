@@ -181,9 +181,11 @@ class _V5HTTPManager:
         if method == "GET":
             payload = "&".join(
                 [
-                    str(k) + "=" + str(v)
+                    str(k) + "=" + str(item)
                     for k, v in sorted(parameters.items())
                     if v is not None
+                    for item in (v if isinstance(v, list) else [v])
+                    if item is not None
                 ]
             )
             return payload

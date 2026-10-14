@@ -72,5 +72,7 @@ class Earn(str, Enum):
     REMOVE_LIQUIDITY = "/v5/earn/liquidity-mining/remove-liquidity"
     SET_FIXED_TERM_AUTO_INVEST = "/v5/earn/fixed-term/position/auto-invest"
 
+    LIST_EARN_AUTO_SAVINGS = "/v5/earn/flexible-saving/auto-savings"
+    EDIT_EARN_AUTO_SAVINGS = "/v5/earn/flexible-saving/auto-savings"
     def __str__(self) -> str:
         return self.value

@@ -57,6 +57,8 @@ class Asset(str, Enum):
     CONFIRM_A_QUOTE_FIAT_CONVERT = "/v5/fiat/trade-execute"
     GET_FIAT_CONVERT_STATUS = "/v5/fiat/trade-query"
 
+    GET_PORTFOLIO_MARGIN = "/v5/asset/portfolio-margin"
+    GET_TOTAL_MEMBERS_ASSETS = "/v5/asset/total-members-assets"
 
     def __str__(self) -> str:
         return self.value

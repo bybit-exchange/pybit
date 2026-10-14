@@ -1312,3 +1312,36 @@ class EarnHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def list_earn_auto_savings(self, **kwargs):
+        """Get Auto Savings Settings
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/finance/earn/flexible-saving/auto-savings
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{Earn.LIST_EARN_AUTO_SAVINGS}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def edit_earn_auto_savings(self, **kwargs):
+        """Edit Auto Savings Settings
+
+        Required args:
+            isSelected (boolean): Whether to enable auto savings
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/finance/earn/flexible-saving/auto-savings
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{Earn.EDIT_EARN_AUTO_SAVINGS}",
+            query=kwargs,
+            auth=True,
+        )

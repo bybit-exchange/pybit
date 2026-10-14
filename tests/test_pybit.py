@@ -62,6 +62,41 @@ def test_prepare_payload(method, params, expected):
         assert '"other": "x"' in payload
 
 
+def test_list_earn_auto_savings_repeats_coins_in_url_and_signature(monkeypatch):
+    manager = HTTP(testnet=True, api_key=_api_key, api_secret=_api_secret)
+    monkeypatch.setattr(
+        "pybit._http_manager._helpers.generate_timestamp",
+        lambda: 12345,
+    )
+
+    response = Mock()
+    response.status_code = 200
+    response.headers = {}
+    response.elapsed = 0
+    response.json.return_value = {
+        "retCode": 0,
+        "retMsg": "OK",
+        "result": {"list": []},
+        "time": 1234567890,
+    }
+    manager.client.send = Mock(return_value=response)
+
+    manager.list_earn_auto_savings(coins=["BTC", "ETH"])
+    request = manager.client.send.call_args[0][0]
+    payload = "coins=BTC&coins=ETH"
+    expected_signature = hmac.new(
+        bytes(_api_secret, "utf-8"),
+        f"12345{_api_key}5000{payload}".encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+
+    assert request.url == (
+        "https://api-testnet.bybit.com/v5/earn/flexible-saving/"
+        "auto-savings?coins=BTC&coins=ETH"
+    )
+    assert request.headers["X-BAPI-SIGN"] == expected_signature
+
+
 @pytest.mark.parametrize("query,expected", [
     (None, {}),
     ({'a': 1.0, 'b': 2.5, 'c': None}, {'a':1, 'b':2.5}),
