@@ -1,0 +1,19 @@
+.github/workflows/publish.yml
+  s_45d73cf32c4dc0::t_d44271b3593995 8-14,16-18,20-23,25-26,30-31,33-68,71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "9b23826e1cf9db2b9c0d89b4b77017314896ab18",
+  "prompts": {},
+  "sessions": {
+    "s_45d73cf32c4dc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c39e-3e86-7600-98a8-8a42adbc3dbe",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
