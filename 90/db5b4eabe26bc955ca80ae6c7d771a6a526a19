@@ -1,0 +1,80 @@
+pybit/_v5_alpha.py
+  s_45d73cf32c4dc0::t_b35c2572c2bc86 39,57,105,129,151,155-663
+  s_45d73cf32c4dc0::t_6e9d5d48783ba8 36-38
+  s_45d73cf32c4dc0::t_fb4c46663d4424 40-42,54-56
+  s_45d73cf32c4dc0::t_2a1f02c0cecd45 58-60,102-104
+  s_45d73cf32c4dc0::t_cafc078bb3b33c 106-108,126-128
+  s_45d73cf32c4dc0::t_d31c5cd637421b 130-132,148-150
+  s_45d73cf32c4dc0::t_ce16801d361db5 152-154
+  s_45d73cf32c4dc0::t_2183e1a41e322a 664-666
+  s_45d73cf32c4dc0::t_45cf787d81bd86 1-35,43-53,61-101,109-125,133-147,667-670
+tests/test_generated_openapi_endpoints.py
+  s_45d73cf32c4dc0::t_a2ddf30e0fe9c6 328-336
+  s_45d73cf32c4dc0::t_b35c2572c2bc86 402-423
+  s_45d73cf32c4dc0::t_ef0a3e23156815 64-65,68-118,256-257,260-281,290-324
+  s_45d73cf32c4dc0::t_0127d95b931f5a 325-326
+pybit/_v5_referral.py
+  s_45d73cf32c4dc0::t_b35c2572c2bc86 12-57
+  s_45d73cf32c4dc0::t_895ada48559416 9-11
+  s_45d73cf32c4dc0::t_cb04b899762b1b 58-60
+  s_45d73cf32c4dc0::t_bc937375b76a2b 1-8,61-64
+CHANGELOG.md
+  s_45d73cf32c4dc0::t_eb63ecfda90600 178,212
+  s_45d73cf32c4dc0::t_e731d685c2c5ba 1-118
+pybit/_v5_event.py
+  s_45d73cf32c4dc0::t_b35c2572c2bc86 12-78
+  s_45d73cf32c4dc0::t_ff355b95cb0673 9-11
+  s_45d73cf32c4dc0::t_331d1fd9318c9b 79-81
+  s_45d73cf32c4dc0::t_8f13035fd6cf29 1-8,82-85
+pybit/_v5_spot_margin_trade.py
+  s_45d73cf32c4dc0::t_b35c2572c2bc86 545-577
+pybit/_v5_spot_x.py
+  s_45d73cf32c4dc0::t_b35c2572c2bc86 19,23,27-28,33,37,42-43,48,52,57-58,63,66-67,72-73,76-79,85,88-89,93-94,97-100,106,110,114-115,120
+  s_45d73cf32c4dc0::t_30bb81eba6f05a 2,5-7,9-13,124
+pybit/__init__.py
+  s_6af3615319c4cd::t_cfdfa5cd89c356 1
+pybit/alpha.py
+  s_6af3615319c4cd::t_6f3e21548535da 1-41
+pybit/event.py
+  s_6af3615319c4cd::t_711a5be368feb9 4-9
+pybit/referral.py
+  s_6af3615319c4cd::t_41ea39183f5faf 1-10
+pybit/spot_margin_trade.py
+  s_ba40b3bb252064::t_64725a0cd96ae1 40-41
+pybit/spot_x.py
+  s_6af3615319c4cd::t_71e2a3e3571f1f 1-13
+pybit/unified_trading.py
+  s_45d73cf32c4dc0::t_b35f29a87e5324 39-42,88-91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "90db5b4eabe26bc955ca80ae6c7d771a6a526a19",
+  "prompts": {},
+  "sessions": {
+    "s_45d73cf32c4dc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c39e-3e86-7600-98a8-8a42adbc3dbe",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    },
+    "s_6af3615319c4cd": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a17b58-1fcd-78f2-af28-625b66470487",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    },
+    "s_ba40b3bb252064": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bf9b-6618-7b90-896d-9c5e6fdc8c6a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
