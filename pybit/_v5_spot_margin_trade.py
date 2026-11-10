@@ -542,3 +542,36 @@ class SpotMarginTradeHTTP(_V5HTTPManager):
             query=kwargs,
             auth=True,
         )
+
+    def query_fixed_borrow_penalty_interest(self, **kwargs):
+        """Query Fixed-Rate Borrow Penalty Interest
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/fixedborrow-interest-accrued
+        """
+        return self._submit_request(
+            method="GET",
+            path=f"{self.endpoint}{SpotMarginTrade.QUERY_FIXED_BORROW_PENALTY_INTEREST}",
+            query=kwargs,
+            auth=True,
+        )
+
+    def cancel_fixed_borrow_order(self, **kwargs):
+        """Cancel Fixed-Rate Borrow Order
+
+        Required args:
+            orderId (string): Fixed-rate borrow order ID, not the contract match ID.
+        Returns:
+            Request results as dictionary.
+
+        Additional information:
+            https://bybit-exchange.github.io/docs/v5/spot-margin-uta/fixedborrow-order-cancel
+        """
+        return self._submit_request(
+            method="POST",
+            path=f"{self.endpoint}{SpotMarginTrade.CANCEL_FIXED_BORROW_ORDER}",
+            query=kwargs,
+            auth=True,
+        )

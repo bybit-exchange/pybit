@@ -37,5 +37,7 @@ class SpotMarginTrade(str, Enum):
     RENEW_FIXED_BORROW = "/v5/spot-margin-trade/fixedborrow-renew"
     GET_SPOT_MARGIN_TRADE_FLEXIBLE_AVAILABLE_INVENTORY = "/v5/spot-margin-trade/flexible-available-inventory"
     QUERY_BORROW_LIABILITY = "/v5/spot-margin-trade/liability"
+    QUERY_FIXED_BORROW_PENALTY_INTEREST = "/v5/spot-margin-trade/fixedborrow-interest-accrued"
+    CANCEL_FIXED_BORROW_ORDER = "/v5/spot-margin-trade/fixedborrow-order-cancel"
     def __str__(self) -> str:
         return self.value
