@@ -1,0 +1,42 @@
+pybit/alpha.py
+  s_45d73cf32c4dc0::t_f00cfcf1be5103 5-12,40
+pybit/event.py
+  s_45d73cf32c4dc0::t_f00cfcf1be5103 10
+pybit/spot_margin_trade.py
+  s_45d73cf32c4dc0::t_f00cfcf1be5103 42
+pybit/referral.py
+  s_45d73cf32c4dc0::t_f00cfcf1be5103 9
+CHANGELOG.md
+  s_45d73cf32c4dc0::t_f8bc461ddd3914 3-115
+  s_45d73cf32c4dc0::t_183f117a2a1d6b 117-120,178,203-211,221,246-254
+  s_45d73cf32c4dc0::t_efcad32dd7e3f1 116
+pybit/spot_x.py
+  s_45d73cf32c4dc0::t_f00cfcf1be5103 12
+pybit/_v5_alpha.py
+  s_45d73cf32c4dc0::t_370716a4c93a68 323-324
+  s_45d73cf32c4dc0::t_f00cfcf1be5103 6,16,21,31,36,49,54,67,72,82,87,97,102,121,126,143,472,539,640
+tests/test_generated_openapi_endpoints.py
+  s_45d73cf32c4dc0::t_5b899ece7e95c4 457-482
+  s_45d73cf32c4dc0::t_49eb4cfbd1fcea 7,69-76,95,99,103,266,300-304,318,332-355
+  s_45d73cf32c4dc0::t_2b070f6883e1d5 356-357
+tests/test_pybit.py
+  s_45d73cf32c4dc0::t_5b899ece7e95c4 149-154
+pybit/_http_manager.py
+  s_45d73cf32c4dc0::t_183f117a2a1d6b 111,118-120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "2750a27279045c91e56f84b689c9f0f930a40efd",
+  "prompts": {},
+  "sessions": {
+    "s_45d73cf32c4dc0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1c39e-3e86-7600-98a8-8a42adbc3dbe",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
