@@ -460,6 +460,13 @@ class _V5WebSocketManager(_WebSocketManager):
             for entry in entries:
                 # Delete.
                 if float(entry[1]) == 0:
+                    price_level_exists = entry[0] in [
+                        level[0] for level in self.data[topic][side]
+                    ]
+                    if not price_level_exists:
+                        # Delta removes a level we do not hold: skip it
+                        # instead of letting find_index raise StopIteration.
+                        continue
                     index = _helpers.find_index(
                         self.data[topic][side], entry, 0
                     )
@@ -486,6 +493,14 @@ class _V5WebSocketManager(_WebSocketManager):
                     )
                     self.data[topic][side][index] = entry
                     continue
+
+            # Deltas may insert levels anywhere in the price range, so keep
+            # each side sorted (bids high->low, asks low->high) to guarantee
+            # that [0] is the best bid/ask.
+            self.data[topic][side].sort(
+                key=lambda level: float(level[0]),
+                reverse=(side == "b"),
+            )
 
     def _process_delta_ticker(self, message, topic):
         self._initialise_local_data(topic)
