@@ -146,6 +146,12 @@ def test_default_retry_and_ignore_codes():
     assert isinstance(m.retry_codes, set)
 
 
+@pytest.mark.parametrize("max_retries", [0, -1])
+def test_http_manager_rejects_non_positive_max_retries(max_retries):
+    with pytest.raises(ValueError, match="max_retries must be at least 1"):
+        _V5HTTPManager(max_retries=max_retries)
+
+
 def test_http_session_headers_and_timeout():
     m = _V5HTTPManager()
     # client should be a requests.Session

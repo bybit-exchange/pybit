@@ -1,0 +1,42 @@
+from enum import Enum
+
+
+class Alpha(str, Enum):
+    GET_LP_ORDER_LIST = "/v5/alpha/lp/order-list"
+    GET_LP_PAY_TOKEN_LIST = "/v5/alpha/lp/pay-token-list"
+    GET_LP_PAY_TOKEN_PRICE = "/v5/alpha/lp/pay-token-price"
+    GET_LP_POOL_INFO = "/v5/alpha/lp/pool-info"
+    GET_LP_POOL_LIST = "/v5/alpha/lp/pool-list"
+    GET_LP_POSITION_LIST = "/v5/alpha/lp/position-list"
+    EXECUTE_LP_REDEEM = "/v5/alpha/lp/redeem"
+    EXECUTE_LP_STAKE = "/v5/alpha/lp/stake"
+    EXECUTE_PREDICTION_BUY = "/v5/alpha/prediction/buy"
+    GET_PREDICTION_ENGINE_STATUS = "/v5/alpha/prediction/engine-status"
+    GET_PREDICTION_EVENT_DETAIL = "/v5/alpha/prediction/event-detail"
+    GET_PREDICTION_ORDER_BOOK = "/v5/alpha/prediction/order-book"
+    GET_PREDICTION_ORDER_ESTIMATE = "/v5/alpha/prediction/order-estimate"
+    GET_PREDICTION_ORDER_LIST = "/v5/alpha/prediction/order-list"
+    GET_PREDICTION_PAY_TOKEN_LIST = "/v5/alpha/prediction/pay-token-list"
+    GET_PREDICTION_PORTFOLIO_SUMMARY = "/v5/alpha/prediction/portfolio-summary"
+    GET_PREDICTION_POSITION_HISTORY = "/v5/alpha/prediction/position-history"
+    GET_PREDICTION_POSITION_LIST = "/v5/alpha/prediction/position-list"
+    GET_PREDICTION_PRICE_HISTORY = "/v5/alpha/prediction/price-history"
+    EXECUTE_PREDICTION_SELL = "/v5/alpha/prediction/sell"
+    GET_PREDICTION_SIDE_MARKET_LIST = "/v5/alpha/prediction/side-market-list"
+    GET_PREDICTION_GROUP_STAGE_DETAIL = "/v5/alpha/prediction/sports/group-stage-detail"
+    GET_PREDICTION_MATCH_LIST = "/v5/alpha/prediction/sports/match-list"
+    GET_PREDICTION_TIMELINE_STAGES = "/v5/alpha/prediction/sports/timeline-stages"
+    GET_PREDICTION_TOKEN_PRICE = "/v5/alpha/prediction/token-price"
+    GET_ASSET_DETAIL = "/v5/alpha/trade/asset-detail"
+    GET_ASSET_LIST = "/v5/alpha/trade/asset-list"
+    GET_BIZ_TOKEN_DETAILS = "/v5/alpha/trade/biz-token-details"
+    GET_BIZ_TOKEN_LIST = "/v5/alpha/trade/biz-token-list"
+    GET_BIZ_TOKEN_PRICE_LIST = "/v5/alpha/trade/biz-token-price-list"
+    GET_ORDER_LIST = "/v5/alpha/trade/order-list"
+    GET_PAY_TOKEN_LIST = "/v5/alpha/trade/pay-token-list"
+    EXECUTE_PURCHASE = "/v5/alpha/trade/purchase"
+    GET_TRADE_QUOTE = "/v5/alpha/trade/quote"
+    EXECUTE_REDEEM = "/v5/alpha/trade/redeem"
+
+    def __str__(self) -> str:
+        return self.value

@@ -108,13 +108,16 @@ class _V5HTTPManager:
     force_retry: bool = field(default=False)
     retry_codes: defaultdict[dict] = field(default_factory=dict)
     ignore_codes: set = field(default_factory=set)
-    max_retries: bool = field(default=3)
+    max_retries: int = field(default=3)
     retry_delay: bool = field(default=3)
     referral_id: str = field(default=None)
     record_request_time: bool = field(default=False)
     return_response_headers: bool = field(default=False)
 
     def __post_init__(self):
+        if self.max_retries < 1:
+            raise ValueError("max_retries must be at least 1")
+
         subdomain = SUBDOMAIN_TESTNET if self.testnet else SUBDOMAIN_MAINNET
         domain = DOMAIN_MAIN if not self.domain else self.domain
         if self.demo:

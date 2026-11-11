@@ -27,7 +27,6 @@ from ._v5_fht import FHTHTTP
 from ._v5_fmartingalebot import FMartingaleBotHTTP
 from ._v5_grid import GridHTTP
 from ._v5_rfq import RFQHTTP
-from ._v5_rwa import RWAHTTP
 from ._v5_p2p import P2PHTTP
 from ._v5_strategy import StrategyHTTP
 from ._websocket_stream import _V5WebSocketManager
@@ -37,6 +36,10 @@ from ._v5_spread import (
     _V5WebSocketSpreadTrading,
 )
 from ._v5_rate_limit import RateLimitHTTP
+from ._v5_alpha import AlphaHTTP
+from ._v5_event import EventHTTP
+from ._v5_referral import ReferralHTTP
+from ._v5_spot_x import SpotXHTTP
 
 
 logger = logging.getLogger(__name__)
@@ -81,8 +84,11 @@ class HTTP(
     FHTHTTP,
     FMartingaleBotHTTP,
     GridHTTP,
-    RWAHTTP,
     StrategyHTTP,
+    AlphaHTTP,
+    EventHTTP,
+    ReferralHTTP,
+    SpotXHTTP,
 ):
     def __init__(self, **args):
         super().__init__(**args)
