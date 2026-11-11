@@ -2,14 +2,14 @@ from enum import Enum
 
 
 class Alpha(str, Enum):
-    GET_LPORDER_LIST = "/v5/alpha/lp/order-list"
-    GET_LPPAY_TOKEN_LIST = "/v5/alpha/lp/pay-token-list"
-    GET_LPPAY_TOKEN_PRICE = "/v5/alpha/lp/pay-token-price"
-    GET_LPPOOL_INFO = "/v5/alpha/lp/pool-info"
-    GET_LPPOOL_LIST = "/v5/alpha/lp/pool-list"
-    GET_LPPOSITION_LIST = "/v5/alpha/lp/position-list"
-    EXECUTE_LPREDEEM = "/v5/alpha/lp/redeem"
-    EXECUTE_LPSTAKE = "/v5/alpha/lp/stake"
+    GET_LP_ORDER_LIST = "/v5/alpha/lp/order-list"
+    GET_LP_PAY_TOKEN_LIST = "/v5/alpha/lp/pay-token-list"
+    GET_LP_PAY_TOKEN_PRICE = "/v5/alpha/lp/pay-token-price"
+    GET_LP_POOL_INFO = "/v5/alpha/lp/pool-info"
+    GET_LP_POOL_LIST = "/v5/alpha/lp/pool-list"
+    GET_LP_POSITION_LIST = "/v5/alpha/lp/position-list"
+    EXECUTE_LP_REDEEM = "/v5/alpha/lp/redeem"
+    EXECUTE_LP_STAKE = "/v5/alpha/lp/stake"
     EXECUTE_PREDICTION_BUY = "/v5/alpha/prediction/buy"
     GET_PREDICTION_ENGINE_STATUS = "/v5/alpha/prediction/engine-status"
     GET_PREDICTION_EVENT_DETAIL = "/v5/alpha/prediction/event-detail"
@@ -37,5 +37,6 @@ class Alpha(str, Enum):
     EXECUTE_PURCHASE = "/v5/alpha/trade/purchase"
     GET_TRADE_QUOTE = "/v5/alpha/trade/quote"
     EXECUTE_REDEEM = "/v5/alpha/trade/redeem"
+
     def __str__(self) -> str:
         return self.value

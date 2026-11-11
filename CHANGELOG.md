@@ -1,123 +1,123 @@
-## 5.17.4 — 2026-11-10
-
-### New Methods (51)
-- get_lporder_list
-- get_lppay_token_list
-- get_lppay_token_price
-- get_lppool_info
-- get_lppool_list
-- get_lpposition_list
-- execute_lpredeem
-- execute_lpstake
-- execute_prediction_buy
-- get_prediction_engine_status
-- get_prediction_event_detail
-- get_prediction_order_book
-- get_prediction_order_estimate
-- get_prediction_order_list
-- get_prediction_pay_token_list
-- get_prediction_portfolio_summary
-- get_prediction_position_history
-- get_prediction_position_list
-- get_prediction_price_history
-- execute_prediction_sell
-- get_prediction_side_market_list
-- get_prediction_group_stage_detail
-- get_prediction_match_list
-- get_prediction_timeline_stages
-- get_prediction_token_price
-- get_asset_detail
-- get_asset_list
-- get_biz_token_details
-- get_biz_token_list
-- get_biz_token_price_list
-- get_order_list
-- get_pay_token_list
-- execute_purchase
-- get_trade_quote
-- execute_redeem
-- get_ec_order_history
-- get_ec_active_orders
-- get_ec_position_info
-- get_ec_settlements
-- get_ec_trade_history
-- get_referral_campaign_rewards
-- get_referral_commission_records
-- get_referral_user_identity_profile
-- get_referral_user_invitations
-- get_launchpool_project_list
-- get_launchpool_user_activity_log
-- get_launchpool_user_current_staking
-- get_launchpool_user_history
-- get_puzzle_project_list
-- get_token_splash_project_list
-- get_token_splash_user_activity_params
-
-### New Endpoint Keys (51)
-- Alpha.GET_LPORDER_LIST
-- Alpha.GET_LPPAY_TOKEN_LIST
-- Alpha.GET_LPPAY_TOKEN_PRICE
-- Alpha.GET_LPPOOL_INFO
-- Alpha.GET_LPPOOL_LIST
-- Alpha.GET_LPPOSITION_LIST
-- Alpha.EXECUTE_LPREDEEM
-- Alpha.EXECUTE_LPSTAKE
-- Alpha.EXECUTE_PREDICTION_BUY
-- Alpha.GET_PREDICTION_ENGINE_STATUS
-- Alpha.GET_PREDICTION_EVENT_DETAIL
-- Alpha.GET_PREDICTION_ORDER_BOOK
-- Alpha.GET_PREDICTION_ORDER_ESTIMATE
-- Alpha.GET_PREDICTION_ORDER_LIST
-- Alpha.GET_PREDICTION_PAY_TOKEN_LIST
-- Alpha.GET_PREDICTION_PORTFOLIO_SUMMARY
-- Alpha.GET_PREDICTION_POSITION_HISTORY
-- Alpha.GET_PREDICTION_POSITION_LIST
-- Alpha.GET_PREDICTION_PRICE_HISTORY
-- Alpha.EXECUTE_PREDICTION_SELL
-- Alpha.GET_PREDICTION_SIDE_MARKET_LIST
-- Alpha.GET_PREDICTION_GROUP_STAGE_DETAIL
-- Alpha.GET_PREDICTION_MATCH_LIST
-- Alpha.GET_PREDICTION_TIMELINE_STAGES
-- Alpha.GET_PREDICTION_TOKEN_PRICE
-- Alpha.GET_ASSET_DETAIL
-- Alpha.GET_ASSET_LIST
-- Alpha.GET_BIZ_TOKEN_DETAILS
-- Alpha.GET_BIZ_TOKEN_LIST
-- Alpha.GET_BIZ_TOKEN_PRICE_LIST
-- Alpha.GET_ORDER_LIST
-- Alpha.GET_PAY_TOKEN_LIST
-- Alpha.EXECUTE_PURCHASE
-- Alpha.GET_TRADE_QUOTE
-- Alpha.EXECUTE_REDEEM
-- Event.GET_EC_ORDER_HISTORY
-- Event.GET_EC_ACTIVE_ORDERS
-- Event.GET_EC_POSITION_INFO
-- Event.GET_EC_SETTLEMENTS
-- Event.GET_EC_TRADE_HISTORY
-- Referral.GET_REFERRAL_CAMPAIGN_REWARDS
-- Referral.GET_REFERRAL_COMMISSION_RECORDS
-- Referral.GET_REFERRAL_USER_IDENTITY_PROFILE
-- Referral.GET_REFERRAL_USER_INVITATIONS
-- SpotX.GET_LAUNCHPOOL_PROJECT_LIST
-- SpotX.GET_LAUNCHPOOL_USER_ACTIVITY_LOG
-- SpotX.GET_LAUNCHPOOL_USER_CURRENT_STAKING
-- SpotX.GET_LAUNCHPOOL_USER_HISTORY
-- SpotX.GET_PUZZLE_PROJECT_LIST
-- SpotX.GET_TOKEN_SPLASH_PROJECT_LIST
-- SpotX.GET_TOKEN_SPLASH_USER_ACTIVITY_PARAMS
-
-## 5.17.3 — 2026-11-10
-
-### New Methods (2)
-- query_fixed_borrow_penalty_interest
-- cancel_fixed_borrow_order
-
-### New Endpoint Keys (2)
-- SpotMarginTrade.QUERY_FIXED_BORROW_PENALTY_INTEREST
-- SpotMarginTrade.CANCEL_FIXED_BORROW_ORDER
-
 # Changelog
 
+## [5.17.4] - 2026-11-10
+
+### New Methods (53)
+
+- `query_fixed_borrow_penalty_interest`
+- `cancel_fixed_borrow_order`
+- `get_lp_order_list`
+- `get_lp_pay_token_list`
+- `get_lp_pay_token_price`
+- `get_lp_pool_info`
+- `get_lp_pool_list`
+- `get_lp_position_list`
+- `execute_lp_redeem`
+- `execute_lp_stake`
+- `execute_prediction_buy`
+- `get_prediction_engine_status`
+- `get_prediction_event_detail`
+- `get_prediction_order_book`
+- `get_prediction_order_estimate`
+- `get_prediction_order_list`
+- `get_prediction_pay_token_list`
+- `get_prediction_portfolio_summary`
+- `get_prediction_position_history`
+- `get_prediction_position_list`
+- `get_prediction_price_history`
+- `execute_prediction_sell`
+- `get_prediction_side_market_list`
+- `get_prediction_group_stage_detail`
+- `get_prediction_match_list`
+- `get_prediction_timeline_stages`
+- `get_prediction_token_price`
+- `get_asset_detail`
+- `get_alpha_asset_list`
+- `get_biz_token_details`
+- `get_biz_token_list`
+- `get_biz_token_price_list`
+- `get_alpha_order_list`
+- `get_pay_token_list`
+- `execute_purchase`
+- `get_trade_quote`
+- `execute_alpha_redeem`
+- `get_ec_order_history`
+- `get_ec_active_orders`
+- `get_ec_position_info`
+- `get_ec_settlements`
+- `get_ec_trade_history`
+- `get_referral_campaign_rewards`
+- `get_referral_commission_records`
+- `get_referral_user_identity_profile`
+- `get_referral_user_invitations`
+- `get_launchpool_project_list`
+- `get_launchpool_user_activity_log`
+- `get_launchpool_user_current_staking`
+- `get_launchpool_user_history`
+- `get_puzzle_project_list`
+- `get_token_splash_project_list`
+- `get_token_splash_user_activity_params`
+
+### New Endpoint Keys (53)
+
+- `SpotMarginTrade.QUERY_FIXED_BORROW_PENALTY_INTEREST`
+- `SpotMarginTrade.CANCEL_FIXED_BORROW_ORDER`
+- `Alpha.GET_LP_ORDER_LIST`
+- `Alpha.GET_LP_PAY_TOKEN_LIST`
+- `Alpha.GET_LP_PAY_TOKEN_PRICE`
+- `Alpha.GET_LP_POOL_INFO`
+- `Alpha.GET_LP_POOL_LIST`
+- `Alpha.GET_LP_POSITION_LIST`
+- `Alpha.EXECUTE_LP_REDEEM`
+- `Alpha.EXECUTE_LP_STAKE`
+- `Alpha.EXECUTE_PREDICTION_BUY`
+- `Alpha.GET_PREDICTION_ENGINE_STATUS`
+- `Alpha.GET_PREDICTION_EVENT_DETAIL`
+- `Alpha.GET_PREDICTION_ORDER_BOOK`
+- `Alpha.GET_PREDICTION_ORDER_ESTIMATE`
+- `Alpha.GET_PREDICTION_ORDER_LIST`
+- `Alpha.GET_PREDICTION_PAY_TOKEN_LIST`
+- `Alpha.GET_PREDICTION_PORTFOLIO_SUMMARY`
+- `Alpha.GET_PREDICTION_POSITION_HISTORY`
+- `Alpha.GET_PREDICTION_POSITION_LIST`
+- `Alpha.GET_PREDICTION_PRICE_HISTORY`
+- `Alpha.EXECUTE_PREDICTION_SELL`
+- `Alpha.GET_PREDICTION_SIDE_MARKET_LIST`
+- `Alpha.GET_PREDICTION_GROUP_STAGE_DETAIL`
+- `Alpha.GET_PREDICTION_MATCH_LIST`
+- `Alpha.GET_PREDICTION_TIMELINE_STAGES`
+- `Alpha.GET_PREDICTION_TOKEN_PRICE`
+- `Alpha.GET_ASSET_DETAIL`
+- `Alpha.GET_ASSET_LIST`
+- `Alpha.GET_BIZ_TOKEN_DETAILS`
+- `Alpha.GET_BIZ_TOKEN_LIST`
+- `Alpha.GET_BIZ_TOKEN_PRICE_LIST`
+- `Alpha.GET_ORDER_LIST`
+- `Alpha.GET_PAY_TOKEN_LIST`
+- `Alpha.EXECUTE_PURCHASE`
+- `Alpha.GET_TRADE_QUOTE`
+- `Alpha.EXECUTE_REDEEM`
+- `Event.GET_EC_ORDER_HISTORY`
+- `Event.GET_EC_ACTIVE_ORDERS`
+- `Event.GET_EC_POSITION_INFO`
+- `Event.GET_EC_SETTLEMENTS`
+- `Event.GET_EC_TRADE_HISTORY`
+- `Referral.GET_REFERRAL_CAMPAIGN_REWARDS`
+- `Referral.GET_REFERRAL_COMMISSION_RECORDS`
+- `Referral.GET_REFERRAL_USER_IDENTITY_PROFILE`
+- `Referral.GET_REFERRAL_USER_INVITATIONS`
+- `SpotX.GET_LAUNCHPOOL_PROJECT_LIST`
+- `SpotX.GET_LAUNCHPOOL_USER_ACTIVITY_LOG`
+- `SpotX.GET_LAUNCHPOOL_USER_CURRENT_STAKING`
+- `SpotX.GET_LAUNCHPOOL_USER_HISTORY`
+- `SpotX.GET_PUZZLE_PROJECT_LIST`
+- `SpotX.GET_TOKEN_SPLASH_PROJECT_LIST`
+- `SpotX.GET_TOKEN_SPLASH_USER_ACTIVITY_PARAMS`
+
+### Removed
+
+- **Breaking change:** Removed the `RWAHTTP` and `RWA` SDK interfaces for
+  `/v5/rwa/stocks/*`, which are temporarily not supported.
 
 ## [5.17.2] - 2026-10-13
 
@@ -175,7 +175,7 @@
 
 ## [5.17.1] - 2026-09-30
 
-### New Methods (31)
+### New Methods (40)
 
 - `get_option_base_coins`
 - `get_crypto_loan_fixed_available_inventory`
@@ -200,6 +200,15 @@
 - `create_grid_bot`
 - `query_grid_detail`
 - `validate_grid_input`
+- `get_convert_detail`
+- `get_convert_list`
+- `submit_convert`
+- `get_multiplier_list`
+- `get_market_session`
+- `place_stocks_order`
+- `cancel_stocks_order`
+- `get_stocks_order_detail`
+- `get_stocks_positions`
 - `create_strategy`
 - `create_chase_order_strategy`
 - `create_twap_strategy`
@@ -209,7 +218,7 @@
 - `query_strategy_order_list`
 - `stop_strategy`
 
-### New Endpoint Keys (28)
+### New Endpoint Keys (37)
 
 - `Market.GET_OPTION_BASE_COINS`
 - `CryptoLoan.GET_CRYPTO_LOAN_FIXED_AVAILABLE_INVENTORY`
@@ -234,6 +243,15 @@
 - `Grid.CREATE_GRID_BOT`
 - `Grid.QUERY_GRID_DETAIL`
 - `Grid.VALIDATE_GRID_INPUT`
+- `RWA.GET_CONVERT_DETAIL`
+- `RWA.GET_CONVERT_LIST`
+- `RWA.SUBMIT_CONVERT`
+- `RWA.GET_MULTIPLIER_LIST`
+- `RWA.GET_MARKET_SESSION`
+- `RWA.PLACE_STOCKS_ORDER`
+- `RWA.CANCEL_STOCKS_ORDER`
+- `RWA.GET_STOCKS_ORDER_DETAIL`
+- `RWA.GET_STOCKS_POSITIONS`
 - `Strategy.CREATE_STRATEGY`
 - `Strategy.CREATE_CHASE_ORDER_STRATEGY`
 - `Strategy.QUERY_STRATEGY_LIST`

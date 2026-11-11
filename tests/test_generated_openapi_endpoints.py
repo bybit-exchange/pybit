@@ -4,6 +4,7 @@ from unittest.mock import Mock
 import pytest
 
 from pybit.unified_trading import HTTP
+from pybit.alpha import Alpha
 from pybit.asset import Asset
 from pybit._v5_crypto_loan import CryptoLoanHTTP
 from pybit.crypto_loan import CryptoLoan
@@ -65,14 +66,14 @@ CASES = [
     ("cancel_fixed_borrow_order", "POST", "/v5/spot-margin-trade/fixedborrow-order-cancel"),
     ("get_spread_max_qty", "GET", "/v5/spread/max-qty"),
     ("query_referral_code", "GET", "/v5/user/invitation/code"),
-    ("get_lporder_list", "POST", "/v5/alpha/lp/order-list"),
-    ("get_lppay_token_list", "POST", "/v5/alpha/lp/pay-token-list"),
-    ("get_lppay_token_price", "POST", "/v5/alpha/lp/pay-token-price"),
-    ("get_lppool_info", "POST", "/v5/alpha/lp/pool-info"),
-    ("get_lppool_list", "POST", "/v5/alpha/lp/pool-list"),
-    ("get_lpposition_list", "POST", "/v5/alpha/lp/position-list"),
-    ("execute_lpredeem", "POST", "/v5/alpha/lp/redeem"),
-    ("execute_lpstake", "POST", "/v5/alpha/lp/stake"),
+    ("get_lp_order_list", "POST", "/v5/alpha/lp/order-list"),
+    ("get_lp_pay_token_list", "POST", "/v5/alpha/lp/pay-token-list"),
+    ("get_lp_pay_token_price", "POST", "/v5/alpha/lp/pay-token-price"),
+    ("get_lp_pool_info", "POST", "/v5/alpha/lp/pool-info"),
+    ("get_lp_pool_list", "POST", "/v5/alpha/lp/pool-list"),
+    ("get_lp_position_list", "POST", "/v5/alpha/lp/position-list"),
+    ("execute_lp_redeem", "POST", "/v5/alpha/lp/redeem"),
+    ("execute_lp_stake", "POST", "/v5/alpha/lp/stake"),
     ("execute_prediction_buy", "POST", "/v5/alpha/prediction/buy"),
     ("get_prediction_engine_status", "GET", "/v5/alpha/prediction/engine-status"),
     ("get_prediction_event_detail", "POST", "/v5/alpha/prediction/event-detail"),
@@ -91,15 +92,15 @@ CASES = [
     ("get_prediction_timeline_stages", "GET", "/v5/alpha/prediction/sports/timeline-stages"),
     ("get_prediction_token_price", "POST", "/v5/alpha/prediction/token-price"),
     ("get_asset_detail", "POST", "/v5/alpha/trade/asset-detail"),
-    ("get_asset_list", "POST", "/v5/alpha/trade/asset-list"),
+    ("get_alpha_asset_list", "POST", "/v5/alpha/trade/asset-list"),
     ("get_biz_token_details", "POST", "/v5/alpha/trade/biz-token-details"),
     ("get_biz_token_list", "POST", "/v5/alpha/trade/biz-token-list"),
     ("get_biz_token_price_list", "POST", "/v5/alpha/trade/biz-token-price-list"),
-    ("get_order_list", "POST", "/v5/alpha/trade/order-list"),
+    ("get_alpha_order_list", "POST", "/v5/alpha/trade/order-list"),
     ("get_pay_token_list", "POST", "/v5/alpha/trade/pay-token-list"),
     ("execute_purchase", "POST", "/v5/alpha/trade/purchase"),
     ("get_trade_quote", "POST", "/v5/alpha/trade/quote"),
-    ("execute_redeem", "POST", "/v5/alpha/trade/redeem"),
+    ("execute_alpha_redeem", "POST", "/v5/alpha/trade/redeem"),
     ("get_ec_order_history", "GET", "/v5/event/order-list"),
     ("get_ec_active_orders", "GET", "/v5/event/order-realtime"),
     ("get_ec_position_info", "GET", "/v5/event/positions"),
@@ -262,7 +263,7 @@ DOC_URLS = {
     "get_prediction_timeline_stages": "/docs/v5/alpha/prediction/sports-timeline-stages",
     "execute_purchase": "/docs/v5/alpha/trade/trade-purchase",
     "get_trade_quote": "/docs/v5/alpha/trade/trade-quote",
-    "execute_redeem": "/docs/v5/alpha/trade/trade-redeem",
+    "execute_alpha_redeem": "/docs/v5/alpha/trade/trade-redeem",
     "get_ec_order_history": "/docs/v5/event/trade/order-list",
     "get_ec_active_orders": "/docs/v5/event/trade/open-order",
     "get_ec_position_info": "/docs/v5/event/trade/position",
@@ -296,7 +297,11 @@ def test_generated_method_links_to_matching_documentation(name, url):
             ["side (integer):", "orderType (integer):"],
             ["side (string):", "orderType (string):"],
         ),
-        ("get_prediction_price_history", ["tokenId (string):"], []),
+        (
+            "get_prediction_price_history",
+            ["tokenId (string):", "interval (string): Time interval."],
+            [],
+        ),
         ("execute_prediction_sell", ["orderType (integer):"], ["orderType (string):"]),
         (
             "get_prediction_side_market_list",
@@ -310,7 +315,7 @@ def test_generated_method_links_to_matching_documentation(name, url):
         ),
         ("get_prediction_match_list", ["eventType (integer):"], ["eventType (string):"]),
         ("get_prediction_timeline_stages", ["eventType (integer):"], []),
-        ("get_order_list", ["limit (integer):", "pageIndex (integer):"], []),
+        ("get_alpha_order_list", ["limit (integer):", "pageIndex (integer):"], []),
     ],
 )
 def test_alpha_method_docs_match_request_parameters(
@@ -322,6 +327,32 @@ def test_alpha_method_docs_match_request_parameters(
         assert fragment in doc
     for fragment in forbidden_fragments:
         assert fragment not in doc
+
+
+def test_alpha_lp_endpoint_keys_use_canonical_word_boundaries():
+    expected_keys = {
+        "GET_LP_ORDER_LIST",
+        "GET_LP_PAY_TOKEN_LIST",
+        "GET_LP_PAY_TOKEN_PRICE",
+        "GET_LP_POOL_INFO",
+        "GET_LP_POOL_LIST",
+        "GET_LP_POSITION_LIST",
+        "EXECUTE_LP_REDEEM",
+        "EXECUTE_LP_STAKE",
+    }
+    legacy_keys = {
+        "GET_LPORDER_LIST",
+        "GET_LPPAY_TOKEN_LIST",
+        "GET_LPPAY_TOKEN_PRICE",
+        "GET_LPPOOL_INFO",
+        "GET_LPPOOL_LIST",
+        "GET_LPPOSITION_LIST",
+        "EXECUTE_LPREDEEM",
+        "EXECUTE_LPSTAKE",
+    }
+
+    assert expected_keys <= Alpha.__members__.keys()
+    assert legacy_keys.isdisjoint(Alpha.__members__.keys())
 
 
 REMOVED_METHODS = [
@@ -423,3 +454,29 @@ def test_changelog_lists_only_supported_5_17_2_methods():
     }
 
     assert listed_methods == expected_methods
+
+
+def test_changelog_preserves_rwa_history_and_documents_removal():
+    changelog = Path("CHANGELOG.md").read_text()
+    release_5_17_4 = changelog.split("## [5.17.4]", 1)[1]
+    release_5_17_4 = release_5_17_4.split("## [5.17.2]", 1)[0]
+    release_5_17_1 = changelog.split("## [5.17.1]", 1)[1]
+    release_5_17_1 = release_5_17_1.split("## [5.17.0]", 1)[0]
+    rwa_methods = {
+        "get_convert_detail",
+        "get_convert_list",
+        "submit_convert",
+        "get_multiplier_list",
+        "get_market_session",
+        "place_stocks_order",
+        "cancel_stocks_order",
+        "get_stocks_order_detail",
+        "get_stocks_positions",
+    }
+
+    for method in rwa_methods:
+        assert f"- `{method}`" in release_5_17_1
+
+    assert "### Removed" in release_5_17_4
+    assert "breaking change" in release_5_17_4.lower()
+    assert "`/v5/rwa/stocks/*`" in release_5_17_4

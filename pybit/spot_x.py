@@ -9,5 +9,6 @@ class SpotX(str, Enum):
     GET_PUZZLE_PROJECT_LIST = "/v5/spot-x/puzzle/project/list"
     GET_TOKEN_SPLASH_PROJECT_LIST = "/v5/spot-x/token-splash/project/list"
     GET_TOKEN_SPLASH_USER_ACTIVITY_PARAMS = "/v5/spot-x/token-splash/user/activity-params"
+
     def __str__(self) -> str:
         return self.value

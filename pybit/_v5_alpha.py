@@ -3,7 +3,7 @@ from .alpha import Alpha
 
 
 class AlphaHTTP(_V5HTTPManager):
-    def get_lporder_list(self, **kwargs):
+    def get_lp_order_list(self, **kwargs):
         """Get LP order history with status and execution details
         Returns:
             Request results as dictionary.
@@ -13,12 +13,12 @@ class AlphaHTTP(_V5HTTPManager):
         """
         return self._submit_request(
             method="POST",
-            path=f"{self.endpoint}{Alpha.GET_LPORDER_LIST}",
+            path=f"{self.endpoint}{Alpha.GET_LP_ORDER_LIST}",
             query=kwargs,
             auth=True,
         )
 
-    def get_lppay_token_list(self, **kwargs):
+    def get_lp_pay_token_list(self, **kwargs):
         """Get list of supported payment tokens
         Returns:
             Request results as dictionary.
@@ -28,12 +28,12 @@ class AlphaHTTP(_V5HTTPManager):
         """
         return self._submit_request(
             method="POST",
-            path=f"{self.endpoint}{Alpha.GET_LPPAY_TOKEN_LIST}",
+            path=f"{self.endpoint}{Alpha.GET_LP_PAY_TOKEN_LIST}",
             query=kwargs,
             auth=True,
         )
 
-    def get_lppay_token_price(self, **kwargs):
+    def get_lp_pay_token_price(self, **kwargs):
         """Get current prices for payment tokens
 
         Required args:
@@ -46,12 +46,12 @@ class AlphaHTTP(_V5HTTPManager):
         """
         return self._submit_request(
             method="POST",
-            path=f"{self.endpoint}{Alpha.GET_LPPAY_TOKEN_PRICE}",
+            path=f"{self.endpoint}{Alpha.GET_LP_PAY_TOKEN_PRICE}",
             query=kwargs,
             auth=True,
         )
 
-    def get_lppool_info(self, **kwargs):
+    def get_lp_pool_info(self, **kwargs):
         """Get detailed information for a specific LP pool
 
         Required args:
@@ -64,12 +64,12 @@ class AlphaHTTP(_V5HTTPManager):
         """
         return self._submit_request(
             method="POST",
-            path=f"{self.endpoint}{Alpha.GET_LPPOOL_INFO}",
+            path=f"{self.endpoint}{Alpha.GET_LP_POOL_INFO}",
             query=kwargs,
             auth=True,
         )
 
-    def get_lppool_list(self, **kwargs):
+    def get_lp_pool_list(self, **kwargs):
         """Get LP pool list with optional filters
         Returns:
             Request results as dictionary.
@@ -79,12 +79,12 @@ class AlphaHTTP(_V5HTTPManager):
         """
         return self._submit_request(
             method="POST",
-            path=f"{self.endpoint}{Alpha.GET_LPPOOL_LIST}",
+            path=f"{self.endpoint}{Alpha.GET_LP_POOL_LIST}",
             query=kwargs,
             auth=True,
         )
 
-    def get_lpposition_list(self, **kwargs):
+    def get_lp_position_list(self, **kwargs):
         """Get user's LP positions with rewards and current value
         Returns:
             Request results as dictionary.
@@ -94,12 +94,12 @@ class AlphaHTTP(_V5HTTPManager):
         """
         return self._submit_request(
             method="POST",
-            path=f"{self.endpoint}{Alpha.GET_LPPOSITION_LIST}",
+            path=f"{self.endpoint}{Alpha.GET_LP_POSITION_LIST}",
             query=kwargs,
             auth=True,
         )
 
-    def execute_lpredeem(self, **kwargs):
+    def execute_lp_redeem(self, **kwargs):
         """Redeem (withdraw) liquidity from a position
 
         Required args:
@@ -118,12 +118,12 @@ class AlphaHTTP(_V5HTTPManager):
         """
         return self._submit_request(
             method="POST",
-            path=f"{self.endpoint}{Alpha.EXECUTE_LPREDEEM}",
+            path=f"{self.endpoint}{Alpha.EXECUTE_LP_REDEEM}",
             query=kwargs,
             auth=True,
         )
 
-    def execute_lpstake(self, **kwargs):
+    def execute_lp_stake(self, **kwargs):
         """Stake tokens into an LP pool
 
         Required args:
@@ -140,7 +140,7 @@ class AlphaHTTP(_V5HTTPManager):
         """
         return self._submit_request(
             method="POST",
-            path=f"{self.endpoint}{Alpha.EXECUTE_LPSTAKE}",
+            path=f"{self.endpoint}{Alpha.EXECUTE_LP_STAKE}",
             query=kwargs,
             auth=True,
         )
@@ -320,7 +320,8 @@ For SELL: number of shares to sell (e.g., "50").
 
         Required args:
             tokenId (string): Outcome token ID.
-            interval (string):
+            interval (string): Time interval. Valid values: `1H`, `6H`, `1D`,
+                `1W`, `1M`, `ALL`.
         Returns:
             Request results as dictionary.
 
@@ -468,7 +469,7 @@ For SELL: number of shares to sell (e.g., "50").
             auth=True,
         )
 
-    def get_asset_list(self, **kwargs):
+    def get_alpha_asset_list(self, **kwargs):
         """Get user's on-chain token portfolio with holdings, PnL, and market value
         Returns:
             Request results as dictionary.
@@ -535,7 +536,7 @@ For SELL: number of shares to sell (e.g., "50").
             auth=True,
         )
 
-    def get_order_list(self, **kwargs):
+    def get_alpha_order_list(self, **kwargs):
         """Get trade order history with status, fees, and execution details
 
         Required args:
@@ -636,7 +637,7 @@ For SELL: number of shares to sell (e.g., "50").
             auth=True,
         )
 
-    def execute_redeem(self, **kwargs):
+    def execute_alpha_redeem(self, **kwargs):
         """Execute a sell order to redeem on-chain tokens for USDT/USDC, returns order number
 
         Required args:
