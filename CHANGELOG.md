@@ -1,8 +1,8 @@
 # Changelog
 
-## [5.17.4] - 2026-11-10
+## [5.18.0] - 2026-11-24
 
-### New Methods (53)
+### New Methods (58)
 
 - `query_fixed_borrow_penalty_interest`
 - `cancel_fixed_borrow_order`
@@ -46,6 +46,11 @@
 - `get_ec_position_info`
 - `get_ec_settlements`
 - `get_ec_trade_history`
+- `get_ec_instruments_info`
+- `get_ec_orderbook`
+- `submit_ec_quote`
+- `cancel_ec_quote`
+- `cancel_all_ec_quotes`
 - `get_referral_campaign_rewards`
 - `get_referral_commission_records`
 - `get_referral_user_identity_profile`
@@ -58,7 +63,7 @@
 - `get_token_splash_project_list`
 - `get_token_splash_user_activity_params`
 
-### New Endpoint Keys (53)
+### New Endpoint Keys (58)
 
 - `SpotMarginTrade.QUERY_FIXED_BORROW_PENALTY_INTEREST`
 - `SpotMarginTrade.CANCEL_FIXED_BORROW_ORDER`
@@ -102,6 +107,11 @@
 - `Event.GET_EC_POSITION_INFO`
 - `Event.GET_EC_SETTLEMENTS`
 - `Event.GET_EC_TRADE_HISTORY`
+- `Event.GET_EC_INSTRUMENTS_INFO`
+- `Event.GET_EC_ORDERBOOK`
+- `Event.SUBMIT_EC_QUOTE`
+- `Event.CANCEL_EC_QUOTE`
+- `Event.CANCEL_ALL_EC_QUOTES`
 - `Referral.GET_REFERRAL_CAMPAIGN_REWARDS`
 - `Referral.GET_REFERRAL_COMMISSION_RECORDS`
 - `Referral.GET_REFERRAL_USER_IDENTITY_PROFILE`

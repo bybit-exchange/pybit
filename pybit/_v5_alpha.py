@@ -5,6 +5,16 @@ from .alpha import Alpha
 class AlphaHTTP(_V5HTTPManager):
     def get_lp_order_list(self, **kwargs):
         """Get LP order history with status and execution details
+
+        Optional args:
+            orderType (integer): Filter by type: 0 all (default), 1 stake, 2 redeem.
+            tokenCode (string): Filter by token code.
+            orderStatus (array): Statuses: 1 processing, 2 success, 3 failed.
+            days (integer): Query the last N days. Default 90; maximum 365.
+            limit (integer): Results per page. Default 20; maximum 100.
+            pageIndex (integer): One-based page number. Default 1.
+            poolAddress (string): Filter by pool contract address.
+
         Returns:
             Request results as dictionary.
 
@@ -20,6 +30,11 @@ class AlphaHTTP(_V5HTTPManager):
 
     def get_lp_pay_token_list(self, **kwargs):
         """Get list of supported payment tokens
+
+        Optional args:
+            chainCode (string): Filter by blockchain identifier.
+            tokenAddress (string): Filter by token contract address.
+
         Returns:
             Request results as dictionary.
 
@@ -38,6 +53,10 @@ class AlphaHTTP(_V5HTTPManager):
 
         Required args:
             tokenCode (array): Array of token codes to query (e.g., ["CEX_1", "CEX_2"]).
+
+        Optional args:
+            chainCode (string): Filter by blockchain identifier.
+
         Returns:
             Request results as dictionary.
 
@@ -71,6 +90,10 @@ class AlphaHTTP(_V5HTTPManager):
 
     def get_lp_pool_list(self, **kwargs):
         """Get LP pool list with optional filters
+
+        Optional args:
+            tokenSymbol (string): Token symbol contained by the pool, e.g. ETH or USDC.
+
         Returns:
             Request results as dictionary.
 
@@ -110,6 +133,9 @@ class AlphaHTTP(_V5HTTPManager):
 - "0.5" = redeem 50%
 - "1" = close entire position (redeem 100%)
 
+        Optional args:
+            receiveTokenCode (string): Token code used to receive the redeemed amount.
+
         Returns:
             Request results as dictionary.
 
@@ -132,6 +158,13 @@ class AlphaHTTP(_V5HTTPManager):
             poolAddress (string): Pool contract address (from getLPPoolInfo).
             payTokenAmount (string): Payment token amount (positive decimal as string).
             payTokenCode (string): Payment token code (e.g., "CEX_1" for USDT).
+
+        Optional args:
+            rangeUpper (string): Range upper limit; mutually exclusive with priceUpper.
+            rangeLower (string): Range lower limit; mutually exclusive with priceLower.
+            priceUpper (string): Price upper limit; mutually exclusive with rangeUpper.
+            priceLower (string): Price lower limit; mutually exclusive with rangeLower.
+
         Returns:
             Request results as dictionary.
 
@@ -185,6 +218,12 @@ class AlphaHTTP(_V5HTTPManager):
 
     def get_prediction_event_detail(self, **kwargs):
         """Get prediction event detail with all markets and outcomes
+
+        Optional args:
+            eventId (string): Event ID; use slug when available.
+            slug (string): URL-friendly slug; takes priority over eventId.
+            hasMoreMarkets (boolean): Include related sub-event markets. Default false.
+
         Returns:
             Request results as dictionary.
 
@@ -227,6 +266,10 @@ class AlphaHTTP(_V5HTTPManager):
 For SELL: number of shares to sell (e.g., "50").
 
             orderType (integer): Order type.
+
+        Optional args:
+            payTokenCode (string): Required for BUY; phase 1 is fixed to USDC.
+
         Returns:
             Request results as dictionary.
 
@@ -242,6 +285,16 @@ For SELL: number of shares to sell (e.g., "50").
 
     def get_prediction_order_list(self, **kwargs):
         """Get user's prediction market order history
+
+        Optional args:
+            status (integer): Filter by prediction order status.
+            tokenId (string): Filter by outcome token ID.
+            eventId (string): Filter by event ID.
+            side (integer): Filter by trade direction.
+            days (integer): Look back N days. Maximum 90.
+            limit (integer): Number of records per page.
+            pageIndex (integer): Page number starting from 1.
+
         Returns:
             Request results as dictionary.
 
@@ -272,6 +325,10 @@ For SELL: number of shares to sell (e.g., "50").
 
     def get_prediction_portfolio_summary(self, **kwargs):
         """Get user's prediction market portfolio overview
+
+        Optional args:
+            eventType (integer): Filter by prediction event type.
+
         Returns:
             Request results as dictionary.
 
@@ -287,6 +344,15 @@ For SELL: number of shares to sell (e.g., "50").
 
     def get_prediction_position_history(self, **kwargs):
         """Get user's historical closed prediction market positions
+
+        Optional args:
+            tokenId (string): Filter by outcome token ID.
+            eventId (string): Filter by event ID.
+            result (integer): Filter by position outcome.
+            days (integer): Look back N days. Maximum 90.
+            limit (integer): Number of records per page.
+            pageIndex (integer): Page number starting from 1.
+
         Returns:
             Request results as dictionary.
 
@@ -302,6 +368,13 @@ For SELL: number of shares to sell (e.g., "50").
 
     def get_prediction_position_list(self, **kwargs):
         """Get user's current open prediction market positions
+
+        Optional args:
+            tokenId (string): Filter by outcome token ID.
+            eventId (string): Filter by event ID.
+            limit (integer): Number of records per page.
+            pageIndex (integer): Page number starting from 1.
+
         Returns:
             Request results as dictionary.
 
@@ -344,6 +417,10 @@ For SELL: number of shares to sell (e.g., "50").
             orderType (integer): Order type.
             slippage (string): Maximum acceptable price slippage as decimal (e.g., "0.05" = 5% tolerance).
             eventId (string): Event ID associated with the token.
+
+        Optional args:
+            toTokenCode (string): Destination token code; phase 1 is fixed to USDC.
+
         Returns:
             Request results as dictionary.
 
@@ -362,6 +439,13 @@ For SELL: number of shares to sell (e.g., "50").
 
         Required args:
             eventId (string): Sports event ID.
+
+        Optional args:
+            sortBy (string): Sort field.
+            marketType (integer): Filter by prediction market type.
+            limit (integer): Number of records per page.
+            pageIndex (integer): Page number starting from 1.
+
         Returns:
             Request results as dictionary.
 
@@ -401,6 +485,15 @@ For SELL: number of shares to sell (e.g., "50").
 
         Required args:
             eventType (integer): Sports event type.
+
+        Optional args:
+            status (integer): Match status filter.
+            startTime (integer): Matches starting after this UTC millisecond timestamp.
+            endTime (integer): Matches starting before this UTC millisecond timestamp.
+            stageCode (string): Filter by tournament stage.
+            limit (integer): Number of records per page.
+            pageIndex (integer): Page number starting from 1.
+
         Returns:
             Request results as dictionary.
 
@@ -505,6 +598,10 @@ For SELL: number of shares to sell (e.g., "50").
 
     def get_biz_token_list(self, **kwargs):
         """Get on-chain tradable tokens with DEX token codes, risk flags, and order limits
+
+        Optional args:
+            tokenTag (integer): 0 all (default), 1 new token, 2 on-chain hot token.
+
         Returns:
             Request results as dictionary.
 
@@ -522,7 +619,8 @@ For SELL: number of shares to sell (e.g., "50").
         """Batch query token prices, 24h change, volume, market cap, liquidity, and holders by chain+address
 
         Required args:
-            tokenAddressInfo (array): List of token identifiers to query. Maximum 20 items per request.
+            tokenAddressInfo (array): Token identifiers; maximum 20 items. Each item
+                contains required chainCode and tokenAddress string fields.
         Returns:
             Request results as dictionary.
 
@@ -542,6 +640,14 @@ For SELL: number of shares to sell (e.g., "50").
         Required args:
             limit (integer): Number of records per page.
             pageIndex (integer): Page number, starting from 1.
+
+        Optional args:
+            tradeType (integer): 0 all (default), 1 purchase, 2 redeem.
+            tokenCode (string): Filter by token code.
+            orderStatus (array): Statuses: 1 processing, 2 success, 3 failed.
+            days (integer): Lookback in days, 0-90. Default 0 means 90 days.
+            direction (string): Pagination direction: prev or next.
+
         Returns:
             Request results as dictionary.
 
@@ -594,6 +700,10 @@ For SELL: number of shares to sell (e.g., "50").
 - `2`: Success Rate Priority
 
             correctingCode (string): MD5 checksum for data integrity. **Must pass as-is from `/quote` response.**
+
+        Optional args:
+            tenant (string): Optional tenant identifier.
+
         Returns:
             Request results as dictionary.
 
@@ -623,6 +733,9 @@ For SELL: number of shares to sell (e.g., "50").
             toTokenCode (string): Target token code. Format: `CEX_<id>` or `DEX_<id>`.
 - Purchase: DEX token code (e.g. `DEX_123`). Get from `getBizTokenList`.
 - Redeem: CEX token code (e.g. `CEX_1` for USDT). Get from `getPayTokenList`.
+
+        Optional args:
+            quoteMode (integer): 0 auto (default), 1 price priority, or 2 success-rate priority.
 
         Returns:
             Request results as dictionary.
@@ -657,6 +770,10 @@ For SELL: number of shares to sell (e.g., "50").
 - `2`: Success Rate Priority
 
             correctingCode (string): MD5 checksum for data integrity. **Must pass as-is from `/quote` response.**
+
+        Optional args:
+            tenant (string): Optional tenant identifier.
+
         Returns:
             Request results as dictionary.
 

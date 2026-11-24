@@ -106,6 +106,11 @@ CASES = [
     ("get_ec_position_info", "GET", "/v5/event/positions"),
     ("get_ec_settlements", "GET", "/v5/event/settlements"),
     ("get_ec_trade_history", "GET", "/v5/event/trades"),
+    ("get_ec_instruments_info", "GET", "/v5/event/instruments-info", None),
+    ("get_ec_orderbook", "GET", "/v5/event/orderbook", None),
+    ("submit_ec_quote", "POST", "/v5/event/quotes"),
+    ("cancel_ec_quote", "POST", "/v5/event/cancel"),
+    ("cancel_all_ec_quotes", "POST", "/v5/event/cancel-all"),
     ("get_referral_campaign_rewards", "POST", "/v5/referral/campaign/rewards"),
     ("get_referral_commission_records", "POST", "/v5/referral/commission/records"),
     ("get_referral_user_identity_profile", "POST", "/v5/referral/user/identity-profile"),
@@ -269,6 +274,11 @@ DOC_URLS = {
     "get_ec_position_info": "/docs/v5/event/trade/position",
     "get_ec_settlements": "/docs/v5/event/trade/settlement",
     "get_ec_trade_history": "/docs/v5/event/trade/execution",
+    "get_ec_instruments_info": "/docs/v5/event/market/instrument-info",
+    "get_ec_orderbook": "/docs/v5/event/market/orderbook",
+    "submit_ec_quote": "/docs/v5/event/trade/submit-quote",
+    "cancel_ec_quote": "/docs/v5/event/trade/cancel-quote",
+    "cancel_all_ec_quotes": "/docs/v5/event/trade/cancel-all",
     "get_referral_campaign_rewards": "/docs/v5/referral/referral-campaign-rewards",
     "get_referral_commission_records": "/docs/v5/referral/referral-commission-records",
     "get_referral_user_identity_profile": "/docs/v5/referral/referral-user-identity-profile",
@@ -286,6 +296,151 @@ DOC_URLS = {
 @pytest.mark.parametrize("name,url", DOC_URLS.items(), ids=DOC_URLS)
 def test_generated_method_links_to_matching_documentation(name, url):
     assert url in getattr(HTTP, name).__doc__
+
+
+@pytest.mark.parametrize(
+    "name,required_params,optional_params",
+    [
+        (
+            "get_ec_order_history",
+            [],
+            ["symbol", "orderId", "orderLinkId", "startTime", "endTime", "limit", "cursor"],
+        ),
+        (
+            "get_ec_active_orders",
+            [],
+            ["symbol", "orderId", "orderLinkId", "limit", "cursor"],
+        ),
+        (
+            "get_ec_position_info",
+            [],
+            ["symbol", "baseCoin", "settleCoin", "limit", "cursor"],
+        ),
+        (
+            "get_ec_settlements",
+            ["symbol"],
+            ["orderId", "startTime", "endTime", "limit", "cursor"],
+        ),
+        (
+            "get_ec_trade_history",
+            ["symbol"],
+            ["orderId", "orderLinkId", "startTime", "endTime", "limit", "cursor"],
+        ),
+    ],
+)
+def test_event_query_docs_list_all_request_parameters(
+    name, required_params, optional_params
+):
+    doc = getattr(HTTP, name).__doc__
+    optional_section = doc.split("Optional args:", 1)[1].split("Returns:", 1)[0]
+
+    for parameter in optional_params:
+        assert f"{parameter} (" in optional_section
+
+    if required_params:
+        required_section = doc.split("Required args:", 1)[1].split(
+            "Optional args:", 1
+        )[0]
+        for parameter in required_params:
+            assert f"{parameter} (" in required_section
+    else:
+        assert "Required args:" not in doc
+
+
+@pytest.mark.parametrize(
+    "name,fragments",
+    [
+        (
+            "get_ec_instruments_info",
+            [
+                "PreLaunch, Trading, Delivering, or Closed",
+                "Default: 50; range: 1 to 100",
+                "nextPageCursor from the previous response",
+            ],
+        ),
+        (
+            "submit_ec_quote",
+            [
+                "0 uses the instrument's quoteMaxValidMs",
+                "must not exceed quoteMaxValidMs",
+            ],
+        ),
+    ],
+)
+def test_event_method_docs_preserve_request_constraints(name, fragments):
+    doc = getattr(HTTP, name).__doc__
+
+    for fragment in fragments:
+        assert fragment in doc
+
+
+GENERATED_METHOD_PARAMS = {
+    "get_lp_order_list": ((), ("orderType", "tokenCode", "orderStatus", "days", "limit", "pageIndex", "poolAddress")),
+    "get_lp_pay_token_list": ((), ("chainCode", "tokenAddress")),
+    "get_lp_pay_token_price": (("tokenCode",), ("chainCode",)),
+    "get_lp_pool_info": (("poolAddress",), ()),
+    "get_lp_pool_list": ((), ("tokenSymbol",)),
+    "execute_lp_redeem": (("positionId", "poolAddress", "dercRatio"), ("receiveTokenCode",)),
+    "execute_lp_stake": (("positionId", "poolAddress", "payTokenAmount", "payTokenCode"), ("rangeUpper", "rangeLower", "priceUpper", "priceLower")),
+    "execute_prediction_buy": (("tokenId", "amount", "payTokenCode", "orderType", "slippage", "eventId"), ()),
+    "get_prediction_event_detail": ((), ("eventId", "slug", "hasMoreMarkets")),
+    "get_prediction_order_book": (("tokenIds",), ()),
+    "get_prediction_order_estimate": (("tokenId", "side", "eventId", "amount", "orderType"), ("payTokenCode",)),
+    "get_prediction_order_list": ((), ("status", "tokenId", "eventId", "side", "days", "limit", "pageIndex")),
+    "get_prediction_portfolio_summary": ((), ("eventType",)),
+    "get_prediction_position_history": ((), ("tokenId", "eventId", "result", "days", "limit", "pageIndex")),
+    "get_prediction_position_list": ((), ("tokenId", "eventId", "limit", "pageIndex")),
+    "get_prediction_price_history": (("tokenId", "interval"), ()),
+    "execute_prediction_sell": (("tokenId", "size", "orderType", "slippage", "eventId"), ("toTokenCode",)),
+    "get_prediction_side_market_list": (("eventId",), ("sortBy", "marketType", "limit", "pageIndex")),
+    "get_prediction_group_stage_detail": (("eventType",), ("groupName",)),
+    "get_prediction_match_list": (("eventType",), ("status", "startTime", "endTime", "stageCode", "limit", "pageIndex")),
+    "get_prediction_timeline_stages": (("eventType",), ()),
+    "get_prediction_token_price": (("tokenIds",), ()),
+    "get_asset_detail": (("chainCode", "tokenAddress"), ()),
+    "get_biz_token_details": (("chainCode", "tokenAddress"), ()),
+    "get_biz_token_list": ((), ("tokenTag",)),
+    "get_biz_token_price_list": (("tokenAddressInfo",), ()),
+    "get_alpha_order_list": (("limit", "pageIndex"), ("tradeType", "tokenCode", "orderStatus", "days", "direction")),
+    "get_pay_token_list": (("chainCode", "tokenAddress"), ()),
+    "execute_purchase": (("fromTokenCode", "fromTokenAmount", "toTokenCode", "slippage", "quoteData", "gas", "quoteMode", "correctingCode"), ("tenant",)),
+    "get_trade_quote": (("tradeType", "fromTokenCode", "fromTokenAmount", "toTokenCode"), ("quoteMode",)),
+    "execute_alpha_redeem": (("fromTokenCode", "fromTokenAmount", "toTokenCode", "slippage", "quoteData", "gas", "quoteMode", "correctingCode"), ("tenant",)),
+    "get_referral_commission_records": ((), ("userIdList", "startTime", "endTime", "page", "pageSize", "productLine")),
+    "get_referral_user_invitations": ((), ("userIdList", "startTime", "endTime", "page", "pageSize", "friendStatus")),
+    "get_launchpool_project_list": (("status",), ("activityCoin", "projectId", "cursor", "limit")),
+    "get_launchpool_user_activity_log": ((), ("stakeCoin", "type", "status", "startTime", "endTime", "pageSize", "current")),
+    "get_launchpool_user_history": ((), ("stakeCoin", "rewardCoin", "startTime", "endTime", "pageSize", "current")),
+    "get_puzzle_project_list": (("status",), ("projectId", "activityCoin", "cursor", "limit")),
+    "get_token_splash_project_list": (("status",), ("projectId", "activityCoin", "cursor", "limit")),
+    "get_token_splash_user_activity_params": ((), ("projectId", "activityCoin")),
+}
+
+
+@pytest.mark.parametrize(
+    "name,parameter_sections",
+    GENERATED_METHOD_PARAMS.items(),
+    ids=GENERATED_METHOD_PARAMS,
+)
+def test_generated_method_docs_list_all_request_parameters(name, parameter_sections):
+    required_params, optional_params = parameter_sections
+    doc = getattr(HTTP, name).__doc__
+
+    if required_params:
+        required_section = doc.split("Required args:", 1)[1]
+        required_section = required_section.split("Optional args:", 1)[0]
+        required_section = required_section.split("Returns:", 1)[0]
+        for parameter in required_params:
+            assert f"{parameter} (" in required_section
+    else:
+        assert "Required args:" not in doc
+
+    if optional_params:
+        optional_section = doc.split("Optional args:", 1)[1].split("Returns:", 1)[0]
+        for parameter in optional_params:
+            assert f"{parameter} (" in optional_section
+    else:
+        assert "Optional args:" not in doc
 
 
 @pytest.mark.parametrize(
@@ -458,8 +613,8 @@ def test_changelog_lists_only_supported_5_17_2_methods():
 
 def test_changelog_preserves_rwa_history_and_documents_removal():
     changelog = Path("CHANGELOG.md").read_text()
-    release_5_17_4 = changelog.split("## [5.17.4]", 1)[1]
-    release_5_17_4 = release_5_17_4.split("## [5.17.2]", 1)[0]
+    release_5_18_0 = changelog.split("## [5.18.0]", 1)[1]
+    release_5_18_0 = release_5_18_0.split("## [5.17.2]", 1)[0]
     release_5_17_1 = changelog.split("## [5.17.1]", 1)[1]
     release_5_17_1 = release_5_17_1.split("## [5.17.0]", 1)[0]
     rwa_methods = {
@@ -477,6 +632,6 @@ def test_changelog_preserves_rwa_history_and_documents_removal():
     for method in rwa_methods:
         assert f"- `{method}`" in release_5_17_1
 
-    assert "### Removed" in release_5_17_4
-    assert "breaking change" in release_5_17_4.lower()
-    assert "`/v5/rwa/stocks/*`" in release_5_17_4
+    assert "### Removed" in release_5_18_0
+    assert "breaking change" in release_5_18_0.lower()
+    assert "`/v5/rwa/stocks/*`" in release_5_18_0

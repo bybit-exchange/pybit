@@ -12,6 +12,12 @@ class SpotXHTTP(_V5HTTPManager):
 - `1` — Ongoing
 - `2` — Ended
 
+        Optional args:
+            activityCoin (string): Reward coin symbol, case-insensitive.
+            projectId (string): Exact activity code for a single project.
+            cursor (string): Previous nextPageCursor; omit for the first page.
+            limit (integer): Items per page. Default and maximum 10.
+
         Returns:
             Request results as dictionary.
 
@@ -26,6 +32,16 @@ class SpotXHTTP(_V5HTTPManager):
 
     def get_launchpool_user_activity_log(self, **kwargs):
         """Get user's staking operation records
+
+        Optional args:
+            stakeCoin (string): Filter by stake coin symbol.
+            type (integer): Operation type, from manual stake (0) through earn reward (10).
+            status (integer): 0 pending, 1 success, or 2 failed.
+            startTime (string): 13-digit millisecond timestamp; use with endTime.
+            endTime (string): 13-digit millisecond timestamp; use with startTime.
+            pageSize (integer): Records per page. Default and maximum 10.
+            current (integer): One-based page. Default 1; maximum 100.
+
         Returns:
             Request results as dictionary.
 
@@ -56,6 +72,15 @@ class SpotXHTTP(_V5HTTPManager):
 
     def get_launchpool_user_history(self, **kwargs):
         """Get user's completed staking position history
+
+        Optional args:
+            stakeCoin (string): Filter by stake coin symbol.
+            rewardCoin (string): Filter by reward coin symbol.
+            startTime (string): Staking-start millisecond timestamp; use with endTime.
+            endTime (string): Staking-end millisecond timestamp; use with startTime.
+            pageSize (integer): Records per page. Default and maximum 10.
+            current (integer): One-based page. Default 1; maximum 100.
+
         Returns:
             Request results as dictionary.
 
@@ -78,6 +103,12 @@ class SpotXHTTP(_V5HTTPManager):
 - `1` — Ongoing (in progress)
 - `2` — Ended
 
+        Optional args:
+            projectId (string): Exact activity code for a single project.
+            activityCoin (string): Activity coin symbol, case-insensitive.
+            cursor (string): Previous nextPageCursor; omit for the first page.
+            limit (integer): Items per page. Default and maximum 10.
+
         Returns:
             Request results as dictionary.
 
@@ -99,6 +130,12 @@ class SpotXHTTP(_V5HTTPManager):
 - `1` — Ongoing (activity in progress)
 - `2` — Ended (announcement time has passed)
 
+        Optional args:
+            projectId (string): Exact activity code for a single project.
+            activityCoin (string): Activity coin symbol, case-insensitive.
+            cursor (string): Previous nextPageCursor; omit for the first page.
+            limit (integer): Items per page. Default and maximum 10.
+
         Returns:
             Request results as dictionary.
 
@@ -113,6 +150,11 @@ class SpotXHTTP(_V5HTTPManager):
 
     def get_token_splash_user_activity_params(self, **kwargs):
         """Get user's Token Splash trade-task progress
+
+        Optional args:
+            projectId (string): Exact activity code for a single project.
+            activityCoin (string): Activity coin symbol, case-insensitive.
+
         Returns:
             Request results as dictionary.
 
