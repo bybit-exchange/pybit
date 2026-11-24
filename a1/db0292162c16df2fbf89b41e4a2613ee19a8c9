@@ -1,0 +1,19 @@
+docs/superpowers/specs/2026-11-24-event-query-docstrings-design.md
+  s_34866489c80204::t_a3ab393e15d76e 1-43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "a1db0292162c16df2fbf89b41e4a2613ee19a8c9",
+  "prompts": {},
+  "sessions": {
+    "s_34866489c80204": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a20c1a-fb56-7ea1-bcc9-78c90470f61e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
