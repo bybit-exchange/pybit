@@ -1,0 +1,19 @@
+docs/superpowers/specs/2026-11-24-generated-api-docstrings-design.md
+  s_34866489c80204::t_74b597f790a26a 1-58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2-bit.2+419f699",
+  "base_commit_sha": "cd302d901e483b4a3fa6479918a41d2e36170750",
+  "prompts": {},
+  "sessions": {
+    "s_34866489c80204": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a20c1a-fb56-7ea1-bcc9-78c90470f61e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "doris-xiao-bybit <doris.xiao@bybit.com>"
+    }
+  }
+}
